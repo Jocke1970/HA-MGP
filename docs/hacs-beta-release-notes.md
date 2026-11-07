@@ -1,18 +1,17 @@
-# HA-MGP 2026.11.0b13 — nya JavaScript-filnamn
+# HA-MGP 2026.11.0b14 — nationsflaggor och grafiska klassval
 
-**HACS beta:** `2026.11.0b13` · **UI:** `0.3.0-dev.25`.
+**HACS beta:** `2026.11.0b14` · **Frontend:** `0.3.0-dev.27`.
 
-## Ändringar sedan b12
+## Sedan b13
 
-- Repo, UI-rubrik, UI-fot och integrationsnamn är HA-MGP.
-- Ny resurs `/motogp_sensor/ha-mgp.js`, samt bibehållen `/motogp_sensor/ha-motogp-next.js` med identiskt innehåll.
-- Helgschema och VM-ställning öppnas en åt gången.
-- Den dubbla schemarubriken och överflödig VM-klassrad tas bort, men klassflikarna finns kvar.
-- VM-ställning visar alla förare som backend skickar, inte bara tio.
-- Intern `motogp_sensor`-domän, backendlogik och main är oförändrade.
+- **VM-ställning:** Förarnas verifierade nationalitetskod följer med från API till backendens klassvisa poängtabeller.
+- **Livetiming:** Nationalsflagga bredvid förarnamnet, baserat på befintlig `nation` i sessionens data.
+- **Klassknappar:** Grafiska MotoGP/Moto2/Moto3-etiketter i både schema och VM, och 🏁 ALL i helgschemat. Grafiken är lokal, stiliserad SVG; de äldre originalbilderna har ännu inte återfunnits i repot.
+- **Säkerhet:** Saknad/okänd nationalitetsuppgift ger ingen påhittad flagga. Spoilerläget och klassisoleringen bevaras.
+- **Kompatibilitet:** `ha-mgp.js` samt det byte-identiska gamla resursaliaset. Backendens integrationsdomän och `main` oförändrade.
 
-## Uppdatering
+## Installera
 
-Installera `2026.11.0b13` från HACS beta och starta om HA när inget pass är aktivt. Kontrollera att `/motogp_sensor/ha-mgp.js` kan öppnas, redigera sedan **befintlig** Lovelace JavaScript module-resurs från `/motogp_sensor/ha-motogp-next.js` till `/motogp_sensor/ha-mgp.js`. **Skapa ingen andra resurs.** Ladda om med `Ctrl+Shift+R` och kontrollera UI `0.3.0-dev.25`.
+Välj HACS-beta `2026.11.0b14`, starta om HA efter tävlingspass och gör `Ctrl+Shift+R`. Använd **endast en** Lovelace JavaScript module-resurs: `/motogp_sensor/ha-mgp.js` (äldre `ha-motogp-next.js` fungerar också och ska inte läggas till parallellt). Kontrollera både live-/VM-flaggor och filterknappar. Flaggor kräver att den aktuella API-posten faktiskt innehåller nationalitet.
 
-Rollback: välj `2026.11.0b12` i HACS och återställ tidigare resursadress. Bevara dashboard, konfigurationspost och `/config/motogp_data/`. Förarflaggor och klassloggor ingår inte i denna beta.
+**Rollback:** HACS-beta `2026.11.0b13`. Behåll dashboard, entiteter och `/config/motogp_data/`.

@@ -22,7 +22,7 @@ def git_blob_sha(data: bytes) -> str:
 
 def check_bundle_integrity() -> None:
     manifest = json.loads((PKG / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "2026.11.0b13"
+    assert manifest["version"] == "2026.11.0b14"
     assert {"http", "frontend"}.issubset(manifest["dependencies"])
 
     # Beta is intentionally a minimal HACS tree (without frontend/ or dist/).
@@ -58,14 +58,14 @@ def check_bundle_integrity() -> None:
     next_js = (ASSETS / "ha-mgp.js").read_text(encoding="utf-8")
     assert "ha-motogp-next-overview-card" in next_js
     assert "ha-motogp-next-timing-card" in next_js
-    assert "0.3.0-dev.25" in next_js
+    assert "0.3.0-dev.27" in next_js
     assert "header-track-weather-20261107-10" in next_js
     assert "mgp-country-flag" in next_js
     assert "mgp-brand-logo" in next_js
     assert "data:image/webp;base64," in next_js
     assert "__MGP_APPROVED_BRAND_DATA_URI__" not in next_js
     assert "Flagga: " in next_js
-    assert "ui-preview-20261107-07" in next_js
+    assert "ui-preview-20261108-02" in next_js
     assert "history-20261107-01" in next_js
     assert "motogp_sensor/session_history" in next_js
     assert "data-motogp-history-session" in next_js

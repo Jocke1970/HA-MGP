@@ -1,13 +1,15 @@
 # HA-MGP — HACS beta
 
-HA-MGP är ett Home Assistant-projekt med frontend och egen backend för MotoGP, Moto2 och Moto3. Härstammar från [Liionboy/motogp_sensor](https://github.com/Liionboy/motogp_sensor); inte officiellt anslutet till MotoGP.
+**HA-MGP** kombinerar Home Assistant-backend och UI för MotoGP, Moto2 och Moto3. Projektet härstammar från [Liionboy/motogp_sensor](https://github.com/Liionboy/motogp_sensor) och är inte officiellt anslutet till MotoGP.
 
-**HACS beta `2026.11.0b13` · UI `0.3.0-dev.25`.** Ordning: **dev → beta → main**.
+**HACS beta `2026.11.0b14` · UI `0.3.0-dev.27`**. SOP: **dev → beta → main**. `main` förblir oförändrad.
 
-Ny huvudresurs: `/motogp_sensor/ha-mgp.js`. Tidigare `/motogp_sensor/ha-motogp-next.js` behålls byte-identisk för kompatibilitet. **Ladda endast en av adresserna** i Lovelace-resurser.
+## Nytt i b14
 
-UI har nu produktnamnet HA-MGP, hopfällbart helgschema, ömsesidigt uteslutande VM-ställning, hela förarlistan och sessionsstyrd livetiming. Förarflaggor och klassloggor är fortfarande kommande arbete.
+- Förarflaggor i livetiming och VM-ställning från API:s `nation`-fält (ingen flagga gissas om uppgiften saknas).
+- Grafiska, lokala SVG-klassknappar för **MotoGP, Moto2, Moto3**, och **🏁 ALL** i helgschemat. Dessa är tillfälliga stiliserade märken – inte originalbilderna från det gamla kortet.
+- Fortsatt hela VM-listor, exklusiv panelväxling och 30-minutersstyrd livetiming.
 
-[Installera och återställ](docs/hacs-beta-installation.md) · [Release notes](docs/hacs-beta-release-notes.md) · [JS-migrering](docs/js-resource-migration.md).
+Huvudresurs `/motogp_sensor/ha-mgp.js`; `/motogp_sensor/ha-motogp-next.js` finns som identiskt kompatibilitetsalias. Registrera **en** JavaScript module-resurs, aldrig båda.
 
-Intern HA-domän `motogp_sensor`, befintliga entiteter och de två interna korttyperna `ha-motogp-next-overview-card` och `ha-motogp-next-timing-card` behålls.
+[Installationsguide](docs/hacs-beta-installation.md) · [Release notes](docs/hacs-beta-release-notes.md). Intern domän `motogp_sensor` och Lovelace-korttyper är oförändrade.

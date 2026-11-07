@@ -8,7 +8,7 @@ class Base {
   constructor(){this._today='2026-09-20';this._live={name:'Race',category:'MotoGP'};this._snapshot={day:this._today,name:'Race',category:'MotoGP',riders:[]};this._ids={race:'race'};this._hass={states:{}};this.view={innerHTML:''};this.shadowRoot={querySelector:()=>null,appendChild(){},getElementById:()=>this.view};this.hidden=false;this._filter='Total';}
   _spoiler(){return this.hidden;}
   _click(){this.legacyClicked=true;}
-  _schedule(){return '<section class="panel"><div>FULL WEEKEND SCHEDULE</div></section>';}
+  _schedule(){return '<section class="panel"><div>FULL WEEKEND SCHEDULE</div><div class="cats"><button type="button" class="cat" data-category="Total" selected aria-pressed="true">Total</button><button type="button" class="cat" data-category="MotoGP" aria-pressed="false">MotoGP</button><button type="button" class="cat" data-category="Moto2" aria-pressed="false">Moto2</button><button type="button" class="cat" data-category="Moto3" aria-pressed="false">Moto3</button></div></section>';}
   _render(){this.view.innerHTML='<div class="root">OVERVIEW<div class="foot">old footer</div></div>';}
   _timing(){
     if(this.hidden)return 'HIDDEN';
@@ -29,18 +29,18 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
 (async()=>{
   vm.runInNewContext(fs.readFileSync(process.argv[2]||'/mnt/data/ha-mgp-ui.js','utf8'),ctx);
   for(let i=0;i<4;i++)await Promise.resolve();
-  const r={position:3,number:93,surname:'TEST',team:'TEAM',num_lap:12,
+  const r={position:3,number:93,surname:'TEST',team:'TEAM',nation:'ITA',num_lap:12,
     last_lap_time:"1'30.450",best_lap_time:"1'29.980",status_name:'RUNNING'};
   const race={state:'GP',attributes:{start_grids:{MotoGP:[{position:8,number:93,rider:'TEST',team:'TEAM'},
     {position:1,number:1,rider:'A',team:'B'}]},sessions_all:[{category:'MotoGP',name:'Race',type:'RAC',
     date:'2026-09-20T14:00:00+00:00',status:'NOT-STARTED'}]}};
   const standing={attributes:{
-    standings:[{position:1,number:93,rider:'STANDINGS',team:'Ducati Lenovo',team_color:'#CC0000',points:250}],
+    standings:[{position:1,number:93,rider:'STANDINGS',nation:'SPA',team:'Ducati Lenovo',team_color:'#CC0000',points:250}],
     standings_by_category:{
-      MotoGP:[{position:1,number:93,rider:'STANDINGS',team:'Ducati Lenovo',team_color:'#CC0000',points:250}],
-      Moto2:[{position:1,number:18,rider:'MOTO2 CHAMPION',team:'Speed Up Moto2',team_color:'#123ABC',points:205},
+      MotoGP:[{position:1,number:93,rider:'STANDINGS',nation:'SPA',team:'Ducati Lenovo',team_color:'#CC0000',points:250}],
+      Moto2:[{position:1,number:18,rider:'MOTO2 CHAMPION',nation:'ESP',team:'Speed Up Moto2',team_color:'#123ABC',points:205},
         {position:2,number:99,rider:'RUNNER UP',team:'Other Moto2 Team',team_color:'#002244',points:202.5}],
-      Moto3:[{position:1,number:28,rider:'MOTO3 CHAMPION',team:'Ajo Moto3',team_color:'#012',points:190}]
+      Moto3:[{position:1,number:28,rider:'MOTO3 CHAMPION',nation:'ITA',team:'Ajo Moto3',team_color:'#012',points:190}]
     }
   }};
   const timing=new Timing();timing._snapshot.riders=[r];timing._hass.states={race};
@@ -49,6 +49,7 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   assert.match(h,/⏱ fastest/);assert.doesNotMatch(h,/⚡/);
   assert.match(h,/nt-last-main[\s\S]*nt-pb-chip[\s\S]*Snabbaste: 1&#39;29\.980/);
   assert.match(h,/▲ \+5/);assert.match(h,/RUNNING/);
+  assert.match(h,/Nation: ITA[^>]*>🇮🇹/,'live timing uses supplied nationality');
   timing._snapshot.name='Q1';timing._live.name='Q1';
   assert.match(timing._timing(),/nt-position-empty/,'no progression in qualifying');
   timing._snapshot.name='Race';timing._live.name='Race';
@@ -70,6 +71,8 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   assert.match(overview.view.innerHTML,/Förare \/ team/);
   assert.match(overview.view.innerHTML,/#93/);
   assert.match(overview.view.innerHTML,/Ducati Lenovo/);
+  assert.match(overview.view.innerHTML,/Nation: SPA[^>]*>🇪🇸/,'VM standings country flag');
+  assert.match(overview.view.innerHTML,/mgp-class-mark/,'graphical class buttons');
   assert.match(overview.view.innerHTML,/background:#CC0000/);
   assert.match(overview.view.innerHTML,/np-standing-rank top-1/);
   assert.match(overview.view.innerHTML,/np-standing-track/);
@@ -84,16 +87,19 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   assert.doesNotMatch(overview.view.innerHTML,/Moto3 · Moto2 · MotoGP/,'no duplicate category legend above class tabs');
   overview._click({target:{closest:sel=>sel==='[data-motogp-standing]'?{getAttribute:()=> 'Moto2'}:null}});
   assert.match(overview.view.innerHTML,/MOTO2 CHAMPION/);
+  assert.match(overview.view.innerHTML,/Nation: ESP[^>]*>🇪🇸/);
   assert.match(overview.view.innerHTML,/#18/);
   assert.match(overview.view.innerHTML,/Speed Up Moto2/);
   assert.match(overview.view.innerHTML,/background:#123ABC/);
   assert.match(overview.view.innerHTML,/RUNNER UP/);
+  assert.equal((overview.view.innerHTML.match(/class="mgp-rider-flag"/g)||[]).length,1,'never invent flag for rider with missing nation');
   assert.match(overview.view.innerHTML,/−2,5 p/);
   assert.match(overview.view.innerHTML,/width:98\.8%;background:#002244/);
   assert.match(overview.view.innerHTML,/np-standing-rank top-2/);
   assert.doesNotMatch(overview.view.innerHTML,/STANDINGS/,'never relabel MotoGP as Moto2');
   overview._click({target:{closest:sel=>sel==='[data-motogp-standing]'?{getAttribute:()=> 'Moto3'}:null}});
   assert.match(overview.view.innerHTML,/MOTO3 CHAMPION/);
+  assert.match(overview.view.innerHTML,/Nation: ITA[^>]*>🇮🇹/);
   assert.match(overview.view.innerHTML,/#28/);
   assert.match(overview.view.innerHTML,/Ajo Moto3/);
   assert.match(overview.view.innerHTML,/background:#012/);
@@ -123,6 +129,9 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   overview._scheduleOpen=false;
   overview._live=null;
   assert.match(overview._schedule(race,new Clock()),/FULL WEEKEND SCHEDULE/);
+  assert.match(overview._schedule(race,new Clock()),/mgp-class-mark/,'schedule filter buttons contain graphics');
+  assert.match(overview._schedule(race,new Clock()),/🏁 ALL/,'schedule has graphic all-classes button');
+  assert.match(overview._schedule(race,new Clock()),/data-category="Moto2"/,'original category action remains');
   now=Date.parse('2026-09-20T13:43:00+02:00');overview._render();
   assert.doesNotMatch(overview.view.innerHTML,/Startgrid · MotoGP Race/,'17 min before start');
   now=Date.parse('2026-09-20T13:46:00+02:00');overview.hidden=true;overview._render();

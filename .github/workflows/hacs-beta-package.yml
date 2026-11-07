@@ -81,10 +81,13 @@ jobs:
           assert "qualifying_q1_eliminated" in source
           assert "MELLAN PASSEN" in source
           assert "leaderboard=shown.map" in source
-          assert "ui-preview-20261107-07" in source
+          assert "ui-preview-20261108-02" in source
           assert "header-track-weather-20261107-10" in source
           assert "mgp-brand-logo" in source
-          assert 'HA-MGP UI · 0.3.0-dev.25' in source
+          assert "mgp-rider-flag" in source
+          assert "mgp-class-mark" in source
+          assert "mgp-all-mark" in source
+          assert 'HA-MGP UI · 0.3.0-dev.27' in source
           assert source == Path('custom_components/motogp_sensor/www/ha-motogp-next.js').read_text(encoding='utf-8')
           assert "mgp-ui-footer" in source
           assert "data-mgp-schedule-jump" in source
@@ -126,7 +129,7 @@ jobs:
           manifest = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
           assert manifest['domain'] == 'motogp_sensor'
           assert manifest['name'] == 'HA-MGP'
-          assert manifest['version'] == '2026.11.0b13'
+          assert manifest['version'] == '2026.11.0b14'
           assert manifest.get('codeowners') == ['@Jocke1970']
           assert {'http', 'frontend'}.issubset(manifest['dependencies'])
           required = {
@@ -143,20 +146,20 @@ jobs:
           assert hacs.get('name')
           assert not hacs.get('content_in_root')
           assert not hacs.get('zip_release')
-          print('Verified HACS beta: 2026.11.0b13 including Next frontend 0.3.0-dev.25')
+          print('Verified HACS beta: 2026.11.0b14 including Next frontend 0.3.0-dev.27')
           PY
       - name: Publish tagged GitHub prerelease
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          TAG=2026.11.0b13
+          TAG=2026.11.0b14
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "$TAG already exists; leaving the immutable prerelease untouched."
             gh release view "$TAG" --json tagName,isPrerelease,url,targetCommitish
             exit 0
           fi
           gh release create "$TAG" --target "$(git rev-parse HEAD)" --prerelease \
-            --title 'HA-MGP 2026.11.0b13 — JS rename and full standings' \
+            --title 'HA-MGP 2026.11.0b14 — rider flags and graphical class filters' \
             --notes-file docs/hacs-beta-release-notes.md
           gh release view "$TAG" --json tagName,isPrerelease,url,targetCommitish

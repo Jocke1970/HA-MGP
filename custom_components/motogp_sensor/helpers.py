@@ -193,6 +193,8 @@ def parse_standings(classification: list[dict[str, Any]]) -> list[dict[str, Any]
                 "number": rider.get("number") if rider.get("number") is not None
                     else entry.get("number"),
                 "rider": rider.get("full_name") or "",
+                "nation": _dict_get(rider.get("country")).get("iso")
+                    or rider.get("country_iso") or "",
                 "rider_api_uuid": rider.get("riders_api_uuid")
                     or rider.get("rider_api_uuid") or "",
                 "team": team.get("name") or entry.get("team_name") or "",
