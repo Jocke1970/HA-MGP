@@ -1,4 +1,4 @@
-/* MotoGP Next SINGLE Lovelace resource | build next-one-20261108-01 | read only. */
+/* MotoGP Next SINGLE Lovelace resource | build next-one-20261108-02 | read only. */
 /* MotoGP Next: isolated frontend for motogp-test. No HA writes or service calls. */
 (() => {
   'use strict';
@@ -303,9 +303,9 @@
       this._track(now,race);
       const event=valid(race?.state)?race.state:'Inget evenemang tillgängligt';
       const meta=[a.circuit,a.country,a.date_start&&a.date_end?dateRange(a.date_start,a.date_end):''].filter(valid);
-      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.26</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
+      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.27</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
         this._schedule(race,now)+`<div class="root">${this._weather()}${this._timing()}</div>`+
-        `<div class="foot">HA-MGP UI · 0.3.0-dev.26 · UI-preview</div></div>`;
+        `<div class="foot">HA-MGP UI · 0.3.0-dev.27 · UI-preview</div></div>`;
     }
     getCardSize(){return 8;}
     getGridOptions(){return {columns:12,rows:'auto',min_columns:6};}
@@ -911,7 +911,7 @@
   const OVERVIEW='ha-motogp-next-overview-card';
   const TIMING='ha-motogp-next-timing-card';
   const REQUIRED='0.2.0-split.2';
-  const BUILD='ui-preview-20261108-01';
+  const BUILD='ui-preview-20261108-02';
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const valid=v=>v!==null&&v!==undefined&&!['','unknown','unavailable','none','null','hidden'].includes(String(v).trim().toLowerCase());
   const cat=v=>{const m=/moto\s*(gp|2|3|e)/i.exec(String(v||''));return m?({gp:'MotoGP','2':'Moto2','3':'Moto3',e:'MotoE'})[m[1].toLowerCase()]:String(v||'');};
@@ -968,6 +968,10 @@
     .np-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;padding:10px}
     .np-slot{border:1px solid var(--divider-color,#ddd);border-radius:9px;padding:9px;min-width:0}
     .np-slot b{font-size:12px}.np-slot small{display:block;font-size:10px;color:var(--secondary-text-color);margin-top:3px;overflow:hidden;text-overflow:ellipsis}
+    .cats{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;align-items:stretch}
+    .cats .cat{min-width:0;min-height:52px;display:flex;align-items:center;justify-content:center;gap:6px}
+    .mgp-all-mark{font-size:15px;font-weight:900;letter-spacing:.04em}
+    @media(max-width:480px){.cats{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.cats .cat{min-height:45px}}
     .np-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:10px 12px}
     .mgp-class-mark{display:block;width:min(100%,146px);height:31px;overflow:visible}
     .mgp-rider-flag{display:inline-block;vertical-align:-.08em;line-height:1;margin-right:6px;font-size:15px;white-space:nowrap}
@@ -1145,7 +1149,12 @@
     const oldSchedule=Overview.prototype._schedule;
     Overview.prototype._schedule=function(race,now) {
       const html=oldSchedule.call(this,race,now);
-      if(!this._live||this._spoiler())return html;
+      // Preserve native filter attributes/click handling; only replace visible marks.
+      const formatted=html.replace(/(<button type="button" class="cat" data-category=")(MotoGP|Moto2|Moto3)("[^>]*>)(?:MotoGP|Moto2|Moto3)(<\/button>)/g,
+        (_full,start,name,end,close)=>start+name+end+classMark(name)+close)
+        .replace(/(<button type="button" class="cat" data-category="Total"[^>]*>)Total(<\/button>)/g,
+          '$1<span class="mgp-all-mark">🏁 ALL</span>$2');
+      if(!this._live||this._spoiler())return formatted;
       const open=this._scheduleOpen===true;
       const control='<section class="panel" aria-label="Helgens schema">'+
         '<div class="np-heading"><span>🗓️ Helgens schema</span>'+
@@ -1155,7 +1164,7 @@
       const header='<section class="panel">';
       const close='<div class="np-hide-row"><button type="button" class="np-show-button" '+
         'data-motogp-schedule-toggle aria-expanded="true">Dölj schema</button></div>';
-      return html.includes(header)?html.replace(header,header+close):control+html;
+      return formatted.includes(header)?formatted.replace(header,header+close):control+formatted;
     };
     function gridHtml(card,now) {
       if(card._spoiler())return '';
