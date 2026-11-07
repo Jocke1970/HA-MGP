@@ -179,3 +179,34 @@ Responsive container queries stack track/conditions on mobile and use four
 weather chips where width permits. The standings toggle stays in the header,
 and its open/closed state is unchanged. UI `0.3.0-dev.12` and backend manifest
 `2026.11.0b5` are staged on **dev** only. Public beta b4 and main are unchanged.
+
+## 3–3–3 staggered grid incl. Q1 non-qualifiers (dev)
+
+The qualifying sidecar now renders a compact *in echelon* grid: P1 at
+left, P2 indented, P3 further indented, then the pattern repeats P4–P6,
+P7–P9 etc. This works next to desktop timing without squashing three full
+rider names into 250px and becomes a single staggered grid below mobile
+timing. Each starting slot shows position, start number, surname and
+verified team color when available.
+
+**Correct 2026 FIM Q1/Q2 positions:**
+- MotoGP: Q2 riders occupy P1–P12; Q1 non-transferees from P13.
+- Moto2 and Moto3: Q2 riders P1–P18; Q1 non-transferees from P19.
+
+The coordinator reads each category's Q1 results *only after scheduled Q2
+begins*. The archive and live session are not guessed or combined; each Q1
+position is normalized, validated for unique contiguous ranks/numbers and
+mapped to the exact starting position. If the Q1 classification is missing,
+incomplete, duplicated or invalid, the tail is omitted with an explicit
+explanation, never filled from a different class or guessed. During Q1 itself
+the list is labelled **Kvalordning · preliminär**, never a final grid.
+
+A fully published event grid remains authoritative **only if** the returned
+positions are complete, unique and consistent with the known Q1 tail. A
+partial grid response remains marked provisional. In Q2 provisional mode,
+we show the observed Q2 classification plus verified Q1 tail, with a clear
+section separator. During race/sprint we render **only** a complete published
+grid. Spoiler mode blocks the panel and its Q1 attribute.
+
+Manifest candidate `2026.11.0b6` and Next `0.3.0-dev.13` are staged on
+**dev**. Existing beta b4 and main remain unchanged.

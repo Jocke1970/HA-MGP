@@ -8,6 +8,7 @@ on:
       - 'custom_components/motogp_sensor/**'
       - 'tests/test_weekend_regressions.py'
       - 'tests/test_standings_enrichment.py'
+      - 'tests/test_qualifying_grid.py'
       - '.github/workflows/weekend-beta-check.yml'
   pull_request:
     branches: [beta, main]
@@ -15,6 +16,7 @@ on:
       - 'custom_components/motogp_sensor/**'
       - 'tests/test_weekend_regressions.py'
       - 'tests/test_standings_enrichment.py'
+      - 'tests/test_qualifying_grid.py'
       - '.github/workflows/weekend-beta-check.yml'
 
 permissions:
@@ -39,5 +41,7 @@ jobs:
           python -m unittest discover -s tests -p 'test_lap_history_*.py' -v
       - name: Validate championship numbers and verified official team colors
         run: python -m unittest discover -s tests -p 'test_standings_enrichment.py' -v
+      - name: Validate Q1 eliminations and official grid positions
+        run: python -m unittest discover -s tests -p 'test_qualifying_grid.py' -v
       - name: Run archive regressions
         run: python -m unittest discover -s tests -p 'test_session_lap_archive.py' -v

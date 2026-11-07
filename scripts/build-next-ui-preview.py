@@ -7,11 +7,11 @@ import sys
 import tempfile
 
 UI_BLOB = '58d7b0f650c1f8cc9c17f5133623378501268b5e'
-QUAL_BLOB = 'b4fa9c1d5eae23e59e5b1978a7b034e296fd8751'
+QUAL_BLOB = '3cd24780166dcc578624221769a8a459c7b62819'
 HEADER_BLOB = '5ca10cc598ac1287e0cb9bbd96cf775f93c5faf8'
 MOBILE_BLOB = '9fad86bfd7fdc2e461371efb458b17f6029df794'
-BUILD = 'next-one-20261107-06'
-VERSION = '0.3.0-dev.12'
+BUILD = 'next-one-20261107-07'
+VERSION = '0.3.0-dev.13'
 
 
 def blob(data):
