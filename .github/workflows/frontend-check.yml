@@ -30,6 +30,12 @@ jobs:
         run: |
           python3 scripts/build-next-one.py frontend /tmp/ha-motogp-next.js
           node --check /tmp/ha-motogp-next.js
+      - name: Bundled HACS frontend package and static route checks
+        run: |
+          python3 tests/test_frontend_package.py
+          node --check custom_components/motogp_sensor/www/ha-motogp-next.js
+          node --check custom_components/motogp_sensor/www/ha-motogp-card.js
+          TZ=Europe/Stockholm node tests/frontend-next-one.cjs custom_components/motogp_sensor/www/ha-motogp-next.js
       - name: Original frontend smoke tests
         env:
           TZ: Europe/Stockholm

@@ -24,8 +24,15 @@ from .const import (
     RACE_WEEK_START_MONDAY,
 )
 from .coordinator import MotogpCoordinator
+from .web_assets import async_register_frontend_paths
 
 _LOGGER = logging.getLogger(__name__)
+
+
+async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
+    """Serve bundled dashboard assets without adding duplicate Lovelace resources."""
+    await async_register_frontend_paths(hass)
+    return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

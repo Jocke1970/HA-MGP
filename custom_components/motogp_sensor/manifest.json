@@ -9,7 +9,10 @@
     "@Jocke1970"
   ],
   "config_flow": true,
-  "dependencies": [],
+  "dependencies": [
+    "frontend",
+    "http"
+  ],
   "documentation": "https://github.com/Jocke1970/ha-motogp/blob/beta/docs/hacs-beta-installation.md",
   "integration_type": "device",
   "iot_class": "cloud_polling",
@@ -17,5 +20,5 @@
   "requirements": [
     "python-dateutil>=2.8"
   ],
-  "version": "2026.10.0b5"
+  "version": "2026.11.0b1"
 }
