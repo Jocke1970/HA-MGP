@@ -39,7 +39,7 @@ jobs:
           node tests/frontend-next-lap-pair.cjs frontend/ha-motogp-next-ui-preview.js frontend/ha-motogp-next-mobile-laps.js
           node tests/frontend-next-header-track.cjs frontend/ha-motogp-next-header-track.js
           node tests/frontend-session-history.cjs frontend/ha-motogp-next-session-history.js
-          sed -e 's/dev\\.3/dev\\.24/g' -e 's/samlad testversion/UI-preview/g' \
+          sed -e 's/dev\\.3/dev\\.25/g' -e 's/samlad testversion/UI-preview/g' \
             -e 's/overview.setConfig({type:\x27custom:ha-motogp-next-overview-card\x27});/overview.setConfig({type:\x27custom:ha-motogp-next-overview-card\x27});overview._scheduleOpen=true;/' \
             -e 's/const push=x=>{states=/const push=x=>{overview._scheduleOpen=true;states=/' \
             -e 's@/Nästa: Moto3 Race/@/Nästa Moto3 Race/@g' \
