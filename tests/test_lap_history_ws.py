@@ -18,7 +18,7 @@ def load_ws():
     pkg_name = "motogp_lap_ws_test"
     pkg = types.ModuleType(pkg_name)
     pkg.__path__ = [str(ROOT)]
-    fake_vol = types.ModuleType("probatio")
+    fake_vol = types.ModuleType("voluptuous")
     fake_vol.Required = lambda text: text
 
     ha = types.ModuleType("homeassistant")
@@ -33,7 +33,7 @@ def load_ws():
 
     injected = {
         pkg_name: pkg,
-        "probatio": fake_vol,
+        "voluptuous": fake_vol,
         "homeassistant": ha,
         "homeassistant.components": components,
         "homeassistant.core": core,

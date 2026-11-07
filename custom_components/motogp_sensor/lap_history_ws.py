@@ -10,7 +10,7 @@ import logging
 from functools import partial
 from typing import Any
 
-import probatio as vol
+import voluptuous as vol
 
 from homeassistant.components import websocket_api
 from homeassistant.core import HomeAssistant
@@ -93,7 +93,13 @@ async def websocket_rider_laps(
     if coordinator.no_spoiler or current_identity != identity:
         connection.send_error(msg["id"], "unavailable", "Session changed or spoiler enabled")
         return
-    connection.send_result(msg["id"], rider_laps_response(archive, rider_id, identity))
+    try:
+        response = rider_laps_response(archive, rider_id, identity)
+    except (TypeError, ValueError, KeyError) as err:
+        _LOGGER.warning("MotoGP lap history invalid: %s", err)
+        connection.send_error(msg["id"], "archive_unavailable", "Invalid lap archive data")
+        return
+    connection.send_result(msg["id"], response)
 
 
 def async_register_rider_laps(hass: HomeAssistant) -> None:

@@ -173,6 +173,14 @@ def check_category_scoped_standings() -> None:
     assert 'by_category[name] = []' in coordinator
 
 
+def check_websocket_dependencies() -> None:
+    source = (INTEGRATION / "lap_history_ws.py").read_text(encoding="utf-8")
+    assert "import voluptuous as vol" in source
+    assert "import probatio" not in source
+    assert "@websocket_api.websocket_command(" in source
+    assert "websocket_api.async_register_command(hass, websocket_rider_laps)" in source
+
+
 def check_beta_version() -> None:
     manifest = json.loads((INTEGRATION / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["domain"] == "motogp_sensor"
@@ -186,5 +194,6 @@ if __name__ == "__main__":
     check_near_session_standby_polling()
     check_live_poll_freshness_contract()
     check_category_scoped_standings()
+    check_websocket_dependencies()
     check_beta_version()
     print("Weekend regressions OK: R/D polling, Mandalika timezone, tiered session-start polling, poll freshness metadata, broadcast URL template, 2026.11.0b2")
