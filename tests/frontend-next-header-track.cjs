@@ -69,6 +69,7 @@ const context={customElements:{
   assert.match(eventHeader[1],/MotoGP · Warm Up/,'next session type is displayed');
   assert.match(eventHeader[1],/data-next-start=/,'chip uses existing countdown refresh selector');
   assert.match(card.root.innerHTML,/<div class="foot"><details class="mgp-ui-footer">/,'UI details live in footer');
+  assert.equal((card.root.innerHTML.match(/ⓘ UI-information/g)||[]).length,1,'only one diagnostics expander');
   assert.ok(card.root.innerHTML.indexOf('mgp-hero-grid')<card.root.innerHTML.indexOf('Schedule'),
     'venue lives in header above the separate schedule');
   assert.match(card.root.innerHTML,/Schematisk banform/);
