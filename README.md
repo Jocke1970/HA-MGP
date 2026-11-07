@@ -1,45 +1,29 @@
-# ha-motogp — development
+# HA-MGP
 
-Independent Home Assistant companion/derived integration based on [Liionboy/motogp_sensor](https://github.com/Liionboy/motogp_sensor). Unaffiliated with MotoGP or its rights holders.
+**HA-MGP** är en Home Assistant-integration med både Python-backend och ett samlat gränssnitt för MotoGP, Moto2 och Moto3. Projektet bygger vidare på [Liionboy/motogp_sensor](https://github.com/Liionboy/motogp_sensor) men har en egen API-klient och kräver ingen separat installation av uppströmsintegrationen. Projektet är inte knutet till MotoGP eller dess rättighetsinnehavare.
 
-> **Current operational truth — 2026-10-09:** backend candidate **2026.10.0b4** is green on `dev` and is being promoted through **dev → beta → main**. `main` remains untouched until the beta has been exercised during real sessions. See [project status](docs/project-status.md), [beta notes](docs/hacs-beta-release-notes.md) and [install/rollback](docs/hacs-beta-installation.md).
+## Funktioner
 
-## What changed for the October weekend beta
+Grand Prix-översikt med MGP-logga, land, bana, banlayout och banväder; helgschema och nästa pass med nedräkning; livetiming och varvdata; förar-VM per klass; spoilerskydd och sessionsrelaterad historik där backendstödet finns. Information från MotoGP/Pulselive är beroende av extern datatillgänglighet och inte garanterad som realtid.
 
-- **Near-session standby polling:** while a normalized session start is within -15/+30 minutes, the coordinator now uses a 30-second standby cadence instead of 300 seconds. This prevents the five-minute blind spot observed between Q1→Q2 and before the Sprint.
+## Installera
 
-> **2026.10.0b1 is withdrawn from use.** It contains a module-import crash in the Broadcast event URL constant (`{uuid}` was eagerly interpolated by an f-string). Use **2026.10.0b4** or later.
+**Senaste publicerade HACS-beta: `2026.11.0b12`** (UI `0.3.0-dev.23`). Uppdatera endast från **beta**, aldrig direkt från `dev`. Se [installations- och rollbackguide](docs/hacs-beta-installation.md).
 
-- **Red Flag / Delayed remain hot:** session states `R` and `D` now keep the coordinator on the 5-second live polling cadence instead of falling back to the 300-second idle cadence. The same live-session set is used by `session_in_progress` and live-condition refresh.
-- **Schedule timezone normalization:** Results API venue wall-clock session times are converted with the event IANA timezone obtained from the Broadcast API. Backend exposes both original `date` and normalized `date_utc`, plus `sensor.motogp_next_race.time_zone`.
-- **Next UI dev.5:** the independent one-file dashboard prefers `date_utc` and renders the browser/HA user's local time. It keeps the previous wall-time parser only as a fallback. The verified bundle blob is `4c73aa7f22ec8876b77beede369d565e86e08e0d`.
-- Regression coverage includes the real observed Mandalika example: **14:05 Asia/Makassar → 06:05 UTC → 08:05 Europe/Stockholm**.
+Aktiv Lovelace-resurs (JavaScript module): `/motogp_sensor/ha-motogp-next.js`. Använd exakt en sådan resurs. Korttyperna är `custom:ha-motogp-next-overview-card` och `custom:ha-motogp-next-timing-card`.
 
-## Distribution boundaries
+**Viktigt vid namnbytet:** Repo och visningsnamn blir HA-MGP, men integrationsdomänen `motogp_sensor`, JS-filnamnet, korttyperna, befintliga entiteter och `/config/motogp_data/` behålls för bakåtkompatibilitet. `next` är ett historiskt internt identifierarnamn, inte produktnamnet.
 
-- HACS backend: `custom_components/motogp_sensor/`, domain unchanged.
-- Persistent session data: `/config/motogp_data/`, outside HACS-managed code.
-- Next frontend: `/config/www/ha-motogp-next.js` / `/local/ha-motogp-next.js`, still separate from HACS. Updating the backend does not replace this JS automatically.
-- Existing HA MotoGP config entry must be preserved. Do not install a second integration with the same domain and do not use the old overlay/1.0.10 patch scripts.
+## Utveckling
 
-## Branch rule
+**dev → beta → main.** Utveckling och CI på dev; HACS- och verkliga sessionsprov på beta; stabil main först efter godkända tester. Ingen direktinstallation från dev.
 
-`dev → beta → main`
+- [Aktuell projektstatus](docs/project-status.md)
+- [Installera och återställ](docs/hacs-beta-installation.md)
+- [HACS och frontend](docs/frontend-hacs-bundling.md)
+- [Frontendversioner](docs/frontend-versioning.md)
+- [Release notes](docs/hacs-beta-release-notes.md)
+- [Dokumentationsindex och äldre anteckningar](docs/README.md)
+- [Källor för banlayout](docs/track-layout-attribution.md)
 
-- `dev`: implementation and regression gates.
-- `beta`: tagged HACS prerelease for live validation.
-- `main`: only after beta evidence is satisfactory.
-
-The first archive-created session JSON and restart/session-boundary behavior still require direct on-host inspection; do not infer archive completeness merely from a green build.
-
-
-### Session-start polling
-
-Polling is now tiered around normalized scheduled session starts: 300 seconds normally, 15 seconds from 5 minutes before through 10 minutes after a scheduled start while the feed is not active, 30 seconds from +10 through +30 minutes as a delayed-start fallback, and 5 seconds for active/Red Flag/Delayed sessions.
-
-### Current dev-only candidate after Indonesia live testing
-
-- Backend manifest on `dev`: **2026.10.0b5** (not released to beta).
-- MotoGP Next dev bundle: **0.3.0-dev.6**.
-- Feed freshness now uses backend `live_poll_at` from successful API polls, never Home Assistant entity `last_updated`.
-- Beta/main promotion is intentionally held until the race-weekend evidence has been evaluated.
+Äldre tester, YAML-exempel och prototyper är referensmaterial, inte alternativa installationspaket. Skydda befintlig HA-konfiguration och sessionsarkiv. Rättigheter till varumärken och tredjepartsmaterial tillhör respektive ägare.
