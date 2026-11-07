@@ -132,7 +132,7 @@ function install(){
     const originalHeader=flag?rawHeader.replace('<h2>',
       '<h2><span class="mgp-country-flag" role="img" aria-label="Flagga: '+esc(country)+'">'+flag+'</span>'):rawHeader;
     // Approved MGP integration artwork is embedded in the single JS bundle; no remote dependency.
-    const brandedHeader=originalHeader.replace(/<div class="eyebrow">(?:🏁\\s*)?/,
+    const brandedHeader=originalHeader.replace(/<div class="eyebrow">(?:🏁\s*)?/,
       '<div class="eyebrow mgp-branded-eyebrow"><img class="mgp-brand-logo" src="'+BRAND_SRC+'" alt="MGP" width="27" height="27">');
     if(originalHeader.includes('data-mgp-venue-header'))return;
     // This reflects the active single-JS UI build, not the separately updated backend.
