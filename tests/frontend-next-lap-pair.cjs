@@ -5,8 +5,8 @@
  */
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),vm=require('node:vm');
-const ui=fs.readFileSync(process.argv[2]||'frontend/ha-motogp-next-ui-preview.js','utf8');
-const mobile=fs.readFileSync(process.argv[3]||'frontend/ha-motogp-next-mobile-laps.js','utf8');
+const ui=fs.readFileSync(process.argv[2]||'frontend/ha-mgp-ui.js','utf8');
+const mobile=fs.readFileSync(process.argv[3]||'frontend/ha-mgp-mobile-laps.js','utf8');
 let styleCount=0;
 const registry=new Map();
 class Base{

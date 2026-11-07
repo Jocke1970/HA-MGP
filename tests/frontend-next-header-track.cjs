@@ -2,9 +2,9 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
-const file=process.argv[2]||'frontend/ha-motogp-next-header-track.js';
+const file=process.argv[2]||'frontend/ha-mgp-header-track.js';
 const src=fs.readFileSync(file,'utf8');
-assert.match(src,/header-track-weather-20261107-08/);
+assert.match(src,/header-track-weather-20261107-10/);
 const docs=[];
 class Overview {
   static buildInfo={version:'0.2.0-split.2'};
@@ -23,7 +23,7 @@ class Overview {
     this.shadowRoot=this.root;
   }
   _weather(){return '<section class="panel">OLD SEPARATE WEATHER PANEL</section>';}
-  _schedule(){return '<section>Schedule</section>';}
+  _schedule(){return '<section><div class="head"><strong>🗓️ Helgens schema</strong><span class="muted">Status</span></div><div class="cats">Filters</div><div class="day">Days</div></section>';}
   _click(){}
 
   _render(){
@@ -98,7 +98,9 @@ const context={customElements:{
   assert.doesNotMatch(card.root.innerHTML,/<section>Schedule<\/section>/,'schedule hidden until opened');
   assert.equal(card._schedule(),'', 'schedule collapsed on initial load');
   card._scheduleOpen=true;
-  assert.match(card._schedule(),/Schedule/,'schedule appears on request');
+  assert.match(card._schedule(),/Filters/,'schedule filters remain');
+  assert.match(card._schedule(),/Days/,'schedule day list remains');
+  assert.doesNotMatch(card._schedule(),/Helgens schema/,'redundant schedule heading removed');
   card._scheduleOpen=false;
   const first=card.root.innerHTML;
   card._render();assert.equal(card.root.innerHTML,first,'no duplicate panels');

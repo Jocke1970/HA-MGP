@@ -16,7 +16,7 @@ _LOGGER = logging.getLogger(__name__)
 
 ASSETS_DIR = Path(__file__).parent / "www"
 RESOURCE_PREFIX = "/motogp_sensor"
-RESOURCE_FILES = ("ha-motogp-next.js", "ha-motogp-card.js")
+RESOURCE_FILES = ("ha-mgp.js", "ha-motogp-next.js", "ha-motogp-card.js")
 
 
 async def async_register_frontend_paths(hass: HomeAssistant) -> None:

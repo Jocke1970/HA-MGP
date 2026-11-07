@@ -1,4 +1,4 @@
-name: Package MotoGP HACS beta
+name: Package HA-MGP HACS beta
 
 on:
   workflow_dispatch:
@@ -56,17 +56,18 @@ jobs:
       - name: Verify bundled frontend and safe static registration
         run: |
           python tests/test_frontend_package.py
+          node --check custom_components/motogp_sensor/www/ha-mgp.js
           node --check custom_components/motogp_sensor/www/ha-motogp-next.js
           node --check custom_components/motogp_sensor/www/ha-motogp-card.js
-          TZ=Europe/Stockholm node tests/frontend-live-freshness.cjs custom_components/motogp_sensor/www/ha-motogp-next.js
-          TZ=Europe/Stockholm node tests/frontend-mobile-laps.cjs custom_components/motogp_sensor/www/ha-motogp-next.js
+          TZ=Europe/Stockholm node tests/frontend-live-freshness.cjs custom_components/motogp_sensor/www/ha-mgp.js
+          TZ=Europe/Stockholm node tests/frontend-mobile-laps.cjs custom_components/motogp_sensor/www/ha-mgp.js
       - name: Run Next, standings, Q1-grid and circuit tests against shipped HACS JavaScript
         env:
           TZ: Europe/Stockholm
         run: |
           python - <<'PY'
           from pathlib import Path
-          source = Path("custom_components/motogp_sensor/www/ha-motogp-next.js").read_text(encoding="utf-8")
+          source = Path("custom_components/motogp_sensor/www/ha-mgp.js").read_text(encoding="utf-8")
           markers = [
               "/* MotoGP Next UI preview: bundled after lap-stats.",
               "/* MotoGP Next responsive timing and authenticated lap-history dialog.",
@@ -80,9 +81,11 @@ jobs:
           assert "qualifying_q1_eliminated" in source
           assert "MELLAN PASSEN" in source
           assert "leaderboard=shown.map" in source
-          assert "ui-preview-20261107-06" in source
-          assert "header-track-weather-20261107-08" in source
+          assert "ui-preview-20261107-07" in source
+          assert "header-track-weather-20261107-10" in source
           assert "mgp-brand-logo" in source
+          assert 'HA-MGP UI · 0.3.0-dev.25' in source
+          assert source == Path('custom_components/motogp_sensor/www/ha-motogp-next.js').read_text(encoding='utf-8')
           assert "mgp-ui-footer" in source
           assert "data-mgp-schedule-jump" in source
           assert "timingWindow(card)" in source
@@ -102,17 +105,17 @@ jobs:
           }
           for name, content in parts.items():
               assert len(content) > 1000, f"Unexpectedly short {name} source"
-              Path(f"/tmp/ha-motogp-b12-{name}.js").write_text(content, encoding="utf-8")
+              Path(f"/tmp/ha-mgp-b13-{name}.js").write_text(content, encoding="utf-8")
           PY
           for name in base ui mobile qual header history; do
-            node --check "/tmp/ha-motogp-b12-$name.js"
+            node --check "/tmp/ha-mgp-b13-$name.js"
           done
-          node tests/frontend-next-one.cjs /tmp/ha-motogp-b12-base.js
-          node tests/frontend-next-ui-preview.cjs /tmp/ha-motogp-b12-ui.js
-          node tests/frontend-next-lap-pair.cjs /tmp/ha-motogp-b12-ui.js /tmp/ha-motogp-b12-mobile.js
-          node tests/frontend-next-qual-grid.cjs /tmp/ha-motogp-b12-qual.js
-          node tests/frontend-next-header-track.cjs /tmp/ha-motogp-b12-header.js
-          node tests/frontend-session-history.cjs /tmp/ha-motogp-b12-history.js
+          node tests/frontend-next-one.cjs /tmp/ha-mgp-b13-base.js
+          node tests/frontend-next-ui-preview.cjs /tmp/ha-mgp-b13-ui.js
+          node tests/frontend-next-lap-pair.cjs /tmp/ha-mgp-b13-ui.js /tmp/ha-mgp-b13-mobile.js
+          node tests/frontend-next-qual-grid.cjs /tmp/ha-mgp-b13-qual.js
+          node tests/frontend-next-header-track.cjs /tmp/ha-mgp-b13-header.js
+          node tests/frontend-session-history.cjs /tmp/ha-mgp-b13-history.js
       - name: Verify HACS package metadata and runtime files
         run: |
           python - <<'PY'
@@ -122,7 +125,8 @@ jobs:
           root = Path('custom_components/motogp_sensor')
           manifest = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
           assert manifest['domain'] == 'motogp_sensor'
-          assert manifest['version'] == '2026.11.0b12'
+          assert manifest['name'] == 'HA-MGP'
+          assert manifest['version'] == '2026.11.0b13'
           assert manifest.get('codeowners') == ['@Jocke1970']
           assert {'http', 'frontend'}.issubset(manifest['dependencies'])
           required = {
@@ -131,7 +135,7 @@ jobs:
               'session_lap_archive.py', 'web_assets.py',
               'lap_history_ws.py', 'lap_history_response.py',
               'qualifying_grid.py',
-              'www/ha-motogp-next.js', 'www/ha-motogp-card.js',
+              'www/ha-mgp.js', 'www/ha-motogp-next.js', 'www/ha-motogp-card.js',
           }
           missing = sorted(name for name in required if not (root / name).is_file())
           assert not missing, f'Missing runtime files: {missing}'
@@ -139,20 +143,20 @@ jobs:
           assert hacs.get('name')
           assert not hacs.get('content_in_root')
           assert not hacs.get('zip_release')
-          print('Verified HACS beta: 2026.11.0b12 including Next frontend 0.3.0-dev.23')
+          print('Verified HACS beta: 2026.11.0b13 including Next frontend 0.3.0-dev.25')
           PY
       - name: Publish tagged GitHub prerelease
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          TAG=2026.11.0b12
+          TAG=2026.11.0b13
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "$TAG already exists; leaving the immutable prerelease untouched."
             gh release view "$TAG" --json tagName,isPrerelease,url,targetCommitish
             exit 0
           fi
           gh release create "$TAG" --target "$(git rev-parse HEAD)" --prerelease \
-            --title 'MotoGP Sensor 2026.11.0b12 — collapsed schedule and pre-session timing' \
+            --title 'HA-MGP 2026.11.0b13 — JS rename and full standings' \
             --notes-file docs/hacs-beta-release-notes.md
           gh release view "$TAG" --json tagName,isPrerelease,url,targetCommitish

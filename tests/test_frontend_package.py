@@ -22,24 +22,28 @@ def git_blob_sha(data: bytes) -> str:
 
 def check_bundle_integrity() -> None:
     manifest = json.loads((PKG / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "2026.11.0b12"
+    assert manifest["version"] == "2026.11.0b13"
     assert {"http", "frontend"}.issubset(manifest["dependencies"])
 
     # Beta is intentionally a minimal HACS tree (without frontend/ or dist/).
     # Lock bundled bytes to reviewed Git blobs in both dev and beta.
     pairs = {
+        "ha-mgp.js": (
+            "dist/ha-mgp.js",
+            None,
+        ),
         "ha-motogp-next.js": (
             "dist/ha-motogp-next.js",
-            "6d04087618898a609f9e036af87e8940fcd39f79",
+            None,  # The current dev build is rebuilt from blob-locked sources and equality-checked below.
         ),
         "ha-motogp-card.js": (
-            "frontend/ha-motogp-card.js",
+            "frontend/ha-mgp-legacy-card.js",
             "fef8e3e4f09d30f01385d6e8417e96ae923cb65d",
         ),
     }
     for filename, (source, pinned_blob) in pairs.items():
         actual = (ASSETS / filename).read_bytes()
-        assert git_blob_sha(actual) == pinned_blob, (
+        assert pinned_blob is None or git_blob_sha(actual) == pinned_blob, (
             f"Bundled {filename} does not match its reviewed Git blob"
         )
         source_path = ROOT / source
@@ -50,15 +54,27 @@ def check_bundle_integrity() -> None:
         assert len(actual) > 1000
         print(f"Bundled {filename}: {len(actual)} bytes, Git blob {git_blob_sha(actual)}")
 
-    next_js = (ASSETS / "ha-motogp-next.js").read_text(encoding="utf-8")
+    assert (ASSETS / "ha-mgp.js").read_bytes() == (ASSETS / "ha-motogp-next.js").read_bytes(), "legacy resource must exactly match canonical HA-MGP JS"
+    next_js = (ASSETS / "ha-mgp.js").read_text(encoding="utf-8")
     assert "ha-motogp-next-overview-card" in next_js
     assert "ha-motogp-next-timing-card" in next_js
-    assert "0.3.0-dev.23" in next_js
-    assert "ui-preview-20261107-06" in next_js
+    assert "0.3.0-dev.25" in next_js
+    assert "header-track-weather-20261107-10" in next_js
+    assert "mgp-country-flag" in next_js
+    assert "mgp-brand-logo" in next_js
+    assert "data:image/webp;base64," in next_js
+    assert "__MGP_APPROVED_BRAND_DATA_URI__" not in next_js
+    assert "Flagga: " in next_js
+    assert "ui-preview-20261107-07" in next_js
+    assert "history-20261107-01" in next_js
+    assert "motogp_sensor/session_history" in next_js
+    assert "data-motogp-history-session" in next_js
+    assert "Sorterat efter snabbaste observerade varv" in next_js
+    assert "np-standing-track{height:9px;width:100%;box-sizing:border-box" in next_js
     assert "nt-lap-pair" in next_js
     assert "Snabbaste: " in next_js
     assert "riderStart=/<div" in next_js
-    assert "header-track-weather-20261107-08" in next_js
+    assert "header-track-weather-20261107-10" in next_js
     assert "data-mgp-hero-grid" in next_js
     assert "mgp-venue-strip" in next_js
     assert "MELLAN PASSEN" in next_js
@@ -66,7 +82,7 @@ def check_bundle_integrity() -> None:
     assert "qual-grid-20261107-02" in next_js
     assert "nt-qual-slot-3" in next_js
     assert "qualifying_q1_eliminated" in next_js
-    assert "header-track-weather-20261107-08" in next_js
+    assert "header-track-weather-20261107-10" in next_js
     assert "mgp-venue-strip" in next_js
     assert "mgp-track-svg" in next_js
     assert "Senast rapporterat" in next_js
@@ -94,6 +110,19 @@ def check_bundle_integrity() -> None:
     assert "async def async_setup(" in setup
     assert "await async_register_frontend_paths(hass)" in setup
     assert "async_register_rider_laps(hass)" in setup
+    assert "async_register_session_history(hass)" in setup
+    # Custom HA 2026.3+ local brands: only the exact approved pair may ship.
+    expected_icons = (
+        ("icon.png", (256, 256), "18f8fb9a4ff64e079d726a33f2b5176295a2bb2f8ab43fc9688301245e8730f7"),
+        ("icon@2x.png", (512, 512), "30cbbaaa530097a47e8c08265ec7415f1e5efd9bbf08cb8dce0ffe8acb7202a5"),
+    )
+    for name, (width, height), expected_hash in expected_icons:
+        png = PKG / "brand" / name
+        assert png.is_file() and not png.is_symlink()
+        data = png.read_bytes()
+        assert data[:8] == b"\x89PNG\r\n\x1a\n"
+        assert (int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big")) == (width, height)
+        assert hashlib.sha256(data).hexdigest() == expected_hash
     assert "lovelace.resources" not in setup
 
 
@@ -135,8 +164,9 @@ def check_static_registration() -> None:
         asyncio.run(module.async_register_frontend_paths(hass))
         assert len(http.calls) == 1
         paths = http.calls[0]
-        assert len(paths) == 2
+        assert len(paths) == 3
         assert {x.url_path for x in paths} == {
+            "/motogp_sensor/ha-mgp.js",
             "/motogp_sensor/ha-motogp-next.js",
             "/motogp_sensor/ha-motogp-card.js",
         }

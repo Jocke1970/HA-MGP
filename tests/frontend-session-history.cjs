@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
-const code=fs.readFileSync(process.argv[2]||'frontend/ha-motogp-next-session-history.js','utf8');
+const code=fs.readFileSync(process.argv[2]||'frontend/ha-mgp-session-history.js','utf8');
 let styleCount=0,latestRequest=null,pending=null;
 class Overview{
   static buildInfo={version:'0.2.0-split.2'};
