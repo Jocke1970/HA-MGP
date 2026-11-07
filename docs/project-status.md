@@ -26,6 +26,6 @@ Vi behåller `motogp_sensor` som intern HA-domän, den gamla resursen `/motogp_s
 
 Källmodulerna är nu omdöpta till `frontend/ha-mgp-*.js`, den byggda huvudfilen heter `ha-mgp.js` och den gamla HACS-filen behålls byte-identisk som kompatibilitetsalias. Samma interna Lovelace-taggar används. **Inte publicerat till beta eller verifierat i HA ännu.** Se [migrationsguide](js-resource-migration.md).
 
-## Rekordchips under banlayout (dev)
+## Rekordchips i livetiming-header (dev)
 
-Frontend `0.3.0-dev.28` visar de tillgängliga MotoGP-rekorden under banritningen från den befintliga sensorns `records_by_category.MotoGP`. Endast igenkända rekordtyper och giltiga tider visas; även förare, år, hastighet och källsession exponeras när de finns. Inga nya API-anrop eller ändringar i backend krävs. Ändringen är på `dev` och ännu inte verifierad visuellt i HACS-beta.
+Frontend `0.3.0-dev.29` visar klassberoende rekordchips direkt under livetimingkortets header (MotoGP, Moto2 eller Moto3). Data hämtas från den befintliga sensorns `records_by_category` för aktiv eller senast visad sessionsklass. Endast igenkända rekordtyper och giltiga tider visas; detaljer finns i chipsets beskrivning. Inga nya API-anrop eller backendändringar krävs. Rekord visas inte i GP-toppkortet och döljs i spoilerläge. Ändringen är på `dev` och ännu inte verifierad visuellt i HACS-beta.
