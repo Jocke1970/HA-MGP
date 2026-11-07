@@ -115,6 +115,9 @@ const context={customElements:{
   assert.equal(timeCard._timing(),'','finished session cannot open timing by schedule alone');
   timeCard._live={name:'Race',category:'MotoGP'};
   assert.equal(timeCard._timing(),'TIMING','verified live status always shows timing');
+  timeCard._live=null;
+  times.sessions_all=[{date_utc:new Date(Date.now()+31*60*1000).toISOString(),status:'SCHEDULED'}];
+  assert.equal(timeCard._timing(),'','31-minute boundary must remain hidden');
 
   assert.match(docs[0].textContent,/@container \(max-width:900px\)/);
   assert.match(docs[0].textContent,/@container \(max-width:680px\)/);
