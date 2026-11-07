@@ -8,7 +8,7 @@ class Base {
   constructor(){this._today='2026-09-20';this._live={name:'Race',category:'MotoGP'};this._snapshot={day:this._today,name:'Race',category:'MotoGP',riders:[]};this._ids={race:'race'};this._hass={states:{}};this.view={innerHTML:''};this.shadowRoot={querySelector:()=>null,appendChild(){},getElementById:()=>this.view};this.hidden=false;this._filter='Total';}
   _spoiler(){return this.hidden;}
   _click(){this.legacyClicked=true;}
-  _schedule(){return '<section class="panel"><div>FULL WEEKEND SCHEDULE</div></section>';}
+  _schedule(){return '<section class="panel"><div>FULL WEEKEND SCHEDULE</div><div class="cats"><button type="button" class="cat" data-category="Total" selected aria-pressed="true">Total</button><button type="button" class="cat" data-category="MotoGP" aria-pressed="false">MotoGP</button><button type="button" class="cat" data-category="Moto2" aria-pressed="false">Moto2</button><button type="button" class="cat" data-category="Moto3" aria-pressed="false">Moto3</button></div></section>';}
   _render(){this.view.innerHTML='<div class="root">OVERVIEW<div class="foot">old footer</div></div>';}
   _timing(){
     if(this.hidden)return 'HIDDEN';
@@ -129,6 +129,9 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   overview._scheduleOpen=false;
   overview._live=null;
   assert.match(overview._schedule(race,new Clock()),/FULL WEEKEND SCHEDULE/);
+  assert.match(overview._schedule(race,new Clock()),/mgp-class-mark/,'schedule filter buttons contain graphics');
+  assert.match(overview._schedule(race,new Clock()),/🏁 ALL/,'schedule has graphic all-classes button');
+  assert.match(overview._schedule(race,new Clock()),/data-category="Moto2"/,'original category action remains');
   now=Date.parse('2026-09-20T13:43:00+02:00');overview._render();
   assert.doesNotMatch(overview.view.innerHTML,/Startgrid · MotoGP Race/,'17 min before start');
   now=Date.parse('2026-09-20T13:46:00+02:00');overview.hidden=true;overview._render();
