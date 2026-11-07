@@ -1,10 +1,11 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const bundle=fs.readFileSync(process.argv[2]||'custom_components/motogp_sensor/www/ha-motogp-next.js','utf8');
-assert.match(bundle,/0\.3\.0-dev\.8/);
+assert.match(bundle,/0\.3\.0-dev\.9/);
 const pos=bundle.lastIndexOf('/* MotoGP Next responsive timing and authenticated lap-history dialog.');
 assert.ok(pos>0,'responsive popup addon must be bundled last');
-const addon=bundle.slice(pos);
+const nextAddon=bundle.indexOf('/* MotoGP Next qualifying start-grid companion',pos);
+const addon=bundle.slice(pos,nextAddon>pos?nextAddon:undefined);
 const rider={rider_id:'r1',surname:'BINDER',number:33,num_lap:3,last_lap_time:"1'49.111"};
 let serverCalls=[],reply={rider_id:'r1',name:'BINDER',number:'33',
   laps:[{lap:1,time:"1'51.321",seconds:111.321},{lap:3,time:"1'49.111",seconds:109.111}],

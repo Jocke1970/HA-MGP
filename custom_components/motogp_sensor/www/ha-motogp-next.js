@@ -1394,4 +1394,3 @@ function install(){
 }
 customElements.whenDefined(TAG).then(install);
 })();
-
