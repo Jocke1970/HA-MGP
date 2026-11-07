@@ -7,8 +7,9 @@ import sys
 import tempfile
 
 UI_BLOB = 'c5c24ffb612ac6ffa52e877975f4fb44ae5f7610'
-BUILD = 'next-one-20261107-01'
-VERSION = '0.3.0-dev.7'
+MOBILE_BLOB = '9fad86bfd7fdc2e461371efb458b17f6029df794'
+BUILD = 'next-one-20261107-02'
+VERSION = '0.3.0-dev.8'
 
 
 def blob(data):
@@ -33,6 +34,12 @@ def main(frontend, target):
     ui = addon.read_bytes()
     if blob(ui) != UI_BLOB:
         raise SystemExit('STOP: unexpected UI source revision')
+    mobile = frontend / 'ha-motogp-next-mobile-laps.js'
+    if not mobile.is_file() or mobile.is_symlink():
+        raise SystemExit('STOP: missing/unsafe mobile popup addon')
+    mobile_bytes = mobile.read_bytes()
+    if blob(mobile_bytes) != MOBILE_BLOB:
+        raise SystemExit('STOP: unexpected mobile popup source revision')
     with tempfile.TemporaryDirectory() as temp:
         base = pathlib.Path(temp) / 'base.js'
         module.build(frontend, base)
@@ -45,7 +52,7 @@ def main(frontend, target):
     text = replace_one(text, '🏁 MOTOGP NEXT · 0.3.0-dev.3', '🏁 MOTOGP NEXT · ' + VERSION)
     text = replace_one(text, 'ha-motogp-next.js · 0.3.0-dev.3 · samlad testversion',
                        'ha-motogp-next.js · ' + VERSION + ' · UI-preview')
-    result = (text + '\n;\n' + ui.decode('utf-8')).encode('utf-8')
+    result = (text + '\n;\n' + ui.decode('utf-8') + '\n;\n' + mobile_bytes.decode('utf-8')).encode('utf-8')
     pathlib.Path(target).write_bytes(result)
     print(f'UI preview built: {target} ({len(result)} bytes, git blob {blob(result)})')
 

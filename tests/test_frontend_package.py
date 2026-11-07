@@ -22,7 +22,7 @@ def git_blob_sha(data: bytes) -> str:
 
 def check_bundle_integrity() -> None:
     manifest = json.loads((PKG / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "2026.11.0b1"
+    assert manifest["version"] == "2026.11.0b2"
     assert {"http", "frontend"}.issubset(manifest["dependencies"])
 
     # Beta is intentionally a minimal HACS tree (without frontend/ or dist/).
@@ -30,7 +30,7 @@ def check_bundle_integrity() -> None:
     pairs = {
         "ha-motogp-next.js": (
             "dist/ha-motogp-next.js",
-            "ca30bf00cd3245730983b8491637a868979f1fc3",
+            "f806f06f51e6d15d23d0cb0ec5dbabf2029f4d26",
         ),
         "ha-motogp-card.js": (
             "frontend/ha-motogp-card.js",
@@ -53,7 +53,11 @@ def check_bundle_integrity() -> None:
     next_js = (ASSETS / "ha-motogp-next.js").read_text(encoding="utf-8")
     assert "ha-motogp-next-overview-card" in next_js
     assert "ha-motogp-next-timing-card" in next_js
-    assert "0.3.0-dev.7" in next_js
+    assert "0.3.0-dev.8" in next_js
+    assert "motogp_sensor/rider_laps" in next_js
+    assert "@container (max-width:620px)" in next_js
+    assert "data-motogp-rider-id" in next_js
+    assert "data-motogp-laps-close" in next_js
     assert "hass.callService(" not in next_js
     assert "window.location" not in next_js
     assert "const health=feedHealth(age,expected)" in next_js
@@ -62,6 +66,7 @@ def check_bundle_integrity() -> None:
     setup = (PKG / "__init__.py").read_text(encoding="utf-8")
     assert "async def async_setup(" in setup
     assert "await async_register_frontend_paths(hass)" in setup
+    assert "async_register_rider_laps(hass)" in setup
     assert "lovelace.resources" not in setup
 
 

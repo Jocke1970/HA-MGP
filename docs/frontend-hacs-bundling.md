@@ -1,4 +1,4 @@
-# HACS-bundled MotoGP dashboard cards — dev candidate 2026.11.0b1
+# HACS-bundled MotoGP dashboard cards — dev candidate 2026.11.0b2
 
 The MotoGP integration ships its two **ready-to-load** JS resources inside the same HACS package:
 
@@ -12,7 +12,7 @@ custom_components/motogp_sensor/
     ha-motogp-card.js       # Legacy preview card (opt-in only)
 ```
 
-The Next file is byte-identical to `dist/ha-motogp-next.js` (frontend `0.3.0-dev.7`).
+The Next file is byte-identical to `dist/ha-motogp-next.js` (frontend `0.3.0-dev.8`).
 The legacy file is byte-identical to `frontend/ha-motogp-card.js`.
 `tests/test_frontend_package.py` enforces these contracts in CI.
 
@@ -52,7 +52,7 @@ HACS updates the JS **files** along with the integration on future beta/main rel
 Do not append query-string version parameters to bundled JS resources. The stable resource URL remains unchanged across HACS upgrades. Reload the dashboard with Ctrl+Shift+R after updating the integration.
 The freshness badge previously rendered a placeholder and depended on a timer
 which might not have started on a pre-connected card. The bundled Next
-`0.3.0-dev.7` renders a green/amber/red/unknown label from `live_poll_at`
+`0.3.0-dev.8` renders a green/amber/red/unknown label from `live_poll_at`
 **immediately**, and starts/restarts the clock on a subsequent connected render.
 The new `tests/frontend-live-freshness.cjs` covers these states plus the
 spoiler guard and timer cleanup.
@@ -60,9 +60,30 @@ spoiler guard and timer cleanup.
 ## Release boundary
 
 - **dev:** new, safe read-only package candidate; CI checks Python registration and both bundled JS.
-- **beta:** `2026.11.0b1` published after frontend and backend CI passed; awaiting on-host acceptance.
+- **beta:** `2026.11.0b1` published and live freshness confirmed; next mobile-laps work remains dev-only pending beta tests.
 - **main:** unchanged.
 - `/config/motogp_data/` and integration entity IDs are untouched.
 
 No automatic resource installation, no legacy patch scripts, no changes to the feed polling or
 TV-delay controls.
+
+## Next mobile timing and rider lap history (dev candidate)
+
+Next `0.3.0-dev.8` uses a card-width container query: below 620px the table fits four
+essential cells (position, rider, lap count, latest lap) without horizontal scrolling.
+On desktop the original seven-column display is unchanged.
+
+Touch, click, Enter or Space on a rider row opens a dialog with only verified
+recorded laps, their times, and delta versus that rider's best observed time.
+The dialog reports gaps by lap number without inventing times. Close with ×,
+Escape or tapping the backdrop. No per-rider history is placed in HA state
+attributes: an authenticated read-only `motogp_sensor/rider_laps` WebSocket
+command loads only the currently exposed TV-delayed session and requested rider.
+
+Spoiler mode blocks both the dialog and the backend read. An in-flight response
+is rejected if the active session changes or spoiler is enabled, and the modal
+is cleared on session changes or spoiler activation.
+
+This is a `dev`-only candidate; HACS `2026.11.0b1` is unchanged. The next
+beta should validate mobile widths ~320–430px and both popup behavior and
+backend authorization on the user's HA before any `main` promotion.

@@ -32,5 +32,8 @@ jobs:
         run: python tests/test_weekend_regressions.py
       - name: Verify bundled frontend and safe static paths
         run: python tests/test_frontend_package.py
+      - name: Validate authenticated on-demand lap history and spoiler fences
+        run: |
+          python -m unittest discover -s tests -p 'test_lap_history_*.py' -v
       - name: Run archive regressions
         run: python -m unittest discover -s tests -p 'test_session_lap_archive.py' -v
