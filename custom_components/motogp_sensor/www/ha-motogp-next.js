@@ -1,4 +1,4 @@
-/* MotoGP Next SINGLE Lovelace resource | build next-one-20261107-09 | read only. */
+/* MotoGP Next SINGLE Lovelace resource | build next-one-20261107-10 | read only. */
 /* MotoGP Next: isolated frontend for motogp-test. No HA writes or service calls. */
 (() => {
   'use strict';
@@ -303,9 +303,9 @@
       this._track(now,race);
       const event=valid(race?.state)?race.state:'Inget evenemang tillgängligt';
       const meta=[a.circuit,a.country,a.date_start&&a.date_end?dateRange(a.date_start,a.date_end):''].filter(valid);
-      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 MOTOGP NEXT · 0.3.0-dev.15</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
+      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 MOTOGP NEXT · 0.3.0-dev.16</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
         this._schedule(race,now)+`<div class="root">${this._weather()}${this._timing()}</div>`+
-        `<div class="foot">ha-motogp-next.js · 0.3.0-dev.15 · UI-preview</div></div>`;
+        `<div class="foot">ha-motogp-next.js · 0.3.0-dev.16 · UI-preview</div></div>`;
     }
     getCardSize(){return 8;}
     getGridOptions(){return {columns:12,rows:'auto',min_columns:6};}
@@ -911,7 +911,7 @@
   const OVERVIEW='ha-motogp-next-overview-card';
   const TIMING='ha-motogp-next-timing-card';
   const REQUIRED='0.2.0-split.2';
-  const BUILD='ui-preview-20261107-04';
+  const BUILD='ui-preview-20261107-05';
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const valid=v=>v!==null&&v!==undefined&&!['','unknown','unavailable','none','null','hidden'].includes(String(v).trim().toLowerCase());
   const cat=v=>{const m=/moto\s*(gp|2|3|e)/i.exec(String(v||''));return m?({gp:'MotoGP','2':'Moto2','3':'Moto3',e:'MotoE'})[m[1].toLowerCase()]:String(v||'');};
@@ -1073,9 +1073,14 @@
         .replace('<span>Δ FRAMFÖR</span>','<span>FRAMFÖR</span>')
         .replace('<span>Δ LEDARE</span>','<span>LEDARE</span>');
       let n=0;
-      const parts=('\u0000'+html).split(/(?=<div class="nt-row(?: unclassified)?">)/);
+      // The rider-lap popup extension can install before this UI extension.
+      // It adds safe data-* / accessibility attributes to <div class="nt-row">.
+      // Match both plain and enriched opening tags; never silently skip the
+      // entire row (which hides the per-rider fastest-lap and position details).
+      const riderStart=/<div class="nt-row(?: unclassified)?"(?:\s[^>]*)?>/;
+      const parts=('\u0000'+html).split(/(?=<div class="nt-row(?: unclassified)?"(?:\s[^>]*)?>)/);
       html=parts.map((row,i)=>{
-        if(!i||!row.startsWith('<div class="nt-row'))return row;
+        if(!i||!riderStart.test(row.slice(0,400)))return row;
         const r=this._snapshot.riders[n++];if(!r)return row;
         const range=lapCellRange(row,r);
         if(range) {

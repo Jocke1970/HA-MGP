@@ -4,7 +4,7 @@
   const OVERVIEW='ha-motogp-next-overview-card';
   const TIMING='ha-motogp-next-timing-card';
   const REQUIRED='0.2.0-split.2';
-  const BUILD='ui-preview-20261107-04';
+  const BUILD='ui-preview-20261107-05';
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const valid=v=>v!==null&&v!==undefined&&!['','unknown','unavailable','none','null','hidden'].includes(String(v).trim().toLowerCase());
   const cat=v=>{const m=/moto\s*(gp|2|3|e)/i.exec(String(v||''));return m?({gp:'MotoGP','2':'Moto2','3':'Moto3',e:'MotoE'})[m[1].toLowerCase()]:String(v||'');};
@@ -166,9 +166,14 @@
         .replace('<span>Δ FRAMFÖR</span>','<span>FRAMFÖR</span>')
         .replace('<span>Δ LEDARE</span>','<span>LEDARE</span>');
       let n=0;
-      const parts=('\u0000'+html).split(/(?=<div class="nt-row(?: unclassified)?">)/);
+      // The rider-lap popup extension can install before this UI extension.
+      // It adds safe data-* / accessibility attributes to <div class="nt-row">.
+      // Match both plain and enriched opening tags; never silently skip the
+      // entire row (which hides the per-rider fastest-lap and position details).
+      const riderStart=/<div class="nt-row(?: unclassified)?"(?:\s[^>]*)?>/;
+      const parts=('\u0000'+html).split(/(?=<div class="nt-row(?: unclassified)?"(?:\s[^>]*)?>)/);
       html=parts.map((row,i)=>{
-        if(!i||!row.startsWith('<div class="nt-row'))return row;
+        if(!i||!riderStart.test(row.slice(0,400)))return row;
         const r=this._snapshot.riders[n++];if(!r)return row;
         const range=lapCellRange(row,r);
         if(range) {

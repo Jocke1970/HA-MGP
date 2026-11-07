@@ -6,12 +6,12 @@ import pathlib
 import sys
 import tempfile
 
-UI_BLOB = '58d7b0f650c1f8cc9c17f5133623378501268b5e'
+UI_BLOB = 'b2e0c48f2c7c8c28546535de40d1485958cd9dd1'
 QUAL_BLOB = '3cd24780166dcc578624221769a8a459c7b62819'
 HEADER_BLOB = '06ce075ad6f4222aee2dad7c3d5194674a6903fb'
 MOBILE_BLOB = '9fad86bfd7fdc2e461371efb458b17f6029df794'
-BUILD = 'next-one-20261107-09'
-VERSION = '0.3.0-dev.15'
+BUILD = 'next-one-20261107-10'
+VERSION = '0.3.0-dev.16'
 
 
 def blob(data):

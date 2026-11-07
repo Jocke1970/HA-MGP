@@ -38,7 +38,7 @@ jobs:
           python3 tests/test_frontend_package.py
           node --check custom_components/motogp_sensor/www/ha-motogp-next.js
           node --check custom_components/motogp_sensor/www/ha-motogp-card.js
-          # Exact parity to the reviewed dev.15 dist is asserted by the Python package test.
+          # Exact parity to the reviewed dev.16 dist is asserted by the Python package test.
           # The historical frontend-next-one.cjs regression intentionally targets dev.3.
       - name: Reproduce and regress live-feed badge refresh
         env:
@@ -57,6 +57,10 @@ jobs:
         env:
           TZ: Europe/Stockholm
         run: node tests/frontend-next-ui-preview.cjs frontend/ha-motogp-next-ui-preview.js
+      - name: Sprint/Race last-lap plus fastest-lap regression with clickable rows
+        env:
+          TZ: Europe/Stockholm
+        run: node tests/frontend-next-lap-pair.cjs frontend/ha-motogp-next-ui-preview.js frontend/ha-motogp-next-mobile-laps.js
       - name: Responsive event-header track map and historical weather data
         env:
           TZ: Europe/Stockholm

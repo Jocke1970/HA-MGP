@@ -19,6 +19,7 @@ on:
       - 'tests/frontend-mobile-laps.cjs'
       - 'tests/frontend-next-qual-grid.cjs'
       - 'tests/frontend-next-header-track.cjs'
+      - 'tests/frontend-next-lap-pair.cjs'
       - '.github/workflows/next-one-distribute.yml'
 
 permissions:
@@ -54,6 +55,7 @@ jobs:
           node tests/frontend-mobile-laps.cjs dist/ha-motogp-next.js
           node tests/frontend-next-qual-grid.cjs frontend/ha-motogp-next-qual-grid.js
           node tests/frontend-next-header-track.cjs frontend/ha-motogp-next-header-track.js
+          node tests/frontend-next-lap-pair.cjs frontend/ha-motogp-next-ui-preview.js frontend/ha-motogp-next-mobile-laps.js
           python tests/test_frontend_package.py
       - name: Publish only when the compiled JS differs
         run: |

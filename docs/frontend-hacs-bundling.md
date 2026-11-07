@@ -253,3 +253,31 @@ No backend poll, session timing, weather source or grid logic was modified.
 
 Candidate: manifest `2026.11.0b8`, Next UI `0.3.0-dev.15` on
 `dev`. Public beta b7 and main remain unchanged until release decision.
+
+## Last lap and fastest lap together (dev candidate)
+
+A production screenshot of the 2026 Qatar Sprint exposed that "Snabbaste"
+and the status/starting-position second lines were absent from the timing table,
+although `best_lap_time` was available in each live rider attribute.
+
+Root cause: the authenticated lap-history popup adds `data-motogp-rider-id`,
+`role`, `tabindex` and `aria-label` to each `.nt-row`. Because that addon
+installs through a single `whenDefined(...).then()` before the UI preview's
+`Promise.all(...).then()`, the preview enhancer sees rows with an enriched
+opening `<div>` tag, whereas its exact-tag split regex used to recognize only
+`<div class="nt-row">`. As a result, none of the per-rider post-processing
+was applied even though header text and the session record rendered normally.
+
+Now the row matcher accepts safe additional opening-tag attributes (including
+`nt-row unclassified`) while preserving the existing positive roster,
+day/session/spoiler guards. The latest observed lap keeps its PB/record
+decoration and color, and `Snabbaste: HH'MM.SSS` appears underneath using
+the provider's actual `best_lap_time`; invalid/missing best shows "—".
+The click-to-open archived laps still works. No source or backend updates,
+and no poll, archive or session status changes.
+
+A combined frontend regression exercises the *actual asynchronous installation
+order* of mobile popup and UI preview with interactive Sprint rows, latest and
+best being unequal, a PB row, an unclassified rider and spoiler safety.
+Version: `2026.11.0b9` / Next `0.3.0-dev.16`, on **dev** only.
+Latest released HACS beta b7 and main stay unchanged.
