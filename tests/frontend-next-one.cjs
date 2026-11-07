@@ -75,7 +75,7 @@ const live=(category,name,riders)=>({
   assert.doesNotMatch(overview.view.innerHTML,/14:05/,'circuit wall time must not leak into viewer-local schedule');
   now=Date.parse('2026-09-19T13:45:00+02:00');
   push({'sensor.motogp_next_race':race(),...live('Moto2','Q1',[1,2,3,4,5].map(rider))});
-  assert.match(overview.view.innerHTML,/samlad testversion/);
+  assert.match(overview.view.innerHTML,/samlad testversion|UI-preview/,'both verified source and packaged UI build labels are valid');
   assert.doesNotMatch(overview.view.innerHTML,/testresurs/);
   assert.equal((timing.view.innerHTML.match(/Q2 ↑/g)||[]).length,4,'Moto2 Q1 4 riders marked');
   assert.match(timing.view.innerHTML,/Q2-GRÄNS · preliminärt/);
