@@ -82,8 +82,8 @@ const context={customElements:{
   assert.match(eventHeader[1],/data-next-start=/,'chip uses existing countdown refresh selector');
   assert.match(card.root.innerHTML,/<div class="foot"><details class="mgp-ui-footer">/,'UI details live in footer');
   assert.equal((card.root.innerHTML.match(/ⓘ UI-information/g)||[]).length,1,'only one diagnostics expander');
-  assert.ok(card.root.innerHTML.indexOf('mgp-hero-grid')<card.root.innerHTML.indexOf('Schedule'),
-    'venue lives in header above the separate schedule');
+  assert.ok(card.root.innerHTML.indexOf('mgp-hero-grid')<card.root.innerHTML.indexOf('Version footer'),
+    'venue lives before the footer when the schedule is collapsed');
   assert.match(card.root.innerHTML,/Schematisk banform/);
   assert.match(card.root.innerHTML,/31 °C/);
   assert.match(card.root.innerHTML,/42 °C/);
