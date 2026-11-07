@@ -62,7 +62,7 @@ def check_bundle_integrity() -> None:
     assert "qual-grid-20261107-02" in next_js
     assert "nt-qual-slot-3" in next_js
     assert "qualifying_q1_eliminated" in next_js
-    assert "header-track-weather-20261107-01" in next_js
+    assert "header-track-weather-20261107-02" in next_js
     assert "mgp-venue-strip" in next_js
     assert "mgp-track-svg" in next_js
     assert "Senast rapporterat" in next_js

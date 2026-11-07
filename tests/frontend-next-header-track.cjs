@@ -66,8 +66,8 @@ const context={customElements:{
   assert.match(card.root.innerHTML,/Moto2 · Q1/);
   assert.match(card.root.innerHTML,/Senast rapporterat · inte livegaranti/);
   assert.doesNotMatch(card.root.innerHTML,/OLD SEPARATE WEATHER PANEL/);
-  assert.ok(card.root.innerHTML.indexOf('mgp-venue-strip')<card.root.innerHTML.indexOf('np-top-actions'),
-    'hero precedes standings button');
+  assert.ok(eventHeader[1].indexOf('np-top-actions')<eventHeader[1].indexOf('mgp-weather-panel'),
+    'VM toggle remains beside event title, before the weather and circuit');
   const first=card.root.innerHTML;
   card._render();assert.equal(card.root.innerHTML,first,'no duplicate panels');
   assert.equal(docs.length,1,'single style');
