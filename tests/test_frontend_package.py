@@ -30,7 +30,7 @@ def check_bundle_integrity() -> None:
     pairs = {
         "ha-motogp-next.js": (
             "dist/ha-motogp-next.js",
-            "a79a2190da7e2fd822214e299075a9d3016a5ded",
+            "679e0ac0232b6fe21b404f835a9e41a7ca3d4263",
         ),
         "ha-motogp-card.js": (
             "frontend/ha-motogp-card.js",

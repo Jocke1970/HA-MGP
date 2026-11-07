@@ -36,6 +36,7 @@ const context={customElements:registry,console,
   assert.ok(h.indexOf('#72')<h.indexOf('#93'),'provisional order sorted by live position');
   assert.doesNotMatch(h,/Publicerad startgrid/);
   t._render();assert.equal(styles,1);
+  assert.match(src,/min-width:940px/,'qual panel fits standard desktop widths');
   t._hass.states['sensor.motogp_next_race'].attributes.start_grids.MotoGP=[
     {position:1,number:93,rider:'Marc Marquez'},
     {position:2,number:72,rider:'Marco Bezzecchi'},

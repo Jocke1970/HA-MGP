@@ -39,6 +39,7 @@
     .np-standings td:last-child,.np-standings th:last-child{text-align:right}
     .np-empty{padding:13px;color:var(--secondary-text-color);font-size:12px}
     .np-top-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+    .np-hide-row{display:flex;justify-content:flex-end;padding:7px 12px}
     .np-show-button{display:inline-flex;align-items:center;justify-content:center;gap:6px;
       padding:7px 12px;border:1px solid var(--divider-color,#ddd);border-radius:18px;
       font:inherit;font-size:12px;font-weight:800;cursor:pointer;background:transparent;color:inherit}
@@ -147,7 +148,11 @@
         '<div class="np-heading"><span>🗓️ Helgens schema</span>'+
         '<button type="button" class="np-show-button" data-motogp-schedule-toggle '+
         'aria-expanded="'+open+'">'+(open?'Dölj schema':'Visa schema')+'</button></div></section>';
-      return open?control+html:control;
+      if(!open)return control;
+      const header='<section class="panel">';
+      const close='<div class="np-hide-row"><button type="button" class="np-show-button" '+
+        'data-motogp-schedule-toggle aria-expanded="true">Dölj schema</button></div>';
+      return html.includes(header)?html.replace(header,header+close):control+html;
     };
     function gridHtml(card,now) {
       if(card._spoiler())return '';

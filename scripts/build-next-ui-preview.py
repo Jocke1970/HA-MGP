@@ -6,8 +6,8 @@ import pathlib
 import sys
 import tempfile
 
-UI_BLOB = '457d48f41d5eccbed0247d4e890a1c75204f0e4c'
-QUAL_BLOB = 'e2162b6eac043522038af4f5febc75c72dda372f'
+UI_BLOB = '17acf27237f1d6c16d109f34595effea8b5a8376'
+QUAL_BLOB = 'b4fa9c1d5eae23e59e5b1978a7b034e296fd8751'
 MOBILE_BLOB = '9fad86bfd7fdc2e461371efb458b17f6029df794'
 BUILD = 'next-one-20261107-03'
 VERSION = '0.3.0-dev.9'

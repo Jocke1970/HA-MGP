@@ -947,6 +947,7 @@
     .np-standings td:last-child,.np-standings th:last-child{text-align:right}
     .np-empty{padding:13px;color:var(--secondary-text-color);font-size:12px}
     .np-top-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+    .np-hide-row{display:flex;justify-content:flex-end;padding:7px 12px}
     .np-show-button{display:inline-flex;align-items:center;justify-content:center;gap:6px;
       padding:7px 12px;border:1px solid var(--divider-color,#ddd);border-radius:18px;
       font:inherit;font-size:12px;font-weight:800;cursor:pointer;background:transparent;color:inherit}
@@ -1055,7 +1056,11 @@
         '<div class="np-heading"><span>🗓️ Helgens schema</span>'+
         '<button type="button" class="np-show-button" data-motogp-schedule-toggle '+
         'aria-expanded="'+open+'">'+(open?'Dölj schema':'Visa schema')+'</button></div></section>';
-      return open?control+html:control;
+      if(!open)return control;
+      const header='<section class="panel">';
+      const close='<div class="np-hide-row"><button type="button" class="np-show-button" '+
+        'data-motogp-schedule-toggle aria-expanded="true">Dölj schema</button></div>';
+      return html.includes(header)?html.replace(header,header+close):control+html;
     };
     function gridHtml(card,now) {
       if(card._spoiler())return '';
@@ -1326,7 +1331,7 @@ customElements.whenDefined(TAG).then(install);
 const TAG='ha-motogp-next-timing-card',REQUIRED='0.2.0-split.2';
 const BUILD='qual-grid-20261107-01';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const css="\n  .nt-qual-layout{display:grid;grid-template-columns:minmax(0,1fr);min-width:0}\n  .nt-qual-main{min-width:0}\n  .nt-qual-aside{border-top:1px solid var(--divider-color,#ddd);padding:10px;\n    background:var(--ha-card-background,var(--card-background-color,#fff))}\n  .nt-qual-title{font-size:12px;font-weight:900;margin:0 0 7px}\n  .nt-qual-caption{font-size:10px;color:var(--secondary-text-color);margin:0 0 9px}\n  .nt-qual-rows{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:5px}\n  .nt-qual-item{display:flex;align-items:center;gap:7px;padding:6px 7px;border-radius:7px;\n    border:1px solid var(--divider-color,#ddd);min-width:0;font-size:11px}\n  .nt-qual-item b{flex:none;font-variant-numeric:tabular-nums}\n  .nt-qual-item span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}\n  @container (min-width:1050px){\n    .nt-qual-layout{grid-template-columns:minmax(0,1fr) 248px;align-items:start}\n    .nt-qual-aside{border-top:0;border-left:1px solid var(--divider-color,#ddd)}\n    .nt-qual-rows{grid-template-columns:1fr}\n    .nt-qual-main .nt-table{min-width:0!important}\n    .nt-qual-main .nt-row{grid-template-columns:28px minmax(120px,1.4fr) 34px 112px 60px 61px 53px!important;\n      gap:6px!important;padding:8px 7px!important}\n    .nt-qual-main .nt-person-text small{font-size:10px}\n  }";
+const css="\n  .nt-qual-layout{display:grid;grid-template-columns:minmax(0,1fr);min-width:0}\n  .nt-qual-main{min-width:0}\n  .nt-qual-aside{border-top:1px solid var(--divider-color,#ddd);padding:10px;\n    background:var(--ha-card-background,var(--card-background-color,#fff))}\n  .nt-qual-title{font-size:12px;font-weight:900;margin:0 0 7px}\n  .nt-qual-caption{font-size:10px;color:var(--secondary-text-color);margin:0 0 9px}\n  .nt-qual-rows{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:5px}\n  .nt-qual-item{display:flex;align-items:center;gap:7px;padding:6px 7px;border-radius:7px;\n    border:1px solid var(--divider-color,#ddd);min-width:0;font-size:11px}\n  .nt-qual-item b{flex:none;font-variant-numeric:tabular-nums}\n  .nt-qual-item span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}\n  @container (min-width:940px){\n    .nt-qual-layout{grid-template-columns:minmax(0,1fr) 248px;align-items:start}\n    .nt-qual-aside{border-top:0;border-left:1px solid var(--divider-color,#ddd)}\n    .nt-qual-rows{grid-template-columns:1fr}\n    .nt-qual-main .nt-table{min-width:0!important}\n    .nt-qual-main .nt-row{grid-template-columns:28px minmax(120px,1.4fr) 34px 112px 60px 61px 53px!important;\n      gap:6px!important;padding:8px 7px!important}\n    .nt-qual-main .nt-person-text small{font-size:10px}\n  }";
 const validPosition=v=>Number.isInteger(Number(v))&&Number(v)>0;
 function companion(card){
   const live=card._live,snapshot=card._snapshot;
