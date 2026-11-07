@@ -58,8 +58,8 @@ def check_bundle_integrity() -> None:
     next_js = (ASSETS / "ha-mgp.js").read_text(encoding="utf-8")
     assert "ha-motogp-next-overview-card" in next_js
     assert "ha-motogp-next-timing-card" in next_js
-    assert "0.3.0-dev.28" in next_js
-    assert "header-track-records-20261108-01" in next_js
+    assert "0.3.0-dev.29" in next_js
+    assert "header-track-weather-20261108-02" in next_js
     assert "mgp-country-flag" in next_js
     assert "mgp-brand-logo" in next_js
     assert "data:image/webp;base64," in next_js
@@ -74,7 +74,7 @@ def check_bundle_integrity() -> None:
     assert "nt-lap-pair" in next_js
     assert "Snabbaste: " in next_js
     assert "riderStart=/<div" in next_js
-    assert "header-track-records-20261108-01" in next_js
+    assert "header-track-weather-20261108-02" in next_js
     assert "data-mgp-hero-grid" in next_js
     assert "mgp-venue-strip" in next_js
     assert "MELLAN PASSEN" in next_js
@@ -82,7 +82,7 @@ def check_bundle_integrity() -> None:
     assert "qual-grid-20261107-02" in next_js
     assert "nt-qual-slot-3" in next_js
     assert "qualifying_q1_eliminated" in next_js
-    assert "header-track-records-20261108-01" in next_js
+    assert "header-track-weather-20261108-02" in next_js
     assert "mgp-venue-strip" in next_js
     assert "mgp-track-svg" in next_js
     assert "Senast rapporterat" in next_js
@@ -99,7 +99,7 @@ def check_bundle_integrity() -> None:
     assert "mgp-rider-flag" in next_js
     assert "mgp-class-mark" in next_js
     assert "mgp-all-mark" in next_js
-    assert "mgp-record-chip" in next_js
+    assert "mgp-timing-record-chip" in next_js
     assert "records_by_category" in next_js
     assert "data-motogp-schedule-toggle" in next_js
     assert "motogp_sensor/rider_laps" in next_js
