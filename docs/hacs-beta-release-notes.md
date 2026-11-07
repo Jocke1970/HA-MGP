@@ -1,30 +1,26 @@
-# MotoGP Sensor 2026.11.0b7 — banlayout, banväder och full startgrid
+# MotoGP Sensor 2026.11.0b9 — vit toppheader och snabbaste varv per förare
 
-**HACS beta/prerelease:** `2026.11.0b7`, Next UI **`0.3.0-dev.14`**. Publicerad beta `2026.11.0b4` är föregångaren; b5/b6 var enbart dev-kandidater.
+**HACS beta:** `2026.11.0b9` · **MotoGP Next:** `0.3.0-dev.16`. Senast publicerade beta före denna var `2026.11.0b7`; b8 var endast en dev-kandidat.
 
-## Nytt sedan b4
+## Ändringar sedan b7
 
-- **Toppkortet:** responsiv, schematisk banlayout tillsammans med det faktiskt rapporterade banvädret. 21 lokalt paketerade banformer, bland annat Lusail, Mandalika, Assen och Mugello; inga nätverksanrop från frontenden. Rapporterad lufttemperatur, bantemperatur, fuktighet, underlag och väderstatus visas där HA-sensorn har värden. Kortet märks **Senast rapporterat · inte livegaranti**. Det gamla separata väderkortet i översikten ersätts utan att sensorn eller dess backend ändras.
-- **3–3–3-startgrid:** förskjutna positioner P1/P2/P3, P4/P5/P6 osv., med startnummer, efternamn och verifierad teamfärg. Q1-utslagna visas längst bak: **från P13 i MotoGP** och **P19 i Moto2/Moto3**. Backend läser separat verifierat Q1-resultat efter planerad Q2-start. Om Q1-data saknas visas en förklarande väntestatus – inga förare eller startplatser hittas på. Endast en fullständig och motsägelsefri publicerad grid får etiketten **Publicerad startgrid**; kvalordningen märks **preliminär**. Under Race/Sprint visas bara publicerad startgrid. Spoilerläget fortsätter dölja den.
-- **Statusraden i timingkortet:** när rubriken säger **Nästa: MotoGP · Sprint** hämtas inte längre `STATUS OKÄND: Moto2 Q2` från det föregående passet. Om nästa pass är framtida och ingen livekälla är bekräftad visas neutralt **MELLAN PASSEN** (eller **SENASTE PASS · EJ LIVE** när förardata för föregående pass visas). Om starttiden passerat inväntas fortfarande matchande livekälla, utan att klockslaget tolkas som LIVE.
-- Den befintliga förbättrade VM-ställningen (podium, nummer, team, verifierade färger och relativa poängbarer) från b4 är oförändrad.
+- **Enhetligt, vitt toppkort:** Grand Prix-titel, datum och VM-knapp till vänster, **Banväder** i mitten och högerställd **Banlayout** längst till höger på desktop. Inga separata grå väder- och bankort. Mobilen får en kompakt layout i samma vita header. Bangeometrierna är fortfarande schematiska och paketerade lokalt (21 banor).
+- **Livetiming – senaste och snabbaste varv på samma rad:** Varje förare får sin senaste varvtid överst med befintlig PB-/rekordfärg och sitt faktiska personbästa (`best_lap_time`) som mindre text **Snabbaste: …** under. Om bästa varv saknas visas `—`. Gäller live träning, kval, Sprint och Race i samma visningskomponent.
+- **Klickbara förarrader bevarade:** Fixen hanterar de extra HTML-attributen som varv-popupen sätter på varje rad. Tidigare orsakade kombinationen att snabbaste varvet inte syntes, trots att sensordatan fanns.
+- Ingen ändring i backendpollning, Red Flag-klassificering, sessionsarkiv, TV-delay eller spoilerläge. Den tidigare identifierade 30-sekunderspollningen under röd flagg kvarstår som separat utredning.
 
-## HACS-installation
+## Kontroll och installation
 
-1. Ta gärna backup. Bevara `/config/motogp_data/`, MotoGP-konfigurationsposten och dashboarden.
-2. **Installera inte eller starta om HA mitt i ett livepass.** Välj prerelease **2026.11.0b7** i HACS/Marketplace och starta om efter ett avslutat pass.
-3. Next-resursen är redan paketerad av integrationen och ska fortsatt vara en **enda** JavaScript module med exakt adress:
-   ```text
-   /motogp_sensor/ha-motogp-next.js
-   ```
-   **Inga `?v=`-parametrar eller dubbla resurser.**
-4. Gör **Ctrl+Shift+R** och kontrollera Next UI **0.3.0-dev.14**, banlayout/väder, Moto2/Moto3/MotoGP-grid samt statusraden mellan pass.
-5. Vid problem: installera tidigare prerelease **2026.11.0b4** via HACS, starta om efter passet och ladda om dashboarden. Radera inte några arkiv.
+Testerna omfattar frontend, Next-bygget, backendregressioner samt den *färdiga HACS-JavaScriptfilen*. Ett nytt samspelstest kör den verkliga installationsordningen mellan Next UI och klickbar förarpopup, och kontrollerar senaste + snabbaste varv, PB, okända varv samt spoilerläge.
 
-## Tester, källor och begränsningar
+Uppdatera via HACS till **2026.11.0b9**, men **vänta tills pågående pass är slut innan omstart**. Behåll exakt en JavaScript module-resurs:
 
-Dev-kontrollerna omfattar backend, frontend, HACS-bundle och Next-regressioner. Release-arbetsflödet kör dessutom **samma UI-tester direkt mot de delar som extraherats ur den paketerade HACS-JavaScriptfilen**, inklusive ett test som återskapar Qatar-situationen Moto2 Q2 → MotoGP Sprint. Ett grönt CI-resultat ersätter inte verklig testning i din HA-miljö.
+```text
+/motogp_sensor/ha-motogp-next.js
+```
 
-Bangeometrierna är förenklade från det Apache-2.0-licensierade projektet [GameDev-Toolkit/global-motorsport-circuits-json](https://github.com/GameDev-Toolkit/global-motorsport-circuits-json). Se `docs/track-layout-attribution.md` och den bevarade licensen. Ritningarna är schematiska och saknar officiella start-/mål- och sektormarkeringar. Om en bana eller väderdata saknas visas en neutral fallback, aldrig en gissad banform eller temperatur.
+Ingen `?v=`-parameter och ingen extra resurs. Efter HA-omstart: `Ctrl+Shift+R`, verifiera **0.3.0-dev.16**, att headern har väder till vänster om högerställd bana och att varje förare har senaste och snabbaste varv.
 
-Den tidigare godkända MGP-ikonen är fortfarande förberedd separat och **ingår inte i b7**. `main` är orörd.
+**Rollback:** Installera tidigare publicerad beta `2026.11.0b7` via HACS. Bevara `/config/motogp_data/`, dashboard och integrationens konfigurationspost.
+
+Bangeometrier: förenklade från [GameDev-Toolkit/global-motorsport-circuits-json](https://github.com/GameDev-Toolkit/global-motorsport-circuits-json) (Apache-2.0); se `docs/track-layout-attribution.md` och licensfil. Tidigare godkända MGP-ikonen är fortfarande inte incheckad. `main` ändras inte.

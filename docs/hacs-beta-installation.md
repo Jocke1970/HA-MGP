@@ -1,17 +1,11 @@
-# Installera MotoGP HACS beta 2026.11.0b7
+# Installera MotoGP HACS beta 2026.11.0b9
 
-**Next UI 0.3.0-dev.14.** Uppdateringen tar med banlayout, banväder i toppkortet, förskjuten startgrid för hela Q1/Q2-fältet samt en korrigerad statusrad mellan passen.
+**Next UI: 0.3.0-dev.16.** Sedan b7 ingår det enhetliga vita toppkortet med **banväder i mitten** och **banlayout längst till höger**, och under senaste varv visas **snabbaste varvet för varje förare**.
 
-1. Bevara `/config/motogp_data/`, dashboarden och MotoGP-integrationens konfigurationspost. Ta en HA-backup.
-2. Välj **2026.11.0b7** (prerelease) i HACS/Marketplace. **Starta inte om HA under ett pågående race- eller kvalpass.**
-3. Starta om HA efter avslutat pass. Kontrollera att integrationen laddas utan fel och att banväder-sensorn fortfarande finns.
-4. Behåll din enda Lovelace-resurs av typen JavaScript module:
-   ```text
-   /motogp_sensor/ha-motogp-next.js
-   ```
-   Ändra inte adressen om den redan stämmer. **Inget `?v=` och inga dubbletter.**
-5. Ladda om med **Ctrl+Shift+R** och verifiera version **0.3.0-dev.14**. Titta på banlayout och väder i toppen, Q1-utslagna i de sista gridpositionerna, samt **MELLAN PASSEN** under ett framtida Sprint/Race i stället för status för föregående klass.
+1. Ta backup. Bevara `/config/motogp_data/`, dashboard och MotoGP-konfigurationspost.
+2. Välj prerelease **2026.11.0b9** i HACS. **Starta inte om under live Sprint, Race eller kval.**
+3. Starta om efter passet. Använd bara en JavaScript module-resurs: `/motogp_sensor/ha-motogp-next.js` (utan `?v=`).
+4. Ladda om browsern med `Ctrl+Shift+R`; kontrollera Next-version **0.3.0-dev.16** och både senaste och snabbaste varv.
+5. Om något går fel: återgå via HACS till **2026.11.0b7**, starta om efter passet. Radera inga arkiv.
 
-**Rollback:** via HACS till senaste tidigare publicerade beta **2026.11.0b4**, starta om efter passet, ladda om dashboarden. Låt arkiven vara kvar.
-
-**Begränsning:** banritningar är schematiska och endast tillgängliga när banan matchar en verifierad lokalt paketerad form. Saknade eller tvetydiga Q1-data ska inte visas som officiell startgrid. Tidigare godkänd MGP-integrationsikon följer i en senare version.
+**Red Flag:** Pollning och statuslogik är oförändrade i b9. Det observerade `N`/30 s-läget felsöks separat innan ändring i backend.

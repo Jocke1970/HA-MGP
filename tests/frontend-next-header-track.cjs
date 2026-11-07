@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const file=process.argv[2]||'frontend/ha-motogp-next-header-track.js';
 const src=fs.readFileSync(file,'utf8');
-assert.match(src,/header-track-weather-20261107-01/);
+assert.match(src,/header-track-weather-20261107-02/);
 const docs=[];
 class Overview {
   static buildInfo={version:'0.2.0-split.2'};
@@ -41,7 +41,22 @@ const context={customElements:{
   const card=new Overview();
   card._render();
   assert.match(card.root.innerHTML,/mgp-venue-strip/);
+  assert.match(card.root.innerHTML,/data-mgp-hero-grid/,'header contains the unified hero');
   assert.match(card.root.innerHTML,/mgp-track-svg/,'Lusail verified layout rendered');
+  const eventHeader=card.root.innerHTML.match(/<section class="panel header">([\s\S]*?)<\/section>/);
+  assert.ok(eventHeader,'single event header exists');
+  assert.match(eventHeader[1],/GRAND PRIX OF QATAR/);
+  assert.match(eventHeader[1],/mgp-weather-panel/);
+  assert.match(eventHeader[1],/mgp-circuit-panel/);
+  assert.ok(eventHeader[1].indexOf('mgp-hero-copy')<eventHeader[1].indexOf('mgp-weather-panel'),
+    'event info left, weather center');
+  assert.ok(eventHeader[1].indexOf('mgp-weather-panel')<eventHeader[1].indexOf('mgp-circuit-panel'),
+    'weather must be to the left of rightmost circuit map');
+  assert.doesNotMatch(card.root.innerHTML.slice(card.root.innerHTML.indexOf('</section>')+10),
+    /mgp-venue-strip/,'venue is not duplicated below the event header');
+  assert.match(eventHeader[1],/np-top-actions/,'existing standings toggle remains in left column');
+  assert.ok(card.root.innerHTML.indexOf('mgp-hero-grid')<card.root.innerHTML.indexOf('Schedule'),
+    'venue lives in header above the separate schedule');
   assert.match(card.root.innerHTML,/Schematisk banform/);
   assert.match(card.root.innerHTML,/31 °C/);
   assert.match(card.root.innerHTML,/42 °C/);
@@ -51,13 +66,18 @@ const context={customElements:{
   assert.match(card.root.innerHTML,/Moto2 · Q1/);
   assert.match(card.root.innerHTML,/Senast rapporterat · inte livegaranti/);
   assert.doesNotMatch(card.root.innerHTML,/OLD SEPARATE WEATHER PANEL/);
-  assert.ok(card.root.innerHTML.indexOf('mgp-venue-strip')<card.root.innerHTML.indexOf('np-top-actions'),
-    'hero precedes standings button');
+  assert.ok(eventHeader[1].indexOf('np-top-actions')<eventHeader[1].indexOf('mgp-weather-panel'),
+    'VM toggle remains beside event title, before the weather and circuit');
   const first=card.root.innerHTML;
   card._render();assert.equal(card.root.innerHTML,first,'no duplicate panels');
   assert.equal(docs.length,1,'single style');
-  assert.match(docs[0].textContent,/@container \(max-width:730px\)/);
-  assert.match(docs[0].textContent,/@container \(max-width:425px\)/);
+  assert.match(docs[0].textContent,/@container \(max-width:900px\)/);
+  assert.match(docs[0].textContent,/@container \(max-width:680px\)/);
+  assert.match(docs[0].textContent,/@container \(max-width:355px\)/);
+  assert.match(docs[0].textContent,/mgp-hero-grid\{display:grid/);
+  assert.match(docs[0].textContent,/mgp-circuit-panel\{justify-self:end/);
+  assert.match(docs[0].textContent,/mgp-weather-panel,.mgp-circuit-panel\{min-width:0;padding:0;margin:0;border:0;background:transparent\}/,
+    'no gray weather/track cards inside the white header');
   assert.match(docs[0].textContent,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
   const other=card._hass.states['sensor.motogp_next_race'];
   other.attributes.circuit='Unknown Track Name';
@@ -83,6 +103,9 @@ const context={customElements:{
   card._render();
   assert.match(card.root.innerHTML,/Ingen banväderrapport tillgänglig ännu/);
   assert.match(card.root.innerHTML,/mgp-venue-strip/,'render works without standings button');
+  assert.match(card.root.innerHTML,/<section class="panel header"><div class="mgp-hero-grid"/);
+  assert.ok(card.root.innerHTML.indexOf('mgp-weather-panel')<card.root.innerHTML.indexOf('mgp-circuit-panel'),
+    'mobile and spoiler-mode fallback preserve weather/map order');
   assert.doesNotMatch(card.root.innerHTML,/OLD SEPARATE WEATHER PANEL/);
-  console.log('PASS: 21 offline track layouts, Qatar map, four weather readings, provenance, no duplicate weather panel, responsive, invalid/unavailable safety');
+  console.log('PASS: one white three-part event hero, weather left of far-right track, toggle preserved, 21 tracks, real weather, responsive and missing-data safety');
 })().catch(e=>{console.error(e);process.exitCode=1;});

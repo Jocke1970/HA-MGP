@@ -1,18 +1,20 @@
 # MotoGP project status — 2026-11-07
 
-- **dev:** validated b7 candidate, Next `0.3.0-dev.14`, screenshot regression for Qatar Moto2 Q2 → MotoGP Sprint and existing live/next/schedule tests.
-- **beta:** HACS prerelease `2026.11.0b7`, to be installed/tested on-host after live racing.
-- **main:** unchanged, pending manual acceptance.
+- **dev:** `2026.11.0b9`, MotoGP Next `0.3.0-dev.16`; four required GitHub Action suites green before beta promotion.
+- **beta:** HACS prerelease `2026.11.0b9`; install and validate on host after live session.
+- **main:** unchanged; user acceptance required.
 
-## Scope since b4
+## Since prior released beta b7
 
-1. Event top card integrates 21 Apache-2.0-derived schematic track outlines, existing sensor's reported weather, provenance and responsive layout.
-2. 3–3–3 staggered grid, with verified Q1 non-transferees correctly assigned P13+ (MotoGP) and P19+ (Moto2/Moto3); never fabricate placements, and reject partial/contradictory public grids.
-3. Fixed cross-session timing subtitle: **Nästa: MotoGP Sprint** no longer incorrectly displays a prior **STATUS OKÄND: Moto2 Q2**. Uses **MELLAN PASSEN** or accurately labelled previous-pass rider data; retains safe unmatched start-time handling.
-4. Existing high-contrast three-class standings and on-demand rider popup are retained.
+1. White unified top hero: Grand Prix title/standings toggle left, reported weather center, right-aligned schematic circuit drawing, container responsive.
+2. Per-rider latest lap and fastest lap shown together. A race screenshot revealed that enhanced clickable row tags caused Next UI preview per-rider formatting to be skipped. The row matcher now supports attributes; PB formatting, rider-lap popup and spoiler remain.
+3. Added an asynchronous addon-install-order regression, verified against the HACS bundle in the beta-release gate.
 
-## Verification and next steps
+## Separate issues / limitations
 
-Dev CI checks backend, archive, frontend, assembled JS and regressions. The b7 beta release gate additionally tests qualified Q1 projection, the actual bundled JS for header/grid and status, and HACS integrity. Manual Home Assistant inspection remains necessary.
+- **Red Flag**: observed 2026-11-07 MotoGP Sprint sensor remained `session_status_id: N`, poll 30 s, while schedule said CURRENT and archive held observed laps. No polling/backend change in b9; need targeted tests before future fix.
+- Public grid numbers can be `null` in source. Remains a known issue to review before claiming every official grid is complete.
+- The agreed MGP brand icon was not shipped.
+- Circuit drawings are schematic; weather data may legitimately be unavailable during Sprint.
 
-Use existing clean Lovelace resource `/motogp_sensor/ha-motogp-next.js` without `?v=`. Preserve `/config/motogp_data/`. Wait until the current live session ends before updating or restarting HA. The custom MGP brand icon is approved but still uncommitted and not included in b7.
+Keep one JS module resource at `/motogp_sensor/ha-motogp-next.js`, no cache query or duplicate resource; preserve `/config/motogp_data/`.

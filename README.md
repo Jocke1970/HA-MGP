@@ -1,18 +1,18 @@
 # ha-motogp — HACS beta
 
-Home Assistant integration derived from [Liionboy/motogp_sensor](https://github.com/Liionboy/motogp_sensor). Independent project, not affiliated with MotoGP or any rights holder.
+Home Assistant MotoGP Sensor fork. Independent project derived from [Liionboy/motogp_sensor](https://github.com/Liionboy/motogp_sensor); no affiliation with MotoGP.
 
-**Latest prerelease: `2026.11.0b7` · Next UI `0.3.0-dev.14`.** Development policy: **`dev → beta → main`**. Stable `main` remains untouched.
+**Latest HACS prerelease: `2026.11.0b9` · Next `0.3.0-dev.16`.** SOP: **dev → beta → main**. Stable main is unchanged.
 
-## Next features in b7
+## Next UI
 
-- **Event header:** locally bundled schematic circuit outlines (21 circuits) alongside weather from the existing HA sensor, marked **Senast rapporterat · inte livegaranti**. The independent Overview weather card is replaced, without removing its sensor.
-- **Grid:** visual staggered 3–3–3 presentation. Verified Q1 non-transferees fill P13+ in MotoGP and P19+ in Moto2/Moto3 when an actual Q1 classification is available. A partial grid never claims to be official; race/sprint uses published grid only.
-- **Accurate next-session banner:** a future MotoGP Sprint is labelled **MELLAN PASSEN** when no matching live session exists, rather than **STATUS OKÄND: Moto2 Q2** from an unrelated prior session.
-- Existing three-category standings, premium points leaderboard, freshness, TV-delay/spoiler protection, mobile timing and rider-lap popup remain.
+- **White event hero:** Grand Prix details and VM toggle left, real reported track weather center, locally bundled schematic circuit layout far right. On narrow cards everything remains inside the same white header.
+- **Timing:** latest lap with PB highlight and each rider's fastest verified lap immediately below, across training, Q1/Q2, Sprint and Race. Clickable rider lap archive retained.
+- **Qualifying:** 3–3–3 staggered provisional versus published grid, with Q1 non-transferees from P13 (MotoGP) / P19 (Moto2, Moto3).
+- **Championship and freshness:** full category standings, points bars, team accents, live feed age, spoiler protections.
 
-Frontend JS is HACS-managed in `custom_components/motogp_sensor/www/`. The single existing Next Lovelace JavaScript module resource is `/motogp_sensor/ha-motogp-next.js`. **Never add `?v=` or a second resource.**
+**Only one existing Lovelace JavaScript module** at `/motogp_sensor/ha-motogp-next.js` — no `?v=` and no duplicate resources.
 
-See [install and rollback](docs/hacs-beta-installation.md) and [release notes](docs/hacs-beta-release-notes.md). Circuit track-outline attribution and Apache 2.0 license are included in `docs/track-layout-attribution.md` and `docs/third-party-track-APACHE-2.0.txt`.
+[Beta release notes](docs/hacs-beta-release-notes.md) · [Install and rollback](docs/hacs-beta-installation.md) · [Track attribution](docs/track-layout-attribution.md).
 
-The previously approved MGP brand icon is pending a separate binary check-in and is **not included in b7**. Actual HA testing is required before considering `main`.
+The 2026-11-07 Red Flag observation (API status `N`, 30-second fallback polling despite schedule `CURRENT`) is **not fixed in this frontend-only beta**. Investigate separately with explicit safety/regression gates. Previously selected custom icon is pending binary verification and not included.
