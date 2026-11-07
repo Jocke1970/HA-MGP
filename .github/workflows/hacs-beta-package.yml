@@ -81,8 +81,11 @@ jobs:
           assert "MELLAN PASSEN" in source
           assert "leaderboard=shown.map" in source
           assert "ui-preview-20261107-06" in source
-          assert "header-track-weather-20261107-06" in source
+          assert "header-track-weather-20261107-07" in source
           assert "mgp-brand-logo" in source
+          assert "mgp-ui-footer" in source
+          assert "data-mgp-schedule-jump" in source
+          assert "mgp-next-chip" in source
           assert "history-20261107-01" in source
           assert "nt-lap-pair" in source
           assert "data-mgp-hero-grid" in source
@@ -97,17 +100,17 @@ jobs:
           }
           for name, content in parts.items():
               assert len(content) > 1000, f"Unexpectedly short {name} source"
-              Path(f"/tmp/ha-motogp-b10-{name}.js").write_text(content, encoding="utf-8")
+              Path(f"/tmp/ha-motogp-b11-{name}.js").write_text(content, encoding="utf-8")
           PY
           for name in base ui mobile qual header history; do
-            node --check "/tmp/ha-motogp-b10-$name.js"
+            node --check "/tmp/ha-motogp-b11-$name.js"
           done
-          node tests/frontend-next-one.cjs /tmp/ha-motogp-b10-base.js
-          node tests/frontend-next-ui-preview.cjs /tmp/ha-motogp-b10-ui.js
-          node tests/frontend-next-lap-pair.cjs /tmp/ha-motogp-b10-ui.js /tmp/ha-motogp-b10-mobile.js
-          node tests/frontend-next-qual-grid.cjs /tmp/ha-motogp-b10-qual.js
-          node tests/frontend-next-header-track.cjs /tmp/ha-motogp-b10-header.js
-          node tests/frontend-session-history.cjs /tmp/ha-motogp-b10-history.js
+          node tests/frontend-next-one.cjs /tmp/ha-motogp-b11-base.js
+          node tests/frontend-next-ui-preview.cjs /tmp/ha-motogp-b11-ui.js
+          node tests/frontend-next-lap-pair.cjs /tmp/ha-motogp-b11-ui.js /tmp/ha-motogp-b11-mobile.js
+          node tests/frontend-next-qual-grid.cjs /tmp/ha-motogp-b11-qual.js
+          node tests/frontend-next-header-track.cjs /tmp/ha-motogp-b11-header.js
+          node tests/frontend-session-history.cjs /tmp/ha-motogp-b11-history.js
       - name: Verify HACS package metadata and runtime files
         run: |
           python - <<'PY'
@@ -117,7 +120,7 @@ jobs:
           root = Path('custom_components/motogp_sensor')
           manifest = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
           assert manifest['domain'] == 'motogp_sensor'
-          assert manifest['version'] == '2026.11.0b10'
+          assert manifest['version'] == '2026.11.0b11'
           assert manifest.get('codeowners') == ['@Jocke1970']
           assert {'http', 'frontend'}.issubset(manifest['dependencies'])
           required = {
@@ -134,20 +137,20 @@ jobs:
           assert hacs.get('name')
           assert not hacs.get('content_in_root')
           assert not hacs.get('zip_release')
-          print('Verified HACS beta: 2026.11.0b10 including Next frontend 0.3.0-dev.21')
+          print('Verified HACS beta: 2026.11.0b11 including Next frontend 0.3.0-dev.22')
           PY
       - name: Publish tagged GitHub prerelease
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          TAG=2026.11.0b10
+          TAG=2026.11.0b11
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "$TAG already exists; leaving the immutable prerelease untouched."
             gh release view "$TAG" --json tagName,isPrerelease,url,targetCommitish
             exit 0
           fi
           gh release create "$TAG" --target "$(git rev-parse HEAD)" --prerelease \
-            --title 'MotoGP Sensor 2026.11.0b10 — MGP logo and UI diagnostics' \
+            --title 'MotoGP Sensor 2026.11.0b11 — weekend shortcut and next-session chip' \
             --notes-file docs/hacs-beta-release-notes.md
           gh release view "$TAG" --json tagName,isPrerelease,url,targetCommitish
