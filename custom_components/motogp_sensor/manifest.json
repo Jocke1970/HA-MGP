@@ -1,6 +1,6 @@
 {
   "domain": "motogp_sensor",
-  "name": "MotoGP Sensor",
+  "name": "HA-MGP",
   "after_dependencies": [
     "logbook",
     "recorder"
@@ -13,10 +13,10 @@
     "frontend",
     "http"
   ],
-  "documentation": "https://github.com/Jocke1970/ha-motogp/blob/beta/docs/hacs-beta-installation.md",
+  "documentation": "https://github.com/Jocke1970/HA-MGP/blob/beta/docs/hacs-beta-installation.md",
   "integration_type": "device",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/Jocke1970/ha-motogp/issues",
+  "issue_tracker": "https://github.com/Jocke1970/HA-MGP/issues",
   "requirements": [
     "python-dateutil>=2.8"
   ],
