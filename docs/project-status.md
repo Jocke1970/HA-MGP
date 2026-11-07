@@ -5,7 +5,7 @@
 - GitHub: [Jocke1970/HA-MGP](https://github.com/Jocke1970/HA-MGP), tidigare `ha-motogp`.
 - Produktnamn: **HA-MGP**, med backend + frontend i samma HACS-integration.
 - Publicerad HACS-beta: **2026.11.0b12**, frontend **0.3.0-dev.23**.
-- Senast färdigbyggda dev före namnputsen: **0.3.0-dev.24**. Den är **inte** publicerad som beta.
+- Aktuell dev-kandidat: **0.3.0-dev.25** med det nya produktnamnet **HA-MGP** i UI. Den är **inte** publicerad som beta.
 - Ordning: **dev → beta → main**.
 
 ## Funktioner
