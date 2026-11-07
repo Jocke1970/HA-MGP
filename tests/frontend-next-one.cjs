@@ -58,7 +58,7 @@ const live=(category,name,riders)=>({
     'switch.motogp_no_spoiler':e('off')};
   const push=x=>{states={...states,...x};overview.hass={states};timing.hass={states};};
   push({});
-  assert.match(overview.view.innerHTML,/0\.3\.0-dev\.3/);
+  assert.match(overview.view.innerHTML,/0\.3\.0-dev\.\d+/,'built Next UI should expose its version');
 
   // Results API schedule times are circuit wall-clock values. When the backend
   // supplies date_utc, the card must render the viewer-local time instead.
