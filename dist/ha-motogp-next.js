@@ -1,4 +1,4 @@
-/* MotoGP Next SINGLE Lovelace resource | build next-one-20261011-01 | read only. */
+/* MotoGP Next SINGLE Lovelace resource | build next-one-20261107-01 | read only. */
 /* MotoGP Next: isolated frontend for motogp-test. No HA writes or service calls. */
 (() => {
   'use strict';
@@ -303,9 +303,9 @@
       this._track(now,race);
       const event=valid(race?.state)?race.state:'Inget evenemang tillgängligt';
       const meta=[a.circuit,a.country,a.date_start&&a.date_end?dateRange(a.date_start,a.date_end):''].filter(valid);
-      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 MOTOGP NEXT · 0.3.0-dev.6</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
+      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 MOTOGP NEXT · 0.3.0-dev.7</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
         this._schedule(race,now)+`<div class="root">${this._weather()}${this._timing()}</div>`+
-        `<div class="foot">ha-motogp-next.js · 0.3.0-dev.6 · UI-preview</div></div>`;
+        `<div class="foot">ha-motogp-next.js · 0.3.0-dev.7 · UI-preview</div></div>`;
     }
     getCardSize(){return 8;}
     getGridOptions(){return {columns:12,rows:'auto',min_columns:6};}
@@ -726,7 +726,7 @@
 (() => {
   'use strict';
   const TAG='ha-motogp-next-timing-card', REQUIRED='0.2.0-split.2';
-  const BUILD='lap-stats-20261011-01';
+  const BUILD='lap-stats-20261107-01';
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function gap(raw) {
     const s=String(raw??'').trim().replace(',','.');
@@ -758,31 +758,35 @@
     .nt-feed-age.delayed{color:#9a5400;border-color:#d97706;background:rgba(217,119,6,.12)}
     .nt-feed-age.missing{color:#b91c1c;border-color:#dc2626;background:rgba(220,38,38,.10)}
   `;
+  // Calculate status during *render*, not only in the one-second callback.
+  // Home Assistant can replace the badge on every state push, and the timing
+  // card can already be connected when this bundled extension is installed.
+  function feedHealth(stamp,expected,now=Date.now()) {
+    if (!Number.isFinite(stamp)||stamp<=0||stamp>now+5000) {
+      return {name:'',text:'Uppdateringstid okänd'};
+    }
+    const age=Math.max(0,Math.floor((now-stamp)/1000));
+    const poll=Number.isFinite(expected)&&expected>0?expected:5;
+    if(age<Math.max(20,Math.ceil(poll*3)))
+      return {name:'ok',text:`● Feed OK · ${age} s`};
+    if(age<Math.max(60,Math.ceil(poll*12)))
+      return {name:'delayed',text:`⚠ Feed fördröjd · ${age} s`};
+    return {name:'missing',text:`⛔ Feed saknas · ${Math.floor(age/60)} min ${age%60} s`};
+  }
   function refreshAge(card) {
     const badge=card.shadowRoot?.querySelector('[data-motogp-feed-age]');
     if (!badge) return;
-    const setState=(name,text)=>{
-      badge.classList.remove('ok','delayed','missing');
-      if(name)badge.classList.add(name);
-      badge.textContent=text;
-    };
-    if (!card._live||card._spoiler()) {setState('', 'Tid okänd');return;}
-    const stamp=Number(badge.getAttribute('data-motogp-feed-age'));
-    const expected=Number(badge.getAttribute('data-motogp-feed-interval'));
-    if (!Number.isFinite(stamp)||stamp<=0||stamp>Date.now()+5000) {
-      setState('', 'Uppdateringstid okänd');return;
-    }
-    const age=Math.max(0,Math.floor((Date.now()-stamp)/1000));
-    const poll=Number.isFinite(expected)&&expected>0?expected:5;
-    const delayedAfter=Math.max(20,Math.ceil(poll*3));
-    const missingAfter=Math.max(60,Math.ceil(poll*12));
-    if(age<delayedAfter) {
-      setState('ok', `● Feed OK · ${age} s`);
-    } else if(age<missingAfter) {
-      setState('delayed', `⚠ Feed fördröjd · ${age} s`);
-    } else {
-      setState('missing', `⛔ Feed saknas · ${Math.floor(age/60)} min ${age%60} s`);
-    }
+    const status=card._live&&!card._spoiler()
+      ? feedHealth(
+          Number(badge.getAttribute('data-motogp-feed-age')),
+          Number(badge.getAttribute('data-motogp-feed-interval')))
+      : {name:'',text:'Tid okänd'};
+    badge.classList.remove('ok','delayed','missing');
+    if(status.name)badge.classList.add(status.name);
+    badge.textContent=status.text;
+  }
+  function ensureAgeTimer(card) {
+    if(!card._motogpAgeTimer)card._motogpAgeTimer=setInterval(()=>refreshAge(card),1000);
   }
   function install() {
     const Timing=customElements.get(TAG);
@@ -864,10 +868,11 @@
       const age=Number.isFinite(timestamp)&&timestamp>0?timestamp:0;
       const interval=Number(attrs.live_poll_interval_seconds);
       const expected=Number.isFinite(interval)&&interval>0?interval:5;
+      const health=feedHealth(age,expected);
       const clockEnd='<span class="nt-toggle">';
       if(out.includes(clockEnd))out=out.replace(clockEnd,
-        `<span class="nt-feed-age" data-motogp-feed-age="${age}" data-motogp-feed-interval="${expected}" title="Tid sedan senaste lyckade livetiming-poll">`+
-        `Uppdateringstid okänd</span>`+clockEnd);
+        `<span class="nt-feed-age${health.name?' '+health.name:''}" data-motogp-feed-age="${age}" data-motogp-feed-interval="${expected}" title="Tid sedan senaste lyckade livetiming-poll">`+
+        `${health.text}</span>`+clockEnd);
       if(!this.shadowRoot?.querySelector('[data-motogp-gap-trends]')) {
         const style=document.createElement('style');
         style.setAttribute('data-motogp-gap-trends','');style.textContent=styleText;
@@ -875,10 +880,18 @@
       }
       return out;
     };
+    // If the card was already connected before the async extension installed,
+    // start the clock on its next render as well.
+    const render=Timing.prototype._render;
+    Timing.prototype._render=function() {
+      render.call(this);
+      if(this.isConnected)ensureAgeTimer(this);
+      refreshAge(this);
+    };
     const on=Timing.prototype.connectedCallback,off=Timing.prototype.disconnectedCallback;
     Timing.prototype.connectedCallback=function() {
       on.call(this);
-      if(!this._motogpAgeTimer)this._motogpAgeTimer=setInterval(()=>refreshAge(this),1000);
+      ensureAgeTimer(this);
       refreshAge(this);
     };
     Timing.prototype.disconnectedCallback=function() {

@@ -12,7 +12,7 @@ custom_components/motogp_sensor/
     ha-motogp-card.js       # Legacy preview card (opt-in only)
 ```
 
-The Next file is byte-identical to `dist/ha-motogp-next.js` (frontend `0.3.0-dev.6`).
+The Next file is byte-identical to `dist/ha-motogp-next.js` (frontend `0.3.0-dev.7`).
 The legacy file is byte-identical to `frontend/ha-motogp-card.js`.
 `tests/test_frontend_package.py` enforces these contracts in CI.
 
@@ -50,13 +50,17 @@ but should not be added unless that original custom card is actually used.
 
 HACS updates the JS **files** along with the integration on future beta/main releases.
 Browsers still need a query-string version bump when bundled JavaScript changes.
-The browser freshness badge issue (showing `Uppdateringstid okänd` despite valid
-`live_poll_at`) is independently tracked; this packaging change does not claim to fix it.
+The freshness badge previously rendered a placeholder and depended on a timer
+which might not have started on a pre-connected card. The bundled Next
+`0.3.0-dev.7` renders a green/amber/red/unknown label from `live_poll_at`
+**immediately**, and starts/restarts the clock on a subsequent connected render.
+The new `tests/frontend-live-freshness.cjs` covers these states plus the
+spoiler guard and timer cleanup.
 
 ## Release boundary
 
 - **dev:** new, safe read-only package candidate; CI checks Python registration and both bundled JS.
-- **beta:** still `2026.10.0b5` until a separate controlled promotion.
+- **beta:** stays `2026.10.0b5` until the full frontend + backend CI gates pass.
 - **main:** unchanged.
 - `/config/motogp_data/` and integration entity IDs are untouched.
 

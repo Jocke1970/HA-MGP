@@ -8,7 +8,7 @@ EXPECTED = {
     'ha-motogp-next-card.js': '260b536a2d57456d2f5aa21e414422e610738dcd',
     'ha-motogp-next-split.js': '71ec9b66918ad5786d0de95c6b32be413e0a08d3',
     'ha-motogp-next-split-enhancements.js': '346df5046cc9301e426650cb36cb32449883414c',
-    'ha-motogp-next-gap-trends.js': '4a6390fab18c4ddbff4e0f58daf39199e1f3a5a5',
+    'ha-motogp-next-gap-trends.js': 'd522624e0eb4ae87315232894d1566bb10e348f3',
 }
 BUILD = 'next-one-20260920-03'
 DISPLAY_VERSION = '0.3.0-dev.3'

@@ -25,23 +25,39 @@ def check_bundle_integrity() -> None:
     assert manifest["version"] == "2026.11.0b1"
     assert {"http", "frontend"}.issubset(manifest["dependencies"])
 
+    # Beta is intentionally a minimal HACS tree (without frontend/ or dist/).
+    # Lock bundled bytes to reviewed Git blobs in both dev and beta.
     pairs = {
-        "ha-motogp-next.js": "dist/ha-motogp-next.js",
-        "ha-motogp-card.js": "frontend/ha-motogp-card.js",
+        "ha-motogp-next.js": (
+            "dist/ha-motogp-next.js",
+            "ca30bf00cd3245730983b8491637a868979f1fc3",
+        ),
+        "ha-motogp-card.js": (
+            "frontend/ha-motogp-card.js",
+            "fef8e3e4f09d30f01385d6e8417e96ae923cb65d",
+        ),
     }
-    for filename, source in pairs.items():
+    for filename, (source, pinned_blob) in pairs.items():
         actual = (ASSETS / filename).read_bytes()
-        expected = (ROOT / source).read_bytes()
-        assert actual == expected, f"Bundled {filename} drifted from {source}"
+        assert git_blob_sha(actual) == pinned_blob, (
+            f"Bundled {filename} does not match its reviewed Git blob"
+        )
+        source_path = ROOT / source
+        if source_path.exists():  # dev has original sources; beta does not.
+            assert actual == source_path.read_bytes(), (
+                f"Bundled {filename} drifted from {source}"
+            )
         assert len(actual) > 1000
         print(f"Bundled {filename}: {len(actual)} bytes, Git blob {git_blob_sha(actual)}")
 
     next_js = (ASSETS / "ha-motogp-next.js").read_text(encoding="utf-8")
     assert "ha-motogp-next-overview-card" in next_js
     assert "ha-motogp-next-timing-card" in next_js
-    assert "0.3.0-dev.6" in next_js
+    assert "0.3.0-dev.7" in next_js
     assert "hass.callService(" not in next_js
     assert "window.location" not in next_js
+    assert "const health=feedHealth(age,expected)" in next_js
+    assert "if(this.isConnected)ensureAgeTimer(this)" in next_js
 
     setup = (PKG / "__init__.py").read_text(encoding="utf-8")
     assert "async def async_setup(" in setup
