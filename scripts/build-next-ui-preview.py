@@ -7,13 +7,13 @@ import pathlib
 import sys
 import tempfile
 
-UI_BLOB = 'e1379c9499bda77ff05d440213ef2a48ca99c422'
+UI_BLOB = 'b40e5065cc3bc9de4c11eefd56d977849a3a428e'
 QUAL_BLOB = '3cd24780166dcc578624221769a8a459c7b62819'
-HEADER_BLOB = '2b4fcda6fe5abc54a0d929d0eeb54d20e3d718a5'
+HEADER_BLOB = 'f44ccca7e396dcb80154b90e96ff95ba8f596582'
 HISTORY_BLOB = '8b7038e64df05cb7ffbc1e6059a966c867733fac'
 MOBILE_BLOB = '9fad86bfd7fdc2e461371efb458b17f6029df794'
-BUILD = 'next-one-20261107-17'
-VERSION = '0.3.0-dev.23'
+BUILD = 'next-one-20261107-18'
+VERSION = '0.3.0-dev.24'
 
 
 def blob(data):
