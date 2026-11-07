@@ -12,7 +12,7 @@ custom_components/motogp_sensor/
     ha-motogp-card.js       # Legacy preview card (opt-in only)
 ```
 
-The Next file is byte-identical to `dist/ha-motogp-next.js` (frontend `0.3.0-dev.8`).
+The Next file is byte-identical to `dist/ha-motogp-next.js` (frontend `0.3.0-dev.9`).
 The legacy file is byte-identical to `frontend/ha-motogp-card.js`.
 `tests/test_frontend_package.py` enforces these contracts in CI.
 
@@ -52,7 +52,7 @@ HACS updates the JS **files** along with the integration on future beta/main rel
 Do not append query-string version parameters to bundled JS resources. The stable resource URL remains unchanged across HACS upgrades. Reload the dashboard with Ctrl+Shift+R after updating the integration.
 The freshness badge previously rendered a placeholder and depended on a timer
 which might not have started on a pre-connected card. The bundled Next
-`0.3.0-dev.8` renders a green/amber/red/unknown label from `live_poll_at`
+`0.3.0-dev.9` renders a green/amber/red/unknown label from `live_poll_at`
 **immediately**, and starts/restarts the clock on a subsequent connected render.
 The new `tests/frontend-live-freshness.cjs` covers these states plus the
 spoiler guard and timer cleanup.
@@ -69,7 +69,7 @@ TV-delay controls.
 
 ## Next mobile timing and rider lap history (dev candidate)
 
-Next `0.3.0-dev.8` uses a card-width container query: below 620px the table fits four
+Next `0.3.0-dev.9` uses a card-width container query: below 620px the table fits four
 essential cells (position, rider, lap count, latest lap) without horizontal scrolling.
 On desktop the original seven-column display is unchanged.
 
@@ -87,3 +87,26 @@ is cleared on session changes or spoiler activation.
 This is a `dev`-only candidate; HACS `2026.11.0b1` is unchanged. The next
 beta should validate mobile widths ~320–430px and both popup behavior and
 backend authorization on the user's HA before any `main` promotion.
+
+## Qualifying, schedule and championship standings (dev candidate)
+
+The Overview displays a **Visa VM-ställning** button by the event header. The full
+points tables are hidden until pressed. MotoGP, Moto2 and Moto3 each have
+their own classification fetched using their own season-category UUID. If one
+API returns no data, that class correctly shows an unavailable message; no
+MotoGP points are relabeled as another class. The legacy MotoGP standings
+sensor retains its original values, with a new `standings_by_category` attribute.
+
+During a verified live session, **Helgens schema** is collapsed and exposes
+**Visa schema / Dölj schema**. Outside live sessions the complete weekend
+schedule is shown as before. The button does not issue HA service calls.
+
+The Timing card displays a qualifying side panel for Q1/Q2. When the event's
+published grid is valid, it says **Publicerad startgrid**. Otherwise it labels
+the current observed live order as **Kvalordning · preliminär**, explicitly
+not claiming this is a confirmed grid. The panel is shown alongside timing
+on wide cards and below the table on narrower displays. It is hidden in
+spoiler mode and outside a matching LIVE qualifying session.
+
+Dev UI is `0.3.0-dev.9`; the next HACS candidate remains
+`2026.11.0b2` on dev. No new beta or main release was triggered.

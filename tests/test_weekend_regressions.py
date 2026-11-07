@@ -161,6 +161,18 @@ def check_live_poll_freshness_contract() -> None:
     )
 
 
+def check_category_scoped_standings() -> None:
+    coordinator = (INTEGRATION / "coordinator.py").read_text(encoding="utf-8")
+    sensor = (INTEGRATION / "sensor.py").read_text(encoding="utf-8")
+    assert 'by_category[name] = parse_standings(classification)' in coordinator
+    assert 'self.static["rider_standings_by_category"] = by_category' in coordinator
+    assert 'by_category.get("MotoGP", [])' in coordinator
+    assert 'async_get_standings(season_uuid, cat_id)' in coordinator
+    assert '"rider_standings_by_category", {}' in sensor
+    # Never send MotoGP's points as Moto2/Moto3 merely because one API failed.
+    assert 'by_category[name] = []' in coordinator
+
+
 def check_beta_version() -> None:
     manifest = json.loads((INTEGRATION / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["domain"] == "motogp_sensor"
@@ -173,5 +185,6 @@ if __name__ == "__main__":
     check_broadcast_url_template_contract()
     check_near_session_standby_polling()
     check_live_poll_freshness_contract()
+    check_category_scoped_standings()
     check_beta_version()
     print("Weekend regressions OK: R/D polling, Mandalika timezone, tiered session-start polling, poll freshness metadata, broadcast URL template, 2026.11.0b2")

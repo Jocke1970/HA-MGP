@@ -632,6 +632,9 @@ def _static_attributes(key: str, coordinator: MotogpCoordinator) -> dict[str, An
             attrs["year"] = season.get("year")
     elif key == SENSOR_RIDER_STANDINGS:
         attrs["standings"] = static.get("rider_standings", [])
+        attrs["standings_by_category"] = static.get(
+            "rider_standings_by_category", {}
+        )
         attrs["count"] = len(static.get("rider_standings", []))
     elif key == SENSOR_CONSTRUCTOR_STANDINGS:
         attrs["standings"] = static.get("constructor_standings", [])

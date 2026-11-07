@@ -6,10 +6,11 @@ import pathlib
 import sys
 import tempfile
 
-UI_BLOB = 'c5c24ffb612ac6ffa52e877975f4fb44ae5f7610'
+UI_BLOB = '457d48f41d5eccbed0247d4e890a1c75204f0e4c'
+QUAL_BLOB = 'e2162b6eac043522038af4f5febc75c72dda372f'
 MOBILE_BLOB = '9fad86bfd7fdc2e461371efb458b17f6029df794'
-BUILD = 'next-one-20261107-02'
-VERSION = '0.3.0-dev.8'
+BUILD = 'next-one-20261107-03'
+VERSION = '0.3.0-dev.9'
 
 
 def blob(data):
@@ -40,6 +41,12 @@ def main(frontend, target):
     mobile_bytes = mobile.read_bytes()
     if blob(mobile_bytes) != MOBILE_BLOB:
         raise SystemExit('STOP: unexpected mobile popup source revision')
+    qual = frontend / 'ha-motogp-next-qual-grid.js'
+    if not qual.is_file() or qual.is_symlink():
+        raise SystemExit('STOP: missing/unsafe qualifying grid addon')
+    qual_bytes = qual.read_bytes()
+    if blob(qual_bytes) != QUAL_BLOB:
+        raise SystemExit('STOP: unexpected qualifying grid source revision')
     with tempfile.TemporaryDirectory() as temp:
         base = pathlib.Path(temp) / 'base.js'
         module.build(frontend, base)
@@ -52,7 +59,7 @@ def main(frontend, target):
     text = replace_one(text, '🏁 MOTOGP NEXT · 0.3.0-dev.3', '🏁 MOTOGP NEXT · ' + VERSION)
     text = replace_one(text, 'ha-motogp-next.js · 0.3.0-dev.3 · samlad testversion',
                        'ha-motogp-next.js · ' + VERSION + ' · UI-preview')
-    result = (text + '\n;\n' + ui.decode('utf-8') + '\n;\n' + mobile_bytes.decode('utf-8')).encode('utf-8')
+    result = (text + '\n;\n' + ui.decode('utf-8') + '\n;\n' + mobile_bytes.decode('utf-8') + '\n;\n' + qual_bytes.decode('utf-8')).encode('utf-8')
     pathlib.Path(target).write_bytes(result)
     print(f'UI preview built: {target} ({len(result)} bytes, git blob {blob(result)})')
 

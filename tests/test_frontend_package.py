@@ -30,7 +30,7 @@ def check_bundle_integrity() -> None:
     pairs = {
         "ha-motogp-next.js": (
             "dist/ha-motogp-next.js",
-            "f806f06f51e6d15d23d0cb0ec5dbabf2029f4d26",
+            "ce5694c27c333d38ded1c0aa7affb078e3be444e",
         ),
         "ha-motogp-card.js": (
             "frontend/ha-motogp-card.js",
@@ -53,7 +53,11 @@ def check_bundle_integrity() -> None:
     next_js = (ASSETS / "ha-motogp-next.js").read_text(encoding="utf-8")
     assert "ha-motogp-next-overview-card" in next_js
     assert "ha-motogp-next-timing-card" in next_js
-    assert "0.3.0-dev.8" in next_js
+    assert "0.3.0-dev.9" in next_js
+    assert "qual-grid-20261107-01" in next_js
+    assert "data-motogp-standings-toggle" in next_js
+    assert "standings_by_category" in next_js
+    assert "data-motogp-schedule-toggle" in next_js
     assert "motogp_sensor/rider_laps" in next_js
     assert "@container (max-width:620px)" in next_js
     assert "data-motogp-rider-id" in next_js

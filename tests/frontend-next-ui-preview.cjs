@@ -8,6 +8,7 @@ class Base {
   constructor(){this._today='2026-09-20';this._live={name:'Race',category:'MotoGP'};this._snapshot={day:this._today,name:'Race',category:'MotoGP',riders:[]};this._ids={race:'race'};this._hass={states:{}};this.view={innerHTML:''};this.shadowRoot={querySelector:()=>null,appendChild(){},getElementById:()=>this.view};this.hidden=false;this._filter='Total';}
   _spoiler(){return this.hidden;}
   _click(){this.legacyClicked=true;}
+  _schedule(){return '<section class="panel"><div>FULL WEEKEND SCHEDULE</div></section>';}
   _render(){this.view.innerHTML='<div class="root">OVERVIEW<div class="foot">old footer</div></div>';}
   _timing(){
     if(this.hidden)return 'HIDDEN';
@@ -33,7 +34,14 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   const race={state:'GP',attributes:{start_grids:{MotoGP:[{position:8,number:93,rider:'TEST',team:'TEAM'},
     {position:1,number:1,rider:'A',team:'B'}]},sessions_all:[{category:'MotoGP',name:'Race',type:'RAC',
     date:'2026-09-20T14:00:00+00:00',status:'NOT-STARTED'}]}};
-  const standing={attributes:{standings:[{position:1,rider:'STANDINGS',points:250}]}};
+  const standing={attributes:{
+    standings:[{position:1,rider:'STANDINGS',points:250}],
+    standings_by_category:{
+      MotoGP:[{position:1,rider:'STANDINGS',points:250}],
+      Moto2:[{position:1,rider:'MOTO2 CHAMPION',points:205}],
+      Moto3:[{position:1,rider:'MOTO3 CHAMPION',points:190}]
+    }
+  }};
   const timing=new Timing();timing._snapshot.riders=[r];timing._hass.states={race};
   let h=timing._timing();
   assert.match(h,/SENASTE VARV/);assert.match(h,/FRAMFÖR/);assert.match(h,/LEDARE/);
@@ -50,14 +58,29 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   const overview=new Overview();overview._hass.states={race,'sensor.motogp_rider_standings':standing};overview._live=null;
   overview._render();h=overview.view.innerHTML;
   assert.match(h,/Startgrid · MotoGP Race/);assert.match(h,/P8 · #93/);
-  assert.match(h,/VM-ställning/);assert.match(h,/Moto3 · Moto2 · MotoGP/);
-  assert.match(h,/STANDINGS/);
+  assert.match(h,/Visa VM-ställning/);
+  assert.doesNotMatch(h,/STANDINGS/,'standings must be collapsed by default');
+  overview._click({target:{closest:sel=>sel==='[data-motogp-standings-toggle]'?{}:null}});
+  assert.match(overview.view.innerHTML,/Moto3 · Moto2 · MotoGP/);
+  assert.match(overview.view.innerHTML,/STANDINGS/);
   overview._click({target:{closest:sel=>sel==='[data-motogp-standing]'?{getAttribute:()=> 'Moto2'}:null}});
-  assert.match(overview.view.innerHTML,/Moto2: inväntar verifierad klassvis data/);
+  assert.match(overview.view.innerHTML,/MOTO2 CHAMPION/);
   assert.doesNotMatch(overview.view.innerHTML,/STANDINGS/,'never relabel MotoGP as Moto2');
+  overview._click({target:{closest:sel=>sel==='[data-motogp-standing]'?{getAttribute:()=> 'Moto3'}:null}});
+  assert.match(overview.view.innerHTML,/MOTO3 CHAMPION/);
+  assert.doesNotMatch(overview.view.innerHTML,/MOTO2 CHAMPION/,'class switch must not bleed scores');
+  overview._standingOpen=false;
+  overview._live={category:'MotoGP',name:'Q2'};
+  assert.match(overview._schedule(race,new Clock()),/Visa schema/);
+  assert.doesNotMatch(overview._schedule(race,new Clock()),/FULL WEEKEND SCHEDULE/);
+  overview._click({target:{closest:sel=>sel==='[data-motogp-schedule-toggle]'?{}:null}});
+  assert.match(overview._schedule(race,new Clock()),/Dölj schema[\s\S]*FULL WEEKEND SCHEDULE/);
+  overview._scheduleOpen=false;
+  overview._live=null;
+  assert.match(overview._schedule(race,new Clock()),/FULL WEEKEND SCHEDULE/);
   now=Date.parse('2026-09-20T13:43:00+02:00');overview._render();
   assert.doesNotMatch(overview.view.innerHTML,/Startgrid · MotoGP Race/,'17 min before start');
   now=Date.parse('2026-09-20T13:46:00+02:00');overview.hidden=true;overview._render();
   assert.doesNotMatch(overview.view.innerHTML,/Startgrid|VM-ställning/,'no spoiler bypass');
-  console.log('PASS: timer icon, two-line laps, race-only progression, ambiguity, T-15 grid, standing tabs and spoiler');
+  console.log('PASS: timer icon, two-line laps, class-scoped standings, top toggle, live schedule collapsing, grid and spoiler');
 })().catch(e=>{console.error(e);process.exitCode=1;});

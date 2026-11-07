@@ -27,6 +27,7 @@ jobs:
           node --check frontend/ha-motogp-next-split-enhancements.js
           node --check frontend/ha-motogp-next-gap-trends.js
           node --check frontend/ha-motogp-next-mobile-laps.js
+          node --check frontend/ha-motogp-next-qual-grid.js
       - name: Build ONE distributable Next resource (pinned source and syntax)
         run: |
           python3 scripts/build-next-one.py frontend /tmp/ha-motogp-next.js
@@ -36,7 +37,7 @@ jobs:
           python3 tests/test_frontend_package.py
           node --check custom_components/motogp_sensor/www/ha-motogp-next.js
           node --check custom_components/motogp_sensor/www/ha-motogp-card.js
-          # Exact parity to the reviewed dev.8 dist is asserted by the Python package test.
+          # Exact parity to the reviewed dev.9 dist is asserted by the Python package test.
           # The historical frontend-next-one.cjs regression intentionally targets dev.3.
       - name: Reproduce and regress live-feed badge refresh
         env:
@@ -47,6 +48,14 @@ jobs:
           TZ: Europe/Stockholm
         run: |
           node tests/frontend-mobile-laps.cjs custom_components/motogp_sensor/www/ha-motogp-next.js
+      - name: Live qualifying grid and no-spoiler regression
+        env:
+          TZ: Europe/Stockholm
+        run: node tests/frontend-next-qual-grid.cjs frontend/ha-motogp-next-qual-grid.js
+      - name: Revised overview UI and independent Moto2/3 standings
+        env:
+          TZ: Europe/Stockholm
+        run: node tests/frontend-next-ui-preview.cjs frontend/ha-motogp-next-ui-preview.js
       - name: Original frontend smoke tests
         env:
           TZ: Europe/Stockholm

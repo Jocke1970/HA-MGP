@@ -4,7 +4,7 @@
   const OVERVIEW='ha-motogp-next-overview-card';
   const TIMING='ha-motogp-next-timing-card';
   const REQUIRED='0.2.0-split.2';
-  const BUILD='ui-preview-20260920-01';
+  const BUILD='ui-preview-20261107-02';
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const valid=v=>v!==null&&v!==undefined&&!['','unknown','unavailable','none','null','hidden'].includes(String(v).trim().toLowerCase());
   const cat=v=>{const m=/moto\s*(gp|2|3|e)/i.exec(String(v||''));return m?({gp:'MotoGP','2':'Moto2','3':'Moto3',e:'MotoE'})[m[1].toLowerCase()]:String(v||'');};
@@ -38,6 +38,13 @@
     .np-standings th,.np-standings td{padding:8px 13px;border-top:1px solid var(--divider-color,#ddd);text-align:left}
     .np-standings td:last-child,.np-standings th:last-child{text-align:right}
     .np-empty{padding:13px;color:var(--secondary-text-color);font-size:12px}
+    .np-top-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+    .np-show-button{display:inline-flex;align-items:center;justify-content:center;gap:6px;
+      padding:7px 12px;border:1px solid var(--divider-color,#ddd);border-radius:18px;
+      font:inherit;font-size:12px;font-weight:800;cursor:pointer;background:transparent;color:inherit}
+    .np-show-button[aria-expanded=true]{border-color:var(--primary-color,#039be5);
+      background:rgba(0,153,220,.1)}
+    .np-grid.note{grid-template-columns:repeat(2,minmax(0,1fr))}
     @media(max-width:600px){.np-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.np-note{font-size:10px}}
   `;
   function ensureStyle(card) {
@@ -122,9 +129,25 @@
     };
     const oldClick=Overview.prototype._click;
     Overview.prototype._click=function(e) {
-      const tab=e.target?.closest?.('[data-motogp-standing]');
+      const target=e.target;
+      const standings=target?.closest?.('[data-motogp-standings-toggle]');
+      if(standings){this._standingOpen=!this._standingOpen;this._render();return;}
+      const schedule=target?.closest?.('[data-motogp-schedule-toggle]');
+      if(schedule){this._scheduleOpen=!this._scheduleOpen;this._render();return;}
+      const tab=target?.closest?.('[data-motogp-standing]');
       if(tab){this._standingTab=tab.getAttribute('data-motogp-standing');this._render();return;}
       return oldClick.call(this,e);
+    };
+    const oldSchedule=Overview.prototype._schedule;
+    Overview.prototype._schedule=function(race,now) {
+      const html=oldSchedule.call(this,race,now);
+      if(!this._live||this._spoiler())return html;
+      const open=this._scheduleOpen===true;
+      const control='<section class="panel" aria-label="Helgens schema">'+
+        '<div class="np-heading"><span>🗓️ Helgens schema</span>'+
+        '<button type="button" class="np-show-button" data-motogp-schedule-toggle '+
+        'aria-expanded="'+open+'">'+(open?'Dölj schema':'Visa schema')+'</button></div></section>';
+      return open?control+html:control;
     };
     function gridHtml(card,now) {
       if(card._spoiler())return '';
@@ -167,22 +190,37 @@
       const head=`<section class="np-card" aria-label="VM-ställning"><div class="np-heading">`+
         `<span>🏆 VM-ställning</span><span class="np-note">Moto3 · Moto2 · MotoGP</span></div>`+
         `<div class="np-tabs" role="tablist" aria-label="VM-klass">${buttons}</div>`;
-      if(live)return head+'<div class="np-empty">VM-ställningen döljs under livepass för att undvika förtida resultat.</div></section>';
-      if(tab!=='MotoGP')return head+`<div class="np-empty">${esc(tab)}: inväntar verifierad klassvis data från backend.</div></section>`;
-      const rows=state?.attributes?.standings;
-      if(!Array.isArray(rows)||!rows.length)return head+'<div class="np-empty">MotoGP: inga verifierade VM-data tillgängliga.</div></section>';
+      // Use only the matching class from its own API category. The legacy
+      // MotoGP key is a fallback for older backend versions, never for Moto2/3.
+      const classes=state?.attributes?.standings_by_category;
+      const rows=classes&&Object.prototype.hasOwnProperty.call(classes,tab)?
+        classes[tab]:tab==='MotoGP'?state?.attributes?.standings:null;
+      if(!Array.isArray(rows)||!rows.length)return head+`<div class="np-empty">${esc(tab)}: inväntar verifierad klassvis data från backend.</div></section>`;
+      const note='<p class="np-note" style="padding:3px 13px 10px">Senast publicerad VM-ställning – uppdateras separat från livetiming.</p>';
       return head+'<table class="np-standings"><thead><tr><th>Pos</th><th>Förare</th><th>Poäng</th></tr></thead><tbody>'+
         rows.slice(0,10).map(r=>`<tr><td>${esc(r.position??'—')}</td><td>${esc(r.rider||'—')}</td>`+
-          `<td>${esc(r.points??'—')}</td></tr>`).join('')+'</tbody></table></section>';
+          `<td>${esc(r.points??'—')}</td></tr>`).join('')+'</tbody></table>'+note+'</section>';
     }
     const oldRender=Overview.prototype._render;
     Overview.prototype._render=function() {
       oldRender.call(this);ensureStyle(this);
       if(!this._hass)return;
       const view=this.shadowRoot?.getElementById('app');if(!view)return;
-      const insert=gridHtml(this,new Date())+standingsHtml(this);
       const marker='<div class="foot">';
-      view.innerHTML=view.innerHTML.includes(marker)?view.innerHTML.replace(marker,insert+marker):view.innerHTML+insert;
+      const content=gridHtml(this,new Date());
+      view.innerHTML=view.innerHTML.includes(marker)?view.innerHTML.replace(marker,content+marker):view.innerHTML+content;
+      if(this._spoiler())return;
+      const open=this._standingOpen===true;
+      const button='<div class="np-top-actions"><button type="button" class="np-show-button" '+
+        'data-motogp-standings-toggle aria-expanded="'+open+'">'+
+        '🏆 '+(open?'Dölj VM-ställning':'Visa VM-ställning')+'</button></div>';
+      // The button lives at the event header, before the schedule. The standings
+      // are on-demand and no longer push live timing below the fold.
+      view.innerHTML=view.innerHTML.replace('</section>',button+'</section>');
+      if(open){
+        const standings=standingsHtml(this);
+        view.innerHTML=view.innerHTML.replace('</section>', '</section>'+standings);
+      }
     };
     Timing.prototype._motogpUiPreview=BUILD;
     Overview.prototype._motogpUiPreview=BUILD;
