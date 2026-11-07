@@ -110,6 +110,7 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "calendar": [],
             "next_event": None,
             "rider_standings": [],
+            "rider_standings_by_category": {},
             "constructor_standings": [],
             "last_race_results": [],
             "start_grids": {},
@@ -880,20 +881,37 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             self.static["weekend_sessions_all"] = all_sessions
             self.static["schedule_categories"] = ordered_categories
 
-        if category_uuid:
-            # Standings (rider + aggregated constructor)
+        # Keep every championship classification bound to the exact category
+        # returned by the official seasons/categories API. Never relabel MotoGP
+        # standings as Moto2 or Moto3 if another endpoint fails.
+        by_category: dict[str, list[dict[str, Any]]] = {}
+        for standing_category in categories:
+            if not isinstance(standing_category, dict):
+                continue
+            name = self._grid_records_category_name(standing_category.get("name"))
+            cat_id = standing_category.get("id")
+            if name not in ("MotoGP", "Moto2", "Moto3") or not cat_id:
+                continue
             try:
-                standings = await self.api.async_get_standings(season_uuid, category_uuid)
-                rider_standings = parse_standings(standings.get("classification", []))
-            except MotogpApiError as err:
-                _LOGGER.debug("Rider standings failed: %s", err)
-                rider_standings = []
-            self.static["rider_standings"] = rider_standings
-            self.static["constructor_standings"] = aggregate_constructor_standings(
-                rider_standings
-            )
+                payload = await self.api.async_get_standings(season_uuid, cat_id)
+                classification = payload.get("classification", [])
+                if not isinstance(classification, list):
+                    raise ValueError("Unexpected standings classification type")
+                by_category[name] = parse_standings(classification)
+            except (MotogpApiError, ValueError, TypeError) as err:
+                _LOGGER.debug("%s rider standings failed: %s", name, err)
+                by_category[name] = []
+        self.static["rider_standings_by_category"] = by_category
+        # Backward compatible sensor semantics: MotoGP's own leaderboard
+        # and constructor standings remain the legacy entity values.
+        rider_standings = by_category.get("MotoGP", [])
+        self.static["rider_standings"] = rider_standings
+        self.static["constructor_standings"] = aggregate_constructor_standings(
+            rider_standings
+        )
 
-            # Last race results + track weather for the relevant events
+        if category_uuid:
+            # Last race results + track weather use the MotoGP category.
             await self._async_refresh_event_details(events, category_uuid, now)
 
     async def _async_refresh_event_details(

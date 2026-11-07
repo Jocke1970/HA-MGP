@@ -1,18 +1,26 @@
-# MotoGP project status — 2026-11-07
+# MotoGP status — 2026-11-07
 
 ## Release track
-- `dev`: backend + bundled Next UI candidate tested; source JS `0.3.0-dev.7`.
-- `beta`: `2026.11.0b1` HACS prerelease; pending on-host acceptance.
+
+- `dev`: latest candidate `2026.11.0b2`, Next `0.3.0-dev.9`, including corrected WebSocket import.
+- `beta`: `2026.11.0b2` HACS prerelease, pending on-host acceptance.
 - `main`: unchanged.
-- Strict `dev → beta → main`. Never install dev.
 
-## Fixes included
-The b5 backend already exposes successful poll timestamps on `sensor.motogp_rider_positions`. Today's real FP2 exposed a separate frontend problem: “Uppdateringstid okänd” persisted despite a valid timestamp and 5-second poll interval. The JS had hard-coded the unknown label at render time, relying on a clock to update later. Next dev.7 fixes this by calculating status during the render and recovering its timer when the timing card is already connected.
+## Features in this beta
 
-The integration now includes read-only JS resources under `custom_components/motogp_sensor/www/`, served as `/motogp_sensor/ha-motogp-next.js` and `/motogp_sensor/ha-motogp-card.js` with `web_assets.py`. It does not change existing Lovelace resources; the resource URL must be edited explicitly to avoid duplicate registration.
+1. Mobile (<620px) condensed four-column timing, desktop unmodified.
+2. Rider-row popups with only observed archive laps, PB/difference, explicit holes and no invented times.
+3. Authenticated WebSocket history endpoint restricted to the currently exposed TV-delayed session and guarded by no-spoiler both before and after loading.
+4. Moto3/Moto2/MotoGP distinct standings via the official category UUIDs, with legacy MotoGP entity kept compatible.
+5. A top **Visa VM-ställning** control, LIVE **Visa schema**, and qualifying grid companion labelled as either published grid or provisional order.
+6. HACS-served Next JS uses the clean URL `/motogp_sensor/ha-motogp-next.js` **without `?v=`**.
 
-## Verification
-The verified JS is byte-for-byte identical to reviewed `dev` dist blob `ca30bf00cd3245730983b8491637a868979f1fc3`. A separate lifecycle test checks immediately fresh/delayed/missing indicators, adaptive intervals, invalid timestamps, preconnected-card recovery, spoiler mode and cleanup. Frontend and Next regressions passed on dev. Beta workflow reruns backend/archive tests, JS syntax, package integrity and lifecycle checks before publishing a prerelease.
+## Safety and validation
+
+The b2 pre-release review found and fixed a startup-blocking typo: `import probatio` instead of Home Assistant's `import voluptuous`. CI now has explicit guards against that regression. Three dev workflow families passed; beta publishing independently runs weekend/archive regression, WebSocket projection/security tests, frontend lifecycle/mobile regression and HACS integrity checks.
+
+No automatic resource registration, no direct HA service calls from frontend, no generated lap times, no new config entries, and no changes to `main`.
 
 ## On-host acceptance
-After HACS beta and HA restart, verify the bundled URL resolves, edit the **existing** Next resource to `/motogp_sensor/ha-motogp-next.js`, reload the browser without any `?v=` suffix, then confirm UI `0.3.0-dev.7` and the freshness badge. Preserve the old `/config/www` JS and `/config/motogp_data` for rollback. Do not promote `main` from CI alone.
+
+Update via HACS, restart after the current racing session, leave the existing Next JS resource URL unchanged if already using the HACS path. Confirm version `0.3.0-dev.9`, test driver-popup on mobile, class-specific VM standings and qualifying/grid labeling. Preserve `/config/motogp_data/`. Roll back via `2026.11.0b1` without deleting the integration.

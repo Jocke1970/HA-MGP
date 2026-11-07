@@ -1,4 +1,4 @@
-/* MotoGP Next SINGLE Lovelace resource | build next-one-20261107-01 | read only. */
+/* MotoGP Next SINGLE Lovelace resource | build next-one-20261107-03 | read only. */
 /* MotoGP Next: isolated frontend for motogp-test. No HA writes or service calls. */
 (() => {
   'use strict';
@@ -303,9 +303,9 @@
       this._track(now,race);
       const event=valid(race?.state)?race.state:'Inget evenemang tillgängligt';
       const meta=[a.circuit,a.country,a.date_start&&a.date_end?dateRange(a.date_start,a.date_end):''].filter(valid);
-      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 MOTOGP NEXT · 0.3.0-dev.7</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
+      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 MOTOGP NEXT · 0.3.0-dev.9</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
         this._schedule(race,now)+`<div class="root">${this._weather()}${this._timing()}</div>`+
-        `<div class="foot">ha-motogp-next.js · 0.3.0-dev.7 · UI-preview</div></div>`;
+        `<div class="foot">ha-motogp-next.js · 0.3.0-dev.9 · UI-preview</div></div>`;
     }
     getCardSize(){return 8;}
     getGridOptions(){return {columns:12,rows:'auto',min_columns:6};}
@@ -912,7 +912,7 @@
   const OVERVIEW='ha-motogp-next-overview-card';
   const TIMING='ha-motogp-next-timing-card';
   const REQUIRED='0.2.0-split.2';
-  const BUILD='ui-preview-20260920-01';
+  const BUILD='ui-preview-20261107-02';
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const valid=v=>v!==null&&v!==undefined&&!['','unknown','unavailable','none','null','hidden'].includes(String(v).trim().toLowerCase());
   const cat=v=>{const m=/moto\s*(gp|2|3|e)/i.exec(String(v||''));return m?({gp:'MotoGP','2':'Moto2','3':'Moto3',e:'MotoE'})[m[1].toLowerCase()]:String(v||'');};
@@ -946,6 +946,14 @@
     .np-standings th,.np-standings td{padding:8px 13px;border-top:1px solid var(--divider-color,#ddd);text-align:left}
     .np-standings td:last-child,.np-standings th:last-child{text-align:right}
     .np-empty{padding:13px;color:var(--secondary-text-color);font-size:12px}
+    .np-top-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+    .np-hide-row{display:flex;justify-content:flex-end;padding:7px 12px}
+    .np-show-button{display:inline-flex;align-items:center;justify-content:center;gap:6px;
+      padding:7px 12px;border:1px solid var(--divider-color,#ddd);border-radius:18px;
+      font:inherit;font-size:12px;font-weight:800;cursor:pointer;background:transparent;color:inherit}
+    .np-show-button[aria-expanded=true]{border-color:var(--primary-color,#039be5);
+      background:rgba(0,153,220,.1)}
+    .np-grid.note{grid-template-columns:repeat(2,minmax(0,1fr))}
     @media(max-width:600px){.np-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.np-note{font-size:10px}}
   `;
   function ensureStyle(card) {
@@ -1030,9 +1038,29 @@
     };
     const oldClick=Overview.prototype._click;
     Overview.prototype._click=function(e) {
-      const tab=e.target?.closest?.('[data-motogp-standing]');
+      const target=e.target;
+      const standings=target?.closest?.('[data-motogp-standings-toggle]');
+      if(standings){this._standingOpen=!this._standingOpen;this._render();return;}
+      const schedule=target?.closest?.('[data-motogp-schedule-toggle]');
+      if(schedule){this._scheduleOpen=!this._scheduleOpen;this._render();return;}
+      const tab=target?.closest?.('[data-motogp-standing]');
       if(tab){this._standingTab=tab.getAttribute('data-motogp-standing');this._render();return;}
       return oldClick.call(this,e);
+    };
+    const oldSchedule=Overview.prototype._schedule;
+    Overview.prototype._schedule=function(race,now) {
+      const html=oldSchedule.call(this,race,now);
+      if(!this._live||this._spoiler())return html;
+      const open=this._scheduleOpen===true;
+      const control='<section class="panel" aria-label="Helgens schema">'+
+        '<div class="np-heading"><span>🗓️ Helgens schema</span>'+
+        '<button type="button" class="np-show-button" data-motogp-schedule-toggle '+
+        'aria-expanded="'+open+'">'+(open?'Dölj schema':'Visa schema')+'</button></div></section>';
+      if(!open)return control;
+      const header='<section class="panel">';
+      const close='<div class="np-hide-row"><button type="button" class="np-show-button" '+
+        'data-motogp-schedule-toggle aria-expanded="true">Dölj schema</button></div>';
+      return html.includes(header)?html.replace(header,header+close):control+html;
     };
     function gridHtml(card,now) {
       if(card._spoiler())return '';
@@ -1075,26 +1103,299 @@
       const head=`<section class="np-card" aria-label="VM-ställning"><div class="np-heading">`+
         `<span>🏆 VM-ställning</span><span class="np-note">Moto3 · Moto2 · MotoGP</span></div>`+
         `<div class="np-tabs" role="tablist" aria-label="VM-klass">${buttons}</div>`;
-      if(live)return head+'<div class="np-empty">VM-ställningen döljs under livepass för att undvika förtida resultat.</div></section>';
-      if(tab!=='MotoGP')return head+`<div class="np-empty">${esc(tab)}: inväntar verifierad klassvis data från backend.</div></section>`;
-      const rows=state?.attributes?.standings;
-      if(!Array.isArray(rows)||!rows.length)return head+'<div class="np-empty">MotoGP: inga verifierade VM-data tillgängliga.</div></section>';
+      // Use only the matching class from its own API category. The legacy
+      // MotoGP key is a fallback for older backend versions, never for Moto2/3.
+      const classes=state?.attributes?.standings_by_category;
+      const rows=classes&&Object.prototype.hasOwnProperty.call(classes,tab)?
+        classes[tab]:tab==='MotoGP'?state?.attributes?.standings:null;
+      if(!Array.isArray(rows)||!rows.length)return head+`<div class="np-empty">${esc(tab)}: inväntar verifierad klassvis data från backend.</div></section>`;
+      const note='<p class="np-note" style="padding:3px 13px 10px">Senast publicerad VM-ställning – uppdateras separat från livetiming.</p>';
       return head+'<table class="np-standings"><thead><tr><th>Pos</th><th>Förare</th><th>Poäng</th></tr></thead><tbody>'+
         rows.slice(0,10).map(r=>`<tr><td>${esc(r.position??'—')}</td><td>${esc(r.rider||'—')}</td>`+
-          `<td>${esc(r.points??'—')}</td></tr>`).join('')+'</tbody></table></section>';
+          `<td>${esc(r.points??'—')}</td></tr>`).join('')+'</tbody></table>'+note+'</section>';
     }
     const oldRender=Overview.prototype._render;
     Overview.prototype._render=function() {
       oldRender.call(this);ensureStyle(this);
       if(!this._hass)return;
       const view=this.shadowRoot?.getElementById('app');if(!view)return;
-      const insert=gridHtml(this,new Date())+standingsHtml(this);
       const marker='<div class="foot">';
-      view.innerHTML=view.innerHTML.includes(marker)?view.innerHTML.replace(marker,insert+marker):view.innerHTML+insert;
+      const content=gridHtml(this,new Date());
+      view.innerHTML=view.innerHTML.includes(marker)?view.innerHTML.replace(marker,content+marker):view.innerHTML+content;
+      if(this._spoiler())return;
+      const open=this._standingOpen===true;
+      const button='<div class="np-top-actions"><button type="button" class="np-show-button" '+
+        'data-motogp-standings-toggle aria-expanded="'+open+'">'+
+        '🏆 '+(open?'Dölj VM-ställning':'Visa VM-ställning')+'</button></div>';
+      // The button lives at the event header, before the schedule. The standings
+      // are on-demand and no longer push live timing below the fold.
+      view.innerHTML=view.innerHTML.replace('</section>',button+'</section>');
+      if(open){
+        const standings=standingsHtml(this);
+        view.innerHTML=view.innerHTML.replace('</section>', '</section>'+standings);
+      }
     };
     Timing.prototype._motogpUiPreview=BUILD;
     Overview.prototype._motogpUiPreview=BUILD;
     console.info(`[MotoGP UI preview] ${BUILD} installed in the existing one-file Next resource`);
   }
   Promise.all([customElements.whenDefined(OVERVIEW),customElements.whenDefined(TIMING)]).then(install);
+})();
+
+;
+/* MotoGP Next responsive timing and authenticated lap-history dialog. */
+(() => {
+'use strict';
+const TAG='ha-motogp-next-timing-card', REQUIRED='0.2.0-split.2';
+const BUILD='mobile-laps-20261107-01';
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const css=`
+  .nt-card{container-type:inline-size}
+  .nt-row[data-motogp-rider-id]{cursor:pointer;touch-action:manipulation}
+  .nt-row[data-motogp-rider-id]:hover{background:rgba(127,127,127,.07)}
+  .nt-row[data-motogp-rider-id]:focus-visible{outline:2px solid var(--primary-color,#03a9f4);outline-offset:-2px}
+  .nt-laps-overlay{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.62);display:flex;
+    align-items:center;justify-content:center;padding:12px;box-sizing:border-box}
+  .nt-laps-dialog{width:min(580px,100%);max-height:min(720px,calc(100dvh - 24px));display:flex;
+    flex-direction:column;border-radius:15px;overflow:hidden;
+    background:var(--ha-card-background,var(--card-background-color,#fff));color:var(--primary-text-color);
+    box-shadow:0 16px 60px rgba(0,0,0,.38)}
+  .nt-laps-head{display:flex;gap:14px;align-items:flex-start;justify-content:space-between;
+    padding:15px;border-bottom:1px solid var(--divider-color,#ddd)}
+  .nt-laps-head strong{font-size:16px}.nt-laps-head small{display:block;margin-top:4px;
+    color:var(--secondary-text-color);font-size:11px}
+  .nt-laps-close{border:1px solid var(--divider-color,#ddd);border-radius:50%;background:transparent;
+    color:inherit;font-size:24px;line-height:1;cursor:pointer;width:36px;height:36px;flex:none}
+  .nt-laps-scroll{overflow-y:auto;overscroll-behavior:contain;padding:0 14px 16px;min-height:0}
+  .nt-laps-message{padding:20px 0;font-size:13px;color:var(--secondary-text-color)}
+  .nt-laps-table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+  .nt-laps-table th,.nt-laps-table td{padding:9px 8px;border-bottom:1px solid var(--divider-color,#ddd)}
+  .nt-laps-table th{text-align:left;color:var(--secondary-text-color);font-size:11px}
+  .nt-laps-table th:nth-child(n+2),.nt-laps-table td:nth-child(n+2){text-align:right}
+  .nt-laps-best{color:#159447;font-weight:900}
+  .nt-laps-note{font-size:12px;margin:12px 0 0;color:var(--secondary-text-color)}
+  @container (max-width:620px){
+    .nt-card .nt-scroll{overflow-x:visible;width:100%}
+    .nt-card .nt-table{min-width:0!important;width:100%!important}
+    .nt-card .nt-row{grid-template-columns:27px minmax(0,1fr) 36px minmax(83px,1.02fr)!important;
+      gap:6px!important;min-height:53px;padding:9px 10px;font-size:11px}
+    .nt-card .nt-row>span:nth-child(n+5){display:none}
+    .nt-card .nt-person{gap:6px}.nt-card .nt-person-text b{font-size:11px}
+    .nt-card .nt-person-text small{display:none}.nt-card .nt-color{height:28px}
+    .nt-card .nt-heading{min-height:30px;font-size:9px;letter-spacing:0}
+    .nt-card .nt-lap-pair>small{font-size:9px;white-space:normal}
+    .nt-card .nt-head{gap:7px;padding:11px 10px;flex-wrap:wrap}
+    .nt-card .nt-label{font-size:14px}.nt-card .nt-clock{font-size:11px}
+    .nt-card .nt-session-record{padding:8px 10px;font-size:11px}
+    .nt-card .nt-feed-age{font-size:10px}
+  }
+`;
+function addStyle(card){
+  const root=card.shadowRoot;
+  if(!root||root.querySelector('[data-motogp-mobile-laps-style]'))return;
+  const element=document.createElement('style');
+  element.setAttribute('data-motogp-mobile-laps-style','');
+  element.textContent=css;root.appendChild(element);
+}
+const key=card=>String(card._activeKey||card._snapshot?.key||'');
+function renderModal(card){
+  const m=card._motogpLapModal;
+  if(!m)return '';
+  const rider=m.rider;
+  const title='<div><strong id="motogp-laps-title">'+esc(rider.surname||rider.shortname||'Förare')+
+    ' · #'+esc(rider.number??'—')+'</strong><small>Observerade varvtider · '+
+    esc(card._snapshot?.category||'')+' '+esc(card._snapshot?.name||'')+'</small></div>';
+  let content='';
+  if(m.state==='loading')content='<div class="nt-laps-message">Läser sparade varvtider…</div>';
+  else if(m.state==='error')content='<div class="nt-laps-message">Varvhistoriken är inte tillgänglig just nu. Försök igen senare.</div>';
+  else{
+    const data=m.data||{},laps=Array.isArray(data.laps)?data.laps:[];
+    const best=Number(data.best_seconds);
+    content=laps.length?'<table class="nt-laps-table"><thead><tr><th>Varv</th><th>Tid</th><th>Mot bästa</th></tr></thead><tbody>'+
+      laps.map(l=>{
+        const seconds=Number(l.seconds),isBest=Number.isFinite(best)&&best>0&&Math.abs(seconds-best)<0.0005;
+        const diff=Number.isFinite(seconds)&&Number.isFinite(best)&&best>0?
+          (isBest?'PB':'+ '+Math.max(0,seconds-best).toFixed(3)+' s'):'—';
+        return '<tr><td>'+esc(l.lap)+'</td><td class="'+(isBest?'nt-laps-best':'')+'">'+esc(l.time)+
+          '</td><td class="'+(isBest?'nt-laps-best':'')+'">'+esc(diff)+'</td></tr>';
+      }).join('')+'</tbody></table>':
+      '<div class="nt-laps-message">Inga registrerade varvtider ännu.</div>';
+    const holes=Array.isArray(data.missing_laps)?data.missing_laps:[];
+    if(holes.length)content+='<p class="nt-laps-note">⚠ Saknade varv: '+holes.map(esc).join(', ')+'. Inga tider uppskattade.</p>';
+    content+='<p class="nt-laps-note">Endast observerade, TV-fördröjda varv från sessionsarkivet.</p>';
+  }
+  return '<div class="nt-laps-overlay" data-motogp-laps-backdrop>'+
+    '<section class="nt-laps-dialog" role="dialog" aria-modal="true" aria-labelledby="motogp-laps-title">'+
+    '<header class="nt-laps-head">'+title+
+    '<button type="button" class="nt-laps-close" data-motogp-laps-close aria-label="Stäng varvtider">×</button></header>'+
+    '<div class="nt-laps-scroll" data-motogp-laps-scroll>'+content+'</div></section></div>';
+}
+function install(){
+  const Timing=customElements.get(TAG);
+  if(Timing?.buildInfo?.version!==REQUIRED){console.error('[MotoGP mobile laps] Wrong card version');return;}
+  if(Timing.prototype._motogpMobileLaps)return;
+  const baseTiming=Timing.prototype._timing;
+  Timing.prototype._timing=function(){
+    const html=baseTiming.call(this);
+    addStyle(this);
+    if(this._spoiler()||!this._snapshot?.riders?.length||this._snapshot.day!==this._today)return html;
+    let index=0;
+    const parts=('\u0000'+html).split(/(?=<div class="nt-row(?: unclassified)?">)/);
+    return parts.map((part,i)=>{
+      if(!i||!part.startsWith('<div class="nt-row'))return part;
+      const r=this._snapshot.riders[index++];
+      const id=String(r?.rider_id||'').trim();
+      if(!id)return part;
+      const name=r?.surname||r?.shortname||'förare';
+      return part.replace(/^(<div class="nt-row(?: unclassified)?")/,
+        '$1 data-motogp-rider-id="'+esc(id)+'" role="button" tabindex="0" aria-haspopup="dialog" '+
+        'aria-label="Visa varvtider för '+esc(name)+'"');
+    }).join('').slice(1);
+  };
+  const baseRender=Timing.prototype._render;
+  Timing.prototype._render=function(){
+    const savedTop=this.shadowRoot?.querySelector('[data-motogp-laps-scroll]')?.scrollTop||0;
+    baseRender.call(this);
+    const m=this._motogpLapModal;
+    if(!m)return;
+    if(this._spoiler()||m.day!==this._today||m.sessionKey!==key(this)||
+        !this._snapshot?.riders?.some(r=>String(r.rider_id||'')===m.riderId)){
+      this._motogpLapModal=null;return;
+    }
+    this.shadowRoot?.getElementById('app')?.insertAdjacentHTML('beforeend',renderModal(this));
+    const list=this.shadowRoot?.querySelector('[data-motogp-laps-scroll]');
+    if(list)list.scrollTop=savedTop;
+  };
+  Timing.prototype._motogpOpenLaps=function(id){
+    if(this._spoiler()||!this._hass||!this._snapshot)return;
+    const rider=this._snapshot.riders?.find(r=>String(r.rider_id||'')===id);
+    if(!rider)return;
+    const sessionKey=key(this);
+    const m={riderId:id,rider,day:this._today,sessionKey,state:'loading',data:null};
+    this._motogpLapModal=m;this._render();
+    this.shadowRoot?.querySelector('[data-motogp-laps-close]')?.focus?.();
+    if(typeof this._hass.callWS!=='function'){m.state='error';this._render();return;}
+    this._hass.callWS({type:'motogp_sensor/rider_laps',rider_id:id})
+      .then(data=>{
+        if(this._motogpLapModal!==m||this._spoiler()||key(this)!==sessionKey)return;
+        m.state='ready';m.data=data;this._render();
+      }).catch(()=>{
+        if(this._motogpLapModal!==m||this._spoiler())return;
+        m.state='error';this._render();
+      });
+  };
+  Timing.prototype._motogpCloseLaps=function(){this._motogpLapModal=null;this._render();};
+  const previousClick=Timing.prototype._click;
+  Timing.prototype._click=function(e){
+    const target=e.target;
+    if(target?.closest?.('[data-motogp-laps-close]')){this._motogpCloseLaps();return;}
+    const overlay=target?.closest?.('[data-motogp-laps-backdrop]');
+    if(overlay&&target===overlay){this._motogpCloseLaps();return;}
+    const row=target?.closest?.('[data-motogp-rider-id]');
+    if(row&&!this._spoiler()){
+      this._motogpOpenLaps(row.getAttribute('data-motogp-rider-id'));return;
+    }
+    return previousClick.call(this,e);
+  };
+  function handleKey(e){
+    if(e.key==='Escape'&&this._motogpLapModal){e.preventDefault();this._motogpCloseLaps();return;}
+    const row=e.target?.closest?.('[data-motogp-rider-id]');
+    if(row&&(e.key==='Enter'||e.key===' ')&&!this._spoiler()){
+      e.preventDefault();this._motogpOpenLaps(row.getAttribute('data-motogp-rider-id'));
+    }
+  }
+  function attach(card){
+    if(card._motogpMobileKeys||!card.shadowRoot)return;
+    card._motogpMobileKeys=handleKey.bind(card);
+    card.shadowRoot.addEventListener('keydown',card._motogpMobileKeys);
+  }
+  const oldConnected=Timing.prototype.connectedCallback;
+  Timing.prototype.connectedCallback=function(){oldConnected.call(this);attach(this);};
+  const oldDisconnected=Timing.prototype.disconnectedCallback;
+  Timing.prototype.disconnectedCallback=function(){
+    if(this._motogpMobileKeys)this.shadowRoot?.removeEventListener('keydown',this._motogpMobileKeys);
+    this._motogpMobileKeys=null;this._motogpLapModal=null;
+    oldDisconnected.call(this);
+  };
+  const withRender=Timing.prototype._render;
+  Timing.prototype._render=function(){withRender.call(this);if(this.isConnected)attach(this);};
+  Timing.prototype._motogpMobileLaps=BUILD;
+}
+customElements.whenDefined(TAG).then(install);
+})();
+
+;
+/* MotoGP Next qualifying start-grid companion, scoped to the timing card. */
+(() => {
+'use strict';
+const TAG='ha-motogp-next-timing-card',REQUIRED='0.2.0-split.2';
+const BUILD='qual-grid-20261107-01';
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const css="\n  .nt-qual-layout{display:grid;grid-template-columns:minmax(0,1fr);min-width:0}\n  .nt-qual-main{min-width:0}\n  .nt-qual-aside{border-top:1px solid var(--divider-color,#ddd);padding:10px;\n    background:var(--ha-card-background,var(--card-background-color,#fff))}\n  .nt-qual-title{font-size:12px;font-weight:900;margin:0 0 7px}\n  .nt-qual-caption{font-size:10px;color:var(--secondary-text-color);margin:0 0 9px}\n  .nt-qual-rows{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:5px}\n  .nt-qual-item{display:flex;align-items:center;gap:7px;padding:6px 7px;border-radius:7px;\n    border:1px solid var(--divider-color,#ddd);min-width:0;font-size:11px}\n  .nt-qual-item b{flex:none;font-variant-numeric:tabular-nums}\n  .nt-qual-item span{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}\n  @container (min-width:940px){\n    .nt-qual-layout{grid-template-columns:minmax(0,1fr) 248px;align-items:start}\n    .nt-qual-aside{border-top:0;border-left:1px solid var(--divider-color,#ddd)}\n    .nt-qual-rows{grid-template-columns:1fr}\n    .nt-qual-main .nt-table{min-width:0!important}\n    .nt-qual-main .nt-row{grid-template-columns:28px minmax(120px,1.4fr) 34px 112px 60px 61px 53px!important;\n      gap:6px!important;padding:8px 7px!important}\n    .nt-qual-main .nt-person-text small{font-size:10px}\n  }";
+const validPosition=v=>Number.isInteger(Number(v))&&Number(v)>0;
+function companion(card){
+  const live=card._live,snapshot=card._snapshot;
+  if(card._spoiler()||!live||!snapshot||snapshot.day!==card._today||
+      !/^Q[12]$/i.test(String(live.name||''))||
+      snapshot.category!==live.category)return '';
+  const race=card._hass?.states?.[card._ids.race],grids=race?.attributes?.start_grids||{};
+  const official=grids[snapshot.category];
+  let entries=[],label='',caption='';
+  if(Array.isArray(official)&&official.length){
+    const rows=official.filter(r=>r&&validPosition(r.position)&&String(r.number??'').trim());
+    const positions=rows.map(r=>Number(r.position));
+    const numbers=rows.map(r=>String(r.number));
+    if(rows.length>=2&&new Set(positions).size===rows.length&&new Set(numbers).size===rows.length){
+      entries=rows.slice().sort((a,b)=>Number(a.position)-Number(b.position))
+        .map(r=>({position:r.position,number:r.number,name:r.rider||'—'}));
+      label='🏁 Publicerad startgrid';
+      caption='Från evenemangets grid-API · inte live-kvalplaceringar';
+    }
+  }
+  if(!entries.length){
+    entries=(snapshot.riders||[]).filter(r=>r&&validPosition(r.position)&&
+      String(r.last_lap_time||'').trim()&&String(r.last_lap_time)!=='—')
+      .slice().sort((a,b)=>Number(a.position)-Number(b.position))
+      .map(r=>({position:r.position,number:r.number,name:r.surname||r.shortname||'—'}));
+    label='⏱ Kvalordning · preliminär';
+    caption='Startgrid fastställs efter kvalet; detta är ännu inte en startgrid';
+  }
+  if(!entries.length)return '<aside class="nt-qual-aside" aria-label="Startgrid">'+
+    '<div class="nt-qual-title">🏁 Startgrid</div>'+
+    '<div class="nt-qual-caption">Inväntar publicerade kvalresultat.</div></aside>';
+  return '<aside class="nt-qual-aside" aria-label="Kval och startgrid">'+
+    '<div class="nt-qual-title">'+esc(label)+'</div><div class="nt-qual-caption">'+
+    esc(caption)+'</div><div class="nt-qual-rows">'+entries.slice(0,32).map(r=>
+      '<div class="nt-qual-item"><b>P'+esc(r.position)+'</b><span>#'+esc(r.number??'—')+
+      ' · '+esc(r.name)+'</span></div>').join('')+'</div></aside>';
+}
+function install(){
+  const Timing=customElements.get(TAG);
+  if(Timing?.buildInfo?.version!==REQUIRED){console.error('[MotoGP qualifying grid] Unexpected timing card');return;}
+  if(Timing.prototype._motogpQualGrid)return;
+  const original=Timing.prototype._timing;
+  Timing.prototype._timing=function(){
+    let html=original.call(this);
+    const aside=companion(this);
+    if(!aside)return html;
+    const marker='<div class="nt-scroll">';
+    const suffix='</div></div></section>';
+    if(!html.includes(marker)||!html.endsWith(suffix))return html;
+    html=html.replace(marker,'<div class="nt-qual-layout"><div class="nt-qual-main">'+marker);
+    return html.slice(0,-suffix.length)+
+      '</div></div></div>'+aside+'</div></section>';
+  };
+  const prior=Timing.prototype._render;
+  Timing.prototype._render=function(){
+    prior.call(this);
+    if(!this.shadowRoot?.querySelector?.('[data-motogp-qual-grid-style]')){
+      const style=document.createElement('style');
+      style.setAttribute('data-motogp-qual-grid-style','');
+      style.textContent=css;
+      this.shadowRoot?.appendChild?.(style);
+    }
+  };
+  Timing.prototype._motogpQualGrid=BUILD;
+}
+customElements.whenDefined(TAG).then(install);
 })();

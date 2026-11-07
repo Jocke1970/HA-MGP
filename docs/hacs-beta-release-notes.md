@@ -1,29 +1,28 @@
-# MotoGP Sensor 2026.11.0b1 — backend + bundled Next UI beta
+# MotoGP Sensor 2026.11.0b2 — mobilvy, varvhistorik och klassvis VM-ställning
 
-Combined HACS prerelease with the unchanged field-tested b5 timing backend and the fixed Next frontend. The integration domain remains `motogp_sensor`.
+**HACS beta / prerelease** med Next UI **0.3.0-dev.9**. Bygger på den live-testade b1-versionen. `main` är oförändrad och installation från `dev` ska inte användas.
 
-## What is new since 2026.10.0b5
+## Nytt sedan 2026.11.0b1
 
-- **Both JS cards ship inside the HACS integration:** `custom_components/motogp_sensor/www/ha-motogp-next.js` and `www/ha-motogp-card.js`. No manual copying to `/config/www`.
-- **Read-only UI resource URLs:** `/motogp_sensor/ha-motogp-next.js` (overview + timing together) and `/motogp_sensor/ha-motogp-card.js` (legacy preview). These paths are served by Home Assistant after the integration loads.
-- **Next frontend 0.3.0-dev.7:** the live-feed freshness chip renders the correct green, amber, red or unknown status immediately on a card render. Previously it could remain on "Uppdateringstid okänd" because it waited for a timer that had not started on a card already connected to the DOM. The next connected render also restores its one-second timer.
-- **Grounded freshness:** the badge uses `sensor.motogp_rider_positions.attributes.live_poll_at` and `live_poll_interval_seconds`, never HA's `last_updated`.
-- **Tests:** package integrity and HTTP path registration, front-end syntax, timing badge first render, late attachment, poll interval, delayed/missing feed, spoiler mode and timer teardown.
+- **Responsiv livetiming:** på kort under cirka 620 px visas de fyra viktigaste kolumnerna – position, förare, varv och senaste varvtid. Desktop behåller full timingtabell.
+- **Tryck på en förare:** en tillgänglig popup med *observerade* varvtider, varvnummer, differens mot förarens bästa observerade tid samt uttryckliga luckor. Inga tider uppskattas eller lagras som nya HA-sensorattribut.
+- **Autentiserad WebSocket-hämtning:** `motogp_sensor/rider_laps` läser enbart den aktuella TV-fördröjda sessionens arkiv. Spoilerläge och sessionsbyte spärrar läsning även när de ändras under en begäran.
+- **VM-ställning:** separata officiella klassificeringar för **MotoGP, Moto2 och Moto3** från var och en av kategoriernas API-ID. En **Visa VM-ställning**-knapp i översikten gör tabellerna frivilliga; om data saknas visas det öppet, aldrig en annan klass poäng.
+- **Schema:** under LIVE visas en knapp för **Visa/Dölj schema**; utan livepass ligger helgens schema kvar i normal vy.
+- **Kval Q1/Q2:** kompletterande panel bredvid timing på bredare kort, nedanför på mobil. En verifierad grid visas som **Publicerad startgrid**; annars visas **Kvalordning · preliminär** utan att påstå att griden är fastställd.
+- **Releasesäkerhet:** rättat ett blockerande importfel för WebSocket-kommandot och lagt in regressionstest så det inte återkommer.
 
-## Unchanged
+## HACS-installation och UI-resurs
 
-- b5 successful live-poll timestamp, R/D and prestart polling, timezone correction, entity names, data source, TV delay and archive structure.
-- `/config/motogp_data` and the existing `/config/www/ha-motogp-next.js` remain untouched.
-- No duplicate Lovelace resource is automatically registered. **Do not add a second URL defining the same custom elements.**
-- Stable `main` is not changed. This is a beta for acceptance testing on HA.
+1. Ta en backup och bevara `/config/motogp_data/` och dina nuvarande dashboardinställningar.
+2. Installera `2026.11.0b2` via HACS/Marketplace, behåll befintlig konfigurationspost och starta om Home Assistant när ett livepass inte pågår.
+3. **Ingen ändring av befintlig Next-resurs behövs** om den redan är `/motogp_sensor/ha-motogp-next.js`. Annars redigera den enda befintliga JavaScript-modulresursen till exakt den URL:en.
+4. **Inga `?v=`-parametrar och inga dubbla Lovelace-resurser.** Ladda om med Ctrl+Shift+R.
+5. Kontrollera på mobil och desktop att UI visar `0.3.0-dev.9`, att kvalpanelen är rätt märkt, att VM-klasserna inte blandas samt att förarpopupen fungerar.
+6. Vid problem: välj HACS `2026.11.0b1`, starta om HA och ladda om dashboarden. Radera inte MotoGP-konfiguration eller sessionsarkiv.
 
-## Installation and controlled UI migration
+## Teststatus och begränsning
 
-1. Back up HA, keeping `/config/motogp_data/` and the existing JS under `/config/www/`.
-2. Upgrade the existing HACS MotoGP integration to prerelease **2026.11.0b1**, keeping the existing config entry; restart Home Assistant.
-3. Confirm that `/motogp_sensor/ha-motogp-next.js` returns JavaScript through your HA address.
-4. Go to **Settings → Dashboards → Resources**. **Edit the existing** JavaScript-module resource `/local/ha-motogp-next.js` to `/motogp_sensor/ha-motogp-next.js`. Do not create a second Next resource or add a version query parameter.
-5. Reload the dashboard with `Ctrl+Shift+R`; confirm UI `0.3.0-dev.7`, preserved overview/timing, and a meaningful freshness indicator during a live session.
-6. Roll back the UI by restoring the old resource URL; roll back the backend by selecting HACS prerelease `2026.10.0b5` and restarting HA.
+Dev-kontrollerna (frontend, Next, weekend/backend) var gröna före release. Beta-arbetsflödet kompilerar integrationskoden, testar arkiv och WebSocket, granskar HACS-paketets filintegritet, kontrollerar JS-syntax och kör popup/freshness-regression innan prerelease-taggen skapas. Verifierad CI är **inte** samma sak som installationstest i din HA.
 
-The bundled legacy JS card is optional and should not be added unless actually needed. A green CI run is not a substitute for an on-host HACS/HA smoke test.
+Live-API:ets publiceringstid kan påverka om officiell grid eller klassvis VM-ställning ännu är tillgänglig; då använder vi explicita mellanlägen. Spoiler- och TV-delay-skyddet gäller oförändrat.
