@@ -7,6 +7,7 @@ unit-tested against real API payloads.
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
+import re
 from typing import Any
 
 from .const import SESSION_STATUS_MAP
@@ -162,8 +163,24 @@ def events_to_calendar(events: list[dict[str, Any]]) -> list[dict[str, str]]:
     return entries
 
 
+_HEX_COLOR_RE = re.compile(r"#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?\Z")
+
+
+def _verified_team_color(value: Any) -> str:
+    """Only allow CSS-safe explicit colors from the provider, never guesses."""
+    if not isinstance(value, str):
+        return ""
+    candidate = value.strip()
+    return candidate if _HEX_COLOR_RE.fullmatch(candidate) else ""
+
+
+def _standings_team_key(value: Any) -> str:
+    """Match an exact case/spacing normalized team name within one category."""
+    return " ".join(str(value or "").casefold().split())
+
+
 def parse_standings(classification: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Normalize championship standings entries."""
+    """Normalize championship standings, preserving rider number and team."""
     result: list[dict[str, Any]] = []
     for entry in classification:
         if not isinstance(entry, dict):
@@ -173,8 +190,15 @@ def parse_standings(classification: list[dict[str, Any]]) -> list[dict[str, Any]
         result.append(
             {
                 "position": entry.get("position"),
+                "number": rider.get("number") if rider.get("number") is not None
+                    else entry.get("number"),
                 "rider": rider.get("full_name") or "",
-                "team": team.get("name") or "",
+                "rider_api_uuid": rider.get("riders_api_uuid")
+                    or rider.get("rider_api_uuid") or "",
+                "team": team.get("name") or entry.get("team_name") or "",
+                "team_color": _verified_team_color(
+                    team.get("color") or entry.get("team_color")
+                ),
                 "constructor": _dict_get(entry.get("constructor")).get("name") or "",
                 "points": entry.get("points"),
                 "wins": entry.get("race_wins"),
@@ -182,6 +206,53 @@ def parse_standings(classification: list[dict[str, Any]]) -> list[dict[str, Any]
             }
         )
     return result
+
+
+def add_official_standings_colors(
+    standings: list[dict[str, Any]], teams: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    """Join broadcast team colors to standings within one verified class.
+
+    Results and Broadcast API team IDs can differ. Match exact normalized team
+    names or rider API UUID only when that rider belongs to the same named team;
+    ambiguous/conflicting colors are deliberately left blank.
+    """
+    names: dict[str, set[str]] = {}
+    riders: dict[str, set[tuple[str, str]]] = {}
+    for item in teams:
+        if not isinstance(item, dict):
+            continue
+        color = _verified_team_color(item.get("color"))
+        name = _standings_team_key(item.get("name"))
+        if not name or not color:
+            continue
+        names.setdefault(name, set()).add(color)
+        members = item.get("riders")
+        if not isinstance(members, list):
+            continue
+        for member in members:
+            if not isinstance(member, dict) or not member.get("id"):
+                continue
+            key = str(member["id"]).strip().casefold()
+            riders.setdefault(key, set()).add((name, color))
+    enriched: list[dict[str, Any]] = []
+    for row in standings:
+        updated = dict(row)
+        if not _verified_team_color(updated.get("team_color")):
+            team = _standings_team_key(updated.get("team"))
+            rider_key = str(updated.get("rider_api_uuid") or "").strip().casefold()
+            matches = riders.get(rider_key, set()) if rider_key else set()
+            by_rider = {color for name, color in matches if name == team}
+            by_team = names.get(team, set())
+            # An ambiguous team or rider mapping must not invent a color.
+            if len(by_rider) == 1 and len(by_team) == 1 and by_rider == by_team:
+                updated["team_color"] = next(iter(by_rider))
+            elif len(by_team) == 1:
+                updated["team_color"] = next(iter(by_team))
+            else:
+                updated["team_color"] = ""
+        enriched.append(updated)
+    return enriched
 
 
 def parse_classification(classification: list[dict[str, Any]]) -> list[dict[str, Any]]:

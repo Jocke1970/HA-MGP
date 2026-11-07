@@ -36,7 +36,7 @@ jobs:
           node tests/frontend-mobile-laps.cjs /tmp/ha-motogp-next.js
           node tests/frontend-next-qual-grid.cjs frontend/ha-motogp-next-qual-grid.js
           node tests/frontend-next-ui-preview.cjs frontend/ha-motogp-next-ui-preview.js
-          sed -e 's/dev\\.3/dev\\.9/g' -e 's/samlad testversion/UI-preview/g' tests/frontend-next-one.cjs > /tmp/frontend-next-preview.cjs
+          sed -e 's/dev\\.3/dev\\.10/g' -e 's/samlad testversion/UI-preview/g' tests/frontend-next-one.cjs > /tmp/frontend-next-preview.cjs
           node /tmp/frontend-next-preview.cjs /tmp/ha-motogp-next.js
       - name: Installer syntax, verified dev.5 upgrade, repeatability and tamper rejection
         run: |

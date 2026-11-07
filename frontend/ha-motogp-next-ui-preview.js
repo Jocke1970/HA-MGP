@@ -4,12 +4,18 @@
   const OVERVIEW='ha-motogp-next-overview-card';
   const TIMING='ha-motogp-next-timing-card';
   const REQUIRED='0.2.0-split.2';
-  const BUILD='ui-preview-20261107-02';
+  const BUILD='ui-preview-20261107-03';
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const valid=v=>v!==null&&v!==undefined&&!['','unknown','unavailable','none','null','hidden'].includes(String(v).trim().toLowerCase());
   const cat=v=>{const m=/moto\s*(gp|2|3|e)/i.exec(String(v||''));return m?({gp:'MotoGP','2':'Moto2','3':'Moto3',e:'MotoE'})[m[1].toLowerCase()]:String(v||'');};
   const session=v=>({RAC:'Race',SPR:'Sprint'})[String(v||'').toUpperCase()]||String(v||'');
   const number=v=>/^#?\d+$/.test(String(v??'').trim())?String(Number(String(v).replace('#',''))):'';
+  // Use only colors explicitly supplied by the provider; neutral fallback.
+  const teamColor=v=>{
+    const c=String(v??'').trim();
+    return /^#[0-9a-f]{3}(?:[0-9a-f]{3})?$/i.test(c)?
+      c:'var(--divider-color,#b4b4b4)';
+  };
   const lap=v=>valid(v)&&!/^0+(?:[.:']0+)?$/.test(String(v).trim())?String(v):'—';
   const style=`
     .nt-live-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#e10600;margin-right:9px;box-shadow:0 0 0 3px rgba(225,6,0,.13)}
@@ -37,6 +43,13 @@
     .np-standings{width:100%;border-collapse:collapse;font-size:12px}
     .np-standings th,.np-standings td{padding:8px 13px;border-top:1px solid var(--divider-color,#ddd);text-align:left}
     .np-standings td:last-child,.np-standings th:last-child{text-align:right}
+    .np-standing-num{width:64px;white-space:nowrap;text-align:center!important;font-weight:850}
+    .np-standing-person{display:flex;align-items:center;gap:10px;min-width:0}
+    .np-standing-color{display:inline-block;flex:none;width:4px;height:33px;border-radius:3px;background:var(--divider-color,#b4b4b4)}
+    .np-standing-driver{min-width:0;display:flex;flex-direction:column;gap:3px}
+    .np-standing-driver strong{font-size:12px;line-height:1.2;overflow-wrap:anywhere}
+    .np-standing-driver small{font-size:10px;color:var(--secondary-text-color);line-height:1.3;overflow-wrap:anywhere}
+    .np-standing-points{font-variant-numeric:tabular-nums;font-weight:850}
     .np-empty{padding:13px;color:var(--secondary-text-color);font-size:12px}
     .np-top-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
     .np-hide-row{display:flex;justify-content:flex-end;padding:7px 12px}
@@ -46,7 +59,12 @@
     .np-show-button[aria-expanded=true]{border-color:var(--primary-color,#039be5);
       background:rgba(0,153,220,.1)}
     .np-grid.note{grid-template-columns:repeat(2,minmax(0,1fr))}
-    @media(max-width:600px){.np-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.np-note{font-size:10px}}
+    @media(max-width:600px){.np-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.np-note{font-size:10px}
+      .np-standings th,.np-standings td{padding:8px 7px}
+      .np-standing-num{width:44px}
+      .np-standing-person{gap:6px}
+      .np-standing-driver strong{font-size:11px}
+      .np-standing-driver small{font-size:9px}}
   `;
   function ensureStyle(card) {
     if(!card.shadowRoot||card.shadowRoot.querySelector('[data-motogp-ui-preview]'))return;
@@ -202,9 +220,14 @@
         classes[tab]:tab==='MotoGP'?state?.attributes?.standings:null;
       if(!Array.isArray(rows)||!rows.length)return head+`<div class="np-empty">${esc(tab)}: inväntar verifierad klassvis data från backend.</div></section>`;
       const note='<p class="np-note" style="padding:3px 13px 10px">Senast publicerad VM-ställning – uppdateras separat från livetiming.</p>';
-      return head+'<table class="np-standings"><thead><tr><th>Pos</th><th>Förare</th><th>Poäng</th></tr></thead><tbody>'+
-        rows.slice(0,10).map(r=>`<tr><td>${esc(r.position??'—')}</td><td>${esc(r.rider||'—')}</td>`+
-          `<td>${esc(r.points??'—')}</td></tr>`).join('')+'</tbody></table>'+note+'</section>';
+      return head+'<table class="np-standings"><thead><tr><th>Pos</th><th class="np-standing-num">Nr</th>'+
+        '<th>Förare / team</th><th>Poäng</th></tr></thead><tbody>'+
+        rows.slice(0,10).map(r=>
+          `<tr><td>${esc(r.position??'—')}</td><td class="np-standing-num">${r.number===null||r.number===undefined||r.number===''?'—':'#'+esc(r.number)}</td>`+
+          `<td><div class="np-standing-person"><span class="np-standing-color" style="background:${teamColor(r.team_color)}"></span>`+
+          `<span class="np-standing-driver"><strong>${esc(r.rider||'—')}</strong><small>${esc(r.team||'Team saknas')}</small></span></div></td>`+
+          `<td class="np-standing-points">${esc(r.points??'—')}</td></tr>`
+        ).join('')+'</tbody></table>'+note+'</section>';
     }
     const oldRender=Overview.prototype._render;
     Overview.prototype._render=function() {

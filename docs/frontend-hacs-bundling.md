@@ -1,4 +1,4 @@
-# HACS-bundled MotoGP dashboard cards — dev candidate 2026.11.0b2
+# HACS-bundled MotoGP dashboard cards — dev candidate 2026.11.0b3
 
 The MotoGP integration ships its two **ready-to-load** JS resources inside the same HACS package:
 
@@ -12,7 +12,7 @@ custom_components/motogp_sensor/
     ha-motogp-card.js       # Legacy preview card (opt-in only)
 ```
 
-The Next file is byte-identical to `dist/ha-motogp-next.js` (frontend `0.3.0-dev.9`).
+The Next file is byte-identical to `dist/ha-motogp-next.js` (frontend `0.3.0-dev.10`).
 The legacy file is byte-identical to `frontend/ha-motogp-card.js`.
 `tests/test_frontend_package.py` enforces these contracts in CI.
 
@@ -52,7 +52,7 @@ HACS updates the JS **files** along with the integration on future beta/main rel
 Do not append query-string version parameters to bundled JS resources. The stable resource URL remains unchanged across HACS upgrades. Reload the dashboard with Ctrl+Shift+R after updating the integration.
 The freshness badge previously rendered a placeholder and depended on a timer
 which might not have started on a pre-connected card. The bundled Next
-`0.3.0-dev.9` renders a green/amber/red/unknown label from `live_poll_at`
+`0.3.0-dev.10` renders a green/amber/red/unknown label from `live_poll_at`
 **immediately**, and starts/restarts the clock on a subsequent connected render.
 The new `tests/frontend-live-freshness.cjs` covers these states plus the
 spoiler guard and timer cleanup.
@@ -69,7 +69,7 @@ TV-delay controls.
 
 ## Next mobile timing and rider lap history (dev candidate)
 
-Next `0.3.0-dev.9` uses a card-width container query: below 620px the table fits four
+Next `0.3.0-dev.10` uses a card-width container query: below 620px the table fits four
 essential cells (position, rider, lap count, latest lap) without horizontal scrolling.
 On desktop the original seven-column display is unchanged.
 
@@ -108,5 +108,28 @@ not claiming this is a confirmed grid. The panel is shown alongside timing
 on wide cards and below the table on narrower displays. It is hidden in
 spoiler mode and outside a matching LIVE qualifying session.
 
-Dev UI is `0.3.0-dev.9`; the next HACS candidate remains
-`2026.11.0b2` on dev. No new beta or main release was triggered.
+Dev UI is `0.3.0-dev.10`; the next HACS candidate remains
+`2026.11.0b3` on dev. No new beta or main release was triggered.
+
+## Championship standings presentation (dev b3 candidate)
+
+The rider standings now display **Position | No. | Rider / team | Points**.
+Each driver name has the officially reported team below it and an unobtrusive
+team-color stripe, matching the live timing visual language. A missing or
+unverified provider color intentionally uses a neutral stripe; colors are never
+guessed from constructor or team-name substrings.
+
+Backend continues to fetch MotoGP/Moto2/Moto3 rankings independently. It now
+preserves `rider.number` and existing `team.name` from Results standings.
+A best-effort six-hour static refresh resolves Broadcast season categories
+and team colors via `/categories?seasonYear=YYYY` and
+`/teams?categoryUuid=<broadcast_uuid>&seasonYear=YYYY`. The Results and
+Broadcast category UUID namespaces differ. Joining is **class-scoped**, based
+on the exact normalized team name and, where available, broadcast rider UUID.
+Invalid/ambiguous color metadata produces neutral fallback; API errors never
+interrupt live timing or standings.
+
+Offline regressions cover rider numbers, team names, all three category
+mappings, valid/malicious colors and ambiguous metadata.
+`2026.11.0b2` is the last public HACS beta; the next target is
+`2026.11.0b3` with Next `0.3.0-dev.10` after acceptance.
