@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
-const code=fs.readFileSync(process.argv[2]||'frontend/ha-motogp-next-qual-grid.js','utf8');
+const code=fs.readFileSync(process.argv[2]||'frontend/ha-mgp-qual-grid.js','utf8');
 let styles=0;
 const rider=(position,number,surname,time="1'50.000",team='Verified Racing')=>
   ({position,number,surname,last_lap_time:time,team,color:'#AA1144'});

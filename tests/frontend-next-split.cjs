@@ -26,10 +26,10 @@ const ctx = {Date: Clock, HTMLElement: Element, window: {customCards: []}, conso
   customElements: {get: name => registry.get(name), define: (name, klass) => {
     assert.ok(!registry.has(name), `Duplicate element: ${name}`);registry.set(name, klass);
   }, whenDefined: name => Promise.resolve(registry.get(name))}};
-vm.runInNewContext(read('frontend/ha-motogp-next-card.js'), ctx);
+vm.runInNewContext(read('frontend/ha-mgp-core.js'), ctx);
 const Base = registry.get('ha-motogp-next-card');
 assert.equal(Base.buildInfo.version, '0.2.0-dev.4');
-const split = read('frontend/ha-motogp-next-split.js');
+const split = read('frontend/ha-mgp-split.js');
 vm.runInNewContext(split, ctx);
 vm.runInNewContext(split, ctx);
 assert.equal(registry.get('ha-motogp-card'), OldMobile);

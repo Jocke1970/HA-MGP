@@ -4,7 +4,7 @@ Timing.buildInfo={version:'0.2.0-split.2'};
 const context={console,Date,Map,customElements:{get:()=>Timing,whenDefined:()=>Promise.resolve()},document:{createElement:()=>({setAttribute(){},textContent:''})}};
 const row=(p,last,prev,first)=>`<div class="nt-row"><span>${p}</span><span class="nt-person"><span class="nt-person-text"><b>Name</b><small>Team</small></span></span><span>7</span><span>${last}</span><span>${prev}</span><span>${first}</span><span>CL</span></div>`;
 (async()=>{
-vm.runInNewContext(fs.readFileSync(require('node:path').join(__dirname,'../frontend/ha-motogp-next-gap-trends.js'),'utf8'),context);await new Promise(resolve=>setImmediate(resolve));
+vm.runInNewContext(fs.readFileSync(require('node:path').join(__dirname,'../frontend/ha-mgp-gap-trends.js'),'utf8'),context);await new Promise(resolve=>setImmediate(resolve));
 const t=new Timing();const styles=[];t.shadowRoot={querySelector:()=>styles[0]||null,appendChild:x=>styles.push(x)};
 t._spoiler=()=>false;t._today='2026-09-19';t._event='San Marino';t._ids={riders:'positions'};
 t._hass={states:{positions:{attributes:{session_fastest_lap:"1'28.634",event:'San Marino'}}}};

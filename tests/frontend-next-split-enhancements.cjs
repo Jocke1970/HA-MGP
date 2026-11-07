@@ -2,7 +2,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
-const code=fs.readFileSync(path.join(__dirname,'../frontend/ha-motogp-next-split-enhancements.js'),'utf8');
+const code=fs.readFileSync(path.join(__dirname,'../frontend/ha-mgp-split-enhancements.js'),'utf8');
 class Overview { _schedule(){ return this.mockHTML; } }
 class Timing { _timing(){ return this.mockHTML; } }
 Overview.buildInfo={version:'0.2.0-split.2'};

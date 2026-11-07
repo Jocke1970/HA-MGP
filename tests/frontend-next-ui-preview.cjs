@@ -27,7 +27,7 @@ registry.set('ha-motogp-next-overview-card',Overview);registry.set('ha-motogp-ne
 const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},textContent:''})},
   customElements:{get:name=>registry.get(name),whenDefined:name=>Promise.resolve(registry.get(name))}};
 (async()=>{
-  vm.runInNewContext(fs.readFileSync(process.argv[2]||'/mnt/data/ha-motogp-next-ui-preview.js','utf8'),ctx);
+  vm.runInNewContext(fs.readFileSync(process.argv[2]||'/mnt/data/ha-mgp-ui.js','utf8'),ctx);
   for(let i=0;i<4;i++)await Promise.resolve();
   const r={position:3,number:93,surname:'TEST',team:'TEAM',num_lap:12,
     last_lap_time:"1'30.450",best_lap_time:"1'29.980",status_name:'RUNNING'};
@@ -104,7 +104,7 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   assert.doesNotMatch(overview.view.innerHTML,/position:fixed/);
   assert.match(overview.view.innerHTML,/background:var\(--divider-color,#b4b4b4\)/);
   // A narrow card hides the visual comparison while keeping data visible.
-  const source=fs.readFileSync(process.argv[2]||'/mnt/data/ha-motogp-next-ui-preview.js','utf8');
+  const source=fs.readFileSync(process.argv[2]||'/mnt/data/ha-mgp-ui.js','utf8');
   assert.match(source,/@container \(max-width:760px\)/);
   assert.match(source,/@container \(max-width:430px\)/);
   assert.match(source,/np-standing-visual\{display:none\}/);
