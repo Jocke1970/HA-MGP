@@ -17,6 +17,7 @@ on:
       - 'scripts/build-next-ui-preview.py'
       - 'tests/frontend-next-one.cjs'
       - 'tests/frontend-next-ui-preview.cjs'
+      - 'tests/test_frontend_package.py'
       - 'tests/frontend-mobile-laps.cjs'
       - 'tests/frontend-next-qual-grid.cjs'
       - 'tests/frontend-next-header-track.cjs'
