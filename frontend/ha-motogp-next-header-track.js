@@ -135,7 +135,7 @@ function install(){
       '<h2><span class="mgp-country-flag" role="img" aria-label="Flagga: '+esc(country)+'">'+flag+'</span>'):rawHeader;
     if(originalHeader.includes('data-mgp-venue-header'))return;
     // This reflects the active single-JS UI build, not the separately updated backend.
-    const uiVersion=(rawHeader.match(/MOTOGP NEXT\\s*·\\s*([^<]+)/i)||[])[1]?.trim()||
+    const uiVersion=(rawHeader.match(/MOTOGP NEXT\s*·\s*([^<]+)/i)||[])[1]?.trim()||
       Overview.buildInfo?.version||'okänd';
     const uiDetails='<details class="mgp-ui-details"><summary>UI-information</summary>'+
       '<div>Frontend: '+esc(uiVersion)+' · Bas-kort: '+esc(Overview.buildInfo?.version||'okänd')+
