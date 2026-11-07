@@ -52,6 +52,7 @@ from .helpers import (
     parse_classification,
     parse_live_timing,
     parse_standings,
+    add_official_standings_colors,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -901,6 +902,35 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             except (MotogpApiError, ValueError, TypeError) as err:
                 _LOGGER.debug("%s rider standings failed: %s", name, err)
                 by_category[name] = []
+        # Broadcast team colors are metadata, not race results. The Broadcast
+        # API uses DIFFERENT category UUIDs from Results: resolve by season year
+        # and category name before joining, never pass a results category ID.
+        season_year = season.get("year") if isinstance(season, dict) else None
+        if isinstance(season_year, int) and 1900 <= season_year <= 2100:
+            try:
+                broadcast_categories = await self.api.async_get_broadcast_categories(
+                    season_year
+                )
+            except (MotogpApiError, ValueError, TypeError) as err:
+                _LOGGER.debug("Broadcast team colors unavailable: %s", err)
+            else:
+                verified_categories: dict[str, str] = {}
+                for cat in broadcast_categories:
+                    name = self._grid_records_category_name(cat.get("name"))
+                    category_id = cat.get("id")
+                    if name in by_category and category_id:
+                        verified_categories[name] = str(category_id)
+                for name, category_id in verified_categories.items():
+                    try:
+                        teams = await self.api.async_get_broadcast_teams(
+                            category_id, season_year
+                        )
+                    except (MotogpApiError, ValueError, TypeError) as err:
+                        _LOGGER.debug("%s team colors unavailable: %s", name, err)
+                        continue
+                    by_category[name] = add_official_standings_colors(
+                        by_category[name], teams
+                    )
         self.static["rider_standings_by_category"] = by_category
         # Backward compatible sensor semantics: MotoGP's own leaderboard
         # and constructor standings remain the legacy entity values.

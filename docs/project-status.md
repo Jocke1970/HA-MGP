@@ -1,26 +1,17 @@
-# MotoGP status — 2026-11-07
+# MotoGP project status — 2026-11-07
 
-## Release track
-
-- `dev`: latest candidate `2026.11.0b2`, Next `0.3.0-dev.9`, including corrected WebSocket import.
-- `beta`: `2026.11.0b2` HACS prerelease, pending on-host acceptance.
+- `dev`: 2026.11.0b3, Next `0.3.0-dev.10`, four independent CI workflows passed.
+- `beta`: prerelease 2026.11.0b3, pending on-host acceptance.
 - `main`: unchanged.
 
-## Features in this beta
+## Added in b3
 
-1. Mobile (<620px) condensed four-column timing, desktop unmodified.
-2. Rider-row popups with only observed archive laps, PB/difference, explicit holes and no invented times.
-3. Authenticated WebSocket history endpoint restricted to the currently exposed TV-delayed session and guarded by no-spoiler both before and after loading.
-4. Moto3/Moto2/MotoGP distinct standings via the official category UUIDs, with legacy MotoGP entity kept compatible.
-5. A top **Visa VM-ställning** control, LIVE **Visa schema**, and qualifying grid companion labelled as either published grid or provisional order.
-6. HACS-served Next JS uses the clean URL `/motogp_sensor/ha-motogp-next.js` **without `?v=`**.
+Rider championship standings for MotoGP, Moto2 and Moto3 now display rider number, team and a verified provider-supplied team-color marker. The Results API provides rider/team data, while Broadcast API teams/colors are resolved by *broadcast* season/category UUID, not Results category UUID. Ambiguous or unavailable colors are neutral rather than guessed. The older MotoGP standings sensor retains its identity and all legacy data.
 
-## Safety and validation
+Added regression tests for category-scoped color matching, correct rider numbers, CSS-safe colors, mobile UI, missing data and exact JS package parity. Staged Next build is dev.10, backend b3.
 
-The b2 pre-release review found and fixed a startup-blocking typo: `import probatio` instead of Home Assistant's `import voluptuous`. CI now has explicit guards against that regression. Three dev workflow families passed; beta publishing independently runs weekend/archive regression, WebSocket projection/security tests, frontend lifecycle/mobile regression and HACS integrity checks.
+## Safety / UX
 
-No automatic resource registration, no direct HA service calls from frontend, no generated lap times, no new config entries, and no changes to `main`.
+No new frontend resource or URL query version; clean path: `/motogp_sensor/ha-motogp-next.js`. No HA restart or HACS updates during a live sprint. The approved MGP brand icon is prepared separately but remains uncommitted; it does not block timing/standings improvements.
 
-## On-host acceptance
-
-Update via HACS, restart after the current racing session, leave the existing Next JS resource URL unchanged if already using the HACS path. Confirm version `0.3.0-dev.9`, test driver-popup on mobile, class-specific VM standings and qualifying/grid labeling. Preserve `/config/motogp_data/`. Roll back via `2026.11.0b1` without deleting the integration.
+Next: controlled HACS beta installation *after* sprint and manual verification before any promotion to main.

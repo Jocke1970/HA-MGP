@@ -1,17 +1,15 @@
 # ha-motogp — HACS beta
 
-Home Assistant companion/derived integration based on [Liionboy/motogp_sensor](https://github.com/Liionboy/motogp_sensor). Not affiliated with MotoGP or rights holders.
+Independent Home Assistant companion/derived integration based on [Liionboy/motogp_sensor](https://github.com/Liionboy/motogp_sensor). Not affiliated with MotoGP or its rights holders.
 
-**Current beta:** `2026.11.0b2` (Next UI `0.3.0-dev.9`). SOP: `dev → beta → main`; `main` remains unchanged.
+**Current HACS beta: `2026.11.0b3`**, with Next UI **`0.3.0-dev.10`**. SOP: `dev → beta → main`. The stable `main` branch remains unchanged.
 
-## MotoGP Next
+## Championship standings (new in b3)
 
-The integration's Next JavaScript is HACS-managed under `custom_components/motogp_sensor/www/ha-motogp-next.js` and served at the stable URL `/motogp_sensor/ha-motogp-next.js`. No manual JS copying, query-string `?v=` suffixes or duplicate Lovelace resources. See [install / rollback](docs/hacs-beta-installation.md).
+The top **Visa VM-ställning** control expands class-specific MotoGP/Moto2/Moto3 tables showing **position, #number, rider, team and points**, with a verified team-color accent whenever official team metadata supplies a unique match. Without authoritative color data the accent is neutral; no values are guessed. All existing timing and archive functionality remains.
 
-New in b2: responsive mobile timing; per-rider authenticated, spoiler-safe on-demand observed-lap popup; class-specific MotoGP/Moto2/Moto3 championship standings behind a top toggle; collapsible LIVE weekend schedule; and a qualifying sidecar distinguishing published grid from provisional order.
+The integration includes Next and legacy JS under `custom_components/motogp_sensor/www/`. The clean, stable Lovelace URL is `/motogp_sensor/ha-motogp-next.js`; **never append `?v=`** or register a duplicate resource.
 
-The b1 live-feed freshness fix, Red Flag polling, TV delay, schedule timezone correction and session archives remain. Archival files remain under `/config/motogp_data/`.
+The mobile timing view, rider-lap popup, separate standings categories, qualifying grid/provisional order and collapsed live schedule from b2 are preserved. See [installation/rollback](docs/hacs-beta-installation.md) and [release notes](docs/hacs-beta-release-notes.md).
 
-The beta requires on-host acceptance before considering `main`. Never install directly from `dev`.
-
-See [release notes](docs/hacs-beta-release-notes.md).
+The previously approved MGP brand icon is still a separate asset and **not included in b3**. On-host acceptance is required before any `main` release. Never install code directly from `dev`.

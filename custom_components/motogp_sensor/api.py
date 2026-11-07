@@ -18,6 +18,8 @@ from .const import (
     OFFICIAL_LIVE_TIMING_URL,
     PULSELIVE_BASE_URL,
     PULSELIVE_BROADCAST_EVENT_URL,
+    PULSELIVE_BROADCAST_CATEGORIES_URL,
+    PULSELIVE_BROADCAST_TEAMS_URL,
     PULSELIVE_CATEGORIES_URL,
     PULSELIVE_EVENTS_URL,
     PULSELIVE_EVENT_GRID_URL,
@@ -94,6 +96,29 @@ class MotogpApiClient:
         if not isinstance(data, dict):
             raise MotogpApiError("Unexpected response shape from broadcast event endpoint")
         return data
+
+    async def async_get_broadcast_categories(
+        self, season_year: int
+    ) -> list[dict[str, Any]]:
+        """Return broadcast category IDs (not Results API category UUIDs)."""
+        data = await self._request(
+            f"{PULSELIVE_BROADCAST_CATEGORIES_URL}?seasonYear={season_year}"
+        )
+        if not isinstance(data, list):
+            raise MotogpApiError("Unexpected broadcast categories response")
+        return [x for x in data if isinstance(x, dict)]
+
+    async def async_get_broadcast_teams(
+        self, category_uuid: str, season_year: int
+    ) -> list[dict[str, Any]]:
+        """Return official broadcast teams/colors for a verified season/class."""
+        data = await self._request(
+            f"{PULSELIVE_BROADCAST_TEAMS_URL}?categoryUuid={category_uuid}"
+            f"&seasonYear={season_year}"
+        )
+        if not isinstance(data, list):
+            raise MotogpApiError("Unexpected broadcast teams response")
+        return [x for x in data if isinstance(x, dict)]
 
     async def async_get_sessions(
         self, event_uuid: str, category_uuid: str
