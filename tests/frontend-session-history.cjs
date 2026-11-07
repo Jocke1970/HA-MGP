@@ -16,8 +16,13 @@ class Overview{
       ]
     }}},callWS:args=>{latestRequest=args;return new Promise(resolve=>{pending=resolve;});}};
     this.view={innerHTML:'',insertAdjacentHTML:(_where,html)=>{this.view.innerHTML+=html;}};
-    this.shadowRoot={querySelector:()=>null,appendChild:()=>styleCount++,getElementById:id=>id==='app'?this.view:null,
-      addEventListener(){},removeEventListener(){}};
+    this.styles=[];
+    this.shadowRoot={
+      querySelector:selector=>selector==='[data-motogp-history-style]'?this.styles[0]||null:null,
+      appendChild:node=>{this.styles.push(node);styleCount++;},
+      getElementById:id=>id==='app'?this.view:null,
+      addEventListener(){},removeEventListener(){}
+    };
   }
   _spoiler(){return this.hidden;}
   _schedule(){return '<section class="panel"><div class="tiles">'+
