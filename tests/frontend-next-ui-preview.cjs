@@ -102,6 +102,9 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   assert.match(source,/@container \(max-width:760px\)/);
   assert.match(source,/@container \(max-width:430px\)/);
   assert.match(source,/np-standing-visual\{display:none\}/);
+  assert.match(source,/np-standing-track\{height:9px;width:100%;box-sizing:border-box/);
+  assert.match(source,/border:1px solid var\(--divider-color,rgba\(127,127,127,\.24\)\)/);
+  assert.match(source,/overflow:hidden\}/,'thin outlined bar clips team fill');
   assert.match(source,/table-layout:fixed/);
   overview._standingOpen=false;
   overview._live={category:'MotoGP',name:'Q2'};

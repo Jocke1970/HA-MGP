@@ -2,11 +2,11 @@
 
 Home Assistant MotoGP Sensor fork. Independent project derived from [Liionboy/motogp_sensor](https://github.com/Liionboy/motogp_sensor); no affiliation with MotoGP.
 
-**Latest HACS prerelease: `2026.11.0b9` · Next `0.3.0-dev.16`.** SOP: **dev → beta → main**. Stable main is unchanged.
+**Latest HACS prerelease: `2026.11.0b10` · Next `0.3.0-dev.21`.** SOP: **dev → beta → main**. Stable main is unchanged.
 
 ## Next UI
 
-- **White event hero:** Grand Prix details and VM toggle left, real reported track weather center, locally bundled schematic circuit layout far right. On narrow cards everything remains inside the same white header.
+- **Branding och UI-info:** Godkänd MGP-logga i toppkortet, landflagga vid GP-namnet och hopfällbar UI-information.\n- **White event hero:** Grand Prix details and VM toggle left, real reported track weather center, locally bundled schematic circuit layout far right. On narrow cards everything remains inside the same white header.
 - **Timing:** latest lap with PB highlight and each rider's fastest verified lap immediately below, across training, Q1/Q2, Sprint and Race. Clickable rider lap archive retained.
 - **Qualifying:** 3–3–3 staggered provisional versus published grid, with Q1 non-transferees from P13 (MotoGP) / P19 (Moto2, Moto3).
 - **Championship and freshness:** full category standings, points bars, team accents, live feed age, spoiler protections.
@@ -15,4 +15,4 @@ Home Assistant MotoGP Sensor fork. Independent project derived from [Liionboy/mo
 
 [Beta release notes](docs/hacs-beta-release-notes.md) · [Install and rollback](docs/hacs-beta-installation.md) · [Track attribution](docs/track-layout-attribution.md).
 
-The 2026-11-07 Red Flag observation (API status `N`, 30-second fallback polling despite schedule `CURRENT`) is **not fixed in this frontend-only beta**. Investigate separately with explicit safety/regression gates. Previously selected custom icon is pending binary verification and not included.
+The 2026-11-07 Red Flag observation (API status `N`, 30-second fallback polling despite schedule `CURRENT`) is **not fixed in this frontend-only beta**. Investigate separately with explicit safety/regression gates. Godkänd MGP-grafik är inbäddad i Next JS; befintlig integrationsikon är oförändrad.
