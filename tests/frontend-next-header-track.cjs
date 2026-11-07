@@ -23,16 +23,27 @@ class Overview {
     this.shadowRoot=this.root;
   }
   _weather(){return '<section class="panel">OLD SEPARATE WEATHER PANEL</section>';}
+  _schedule(){return '<section>Schedule</section>';}
+  _click(){}
+
   _render(){
     this.root.innerHTML='<div class="root"><section class="panel header">'+
       '<div class="eyebrow">MOTOGP NEXT</div><h2>GRAND PRIX OF QATAR</h2>'+
       '<div class="sub">Lusail International Circuit</div>'+
       (this.showButton?'<div class="np-top-actions"><button>Visa VM</button></div>':'')+
-      '</section>'+this._weather()+'<section>Schedule</section><div class="foot">Version footer</div></div>';
+      '</section>'+this._weather()+this._schedule()+'<div class="foot">Version footer</div></div>';
   }
 }
+class Timing {
+  constructor(){
+    this._live=null;
+    this._ids={race:'sensor.motogp_next_race'};
+    this._hass={states:{'sensor.motogp_next_race':{attributes:{sessions_all:[]}}}};
+  }
+  _timing(){return 'TIMING';}
+}
 const context={customElements:{
-  get:name=>name==='ha-motogp-next-overview-card'?Overview:null,
+  get:name=>name==='ha-motogp-next-overview-card'?Overview:name==='ha-motogp-next-timing-card'?Timing:null,
   whenDefined:()=>Promise.resolve()
 },document:{createElement:()=>({setAttribute(){},textContent:''})},console};
 (async()=>{
@@ -85,9 +96,26 @@ const context={customElements:{
   assert.ok(eventHeader[1].indexOf('np-top-actions')<eventHeader[1].indexOf('mgp-weather-panel'),
     'VM toggle remains beside event title, before the weather and circuit');
   assert.doesNotMatch(card.root.innerHTML,/<section>Schedule<\/section>/,'schedule hidden until opened');
+  assert.equal(card._schedule(),'', 'schedule collapsed on initial load');
+  card._scheduleOpen=true;
+  assert.match(card._schedule(),/Schedule/,'schedule appears on request');
+  card._scheduleOpen=false;
   const first=card.root.innerHTML;
   card._render();assert.equal(card.root.innerHTML,first,'no duplicate panels');
   assert.equal(docs.length,1,'single style');
+  const timeCard=new Timing();
+  const times=timeCard._hass.states['sensor.motogp_next_race'].attributes;
+  times.sessions_all=[{date_utc:new Date(Date.now()+35*60*1000).toISOString(),status:'SCHEDULED'}];
+  assert.equal(timeCard._timing(),'','timing stays hidden more than 30 min before next pass');
+  times.sessions_all=[{date_utc:new Date(Date.now()+25*60*1000).toISOString(),status:'SCHEDULED'}];
+  assert.equal(timeCard._timing(),'TIMING','timing appears within 30 min');
+  times.sessions_all=[{date_utc:new Date(Date.now()-15*60*1000).toISOString(),status:'SCHEDULED'}];
+  assert.equal(timeCard._timing(),'TIMING','timing remains around delayed scheduled start');
+  times.sessions_all=[{date_utc:new Date(Date.now()-15*60*1000).toISOString(),status:'FINISHED'}];
+  assert.equal(timeCard._timing(),'','finished session cannot open timing by schedule alone');
+  timeCard._live={name:'Race',category:'MotoGP'};
+  assert.equal(timeCard._timing(),'TIMING','verified live status always shows timing');
+
   assert.match(docs[0].textContent,/@container \(max-width:900px\)/);
   assert.match(docs[0].textContent,/@container \(max-width:680px\)/);
   assert.match(docs[0].textContent,/@container \(max-width:355px\)/);
