@@ -12,7 +12,7 @@ class Base {
   _render(){this.view.innerHTML='<div class="root">OVERVIEW<div class="foot">old footer</div></div>';}
   _timing(){
     if(this.hidden)return 'HIDDEN';
-    let text='<section class="nt-card"><button type="button" class="nt-head"><span class="nt-label">🏁 MotoGP · Race</span></button>'<div class="nt-session-record"><strong>⚡ fastest</strong></div><div class="nt-scroll"><div class="nt-table">'+
+    let text='<section class="nt-card"><button type="button" class="nt-head"><span class="nt-label">🏁 MotoGP · Race</span></button><div class="nt-session-record"><strong>⚡ fastest</strong></div><div class="nt-scroll"><div class="nt-table">'+
       '<div class="nt-row nt-heading"><span>POS</span><span>FÖRARE / TEAM</span><span>VARV</span><span>SENASTE</span><span>Δ FRAMFÖR</span><span>Δ LEDARE</span><span>STATUS</span></div>';
     for(const r of this._snapshot.riders)text+=`<div class="nt-row"><span>${r.position}</span>`+
       `<span class="nt-person"><span class="nt-color"></span><span class="nt-person-text"><b>${r.surname}</b><small>${r.team}</small></span></span>`+
