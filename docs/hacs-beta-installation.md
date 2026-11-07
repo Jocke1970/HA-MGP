@@ -17,10 +17,10 @@ The JS files now come with HACS, but the integration **does not change Lovelace 
 In **Settings → Dashboards → Resources**, find your **existing** resource with URL `/local/ha-motogp-next.js`. Change **that same resource URL** to:
 
 ```text
-/motogp_sensor/ha-motogp-next.js?v=2026.11.0b1
+/motogp_sensor/ha-motogp-next.js
 ```
 
-Keep type **JavaScript module**; do not add a duplicate resource. If resources are configured via YAML, update the single existing `resources:` entry instead. Reload the dashboard with `Ctrl+Shift+R`.
+Keep type **JavaScript module**; do not add a duplicate resource or append `?v=` to the URL. If resources are configured via YAML, update the single existing `resources:` entry instead. Reload the dashboard with `Ctrl+Shift+R`.
 
 This release's Next JS identifies as **0.3.0-dev.7**; overview and timing still share one JS resource. `/config/www/ha-motogp-next.js` is left intact for rollback. The optional `/motogp_sensor/ha-motogp-card.js` is the legacy preview only.
 

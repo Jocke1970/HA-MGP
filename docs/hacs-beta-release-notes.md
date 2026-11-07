@@ -22,7 +22,7 @@ Combined HACS prerelease with the unchanged field-tested b5 timing backend and t
 1. Back up HA, keeping `/config/motogp_data/` and the existing JS under `/config/www/`.
 2. Upgrade the existing HACS MotoGP integration to prerelease **2026.11.0b1**, keeping the existing config entry; restart Home Assistant.
 3. Confirm that `/motogp_sensor/ha-motogp-next.js` returns JavaScript through your HA address.
-4. Go to **Settings → Dashboards → Resources**. **Edit the existing** JavaScript-module resource `/local/ha-motogp-next.js` to `/motogp_sensor/ha-motogp-next.js?v=2026.11.0b1`. Do not create a second Next resource.
+4. Go to **Settings → Dashboards → Resources**. **Edit the existing** JavaScript-module resource `/local/ha-motogp-next.js` to `/motogp_sensor/ha-motogp-next.js`. Do not create a second Next resource or add a version query parameter.
 5. Reload the dashboard with `Ctrl+Shift+R`; confirm UI `0.3.0-dev.7`, preserved overview/timing, and a meaningful freshness indicator during a live session.
 6. Roll back the UI by restoring the old resource URL; roll back the backend by selecting HACS prerelease `2026.10.0b5` and restarting HA.
 
