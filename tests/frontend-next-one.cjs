@@ -131,9 +131,33 @@ const live=(category,name,riders)=>({
     {id:'gprac',category:'MotoGP',name:'Race',date:'2026-09-20T14:00:00+00:00',status:'NOT-STARTED'}];
   push({'sensor.motogp_next_race':race(sunday)});
   assert.match(timing.view.innerHTML,/Nästa: Moto3 · Race/,'next means future start, never overdue Warm Up');
-  assert.match(timing.view.innerHTML,/STATUS OKÄND: MotoGP Warm Up/,'unverified prior pass explicitly reported');
+  assert.match(timing.view.innerHTML,/MELLAN PASSEN/,'next-session status must describe the upcoming pass');
+  assert.doesNotMatch(timing.view.innerHTML,/STATUS OKÄND: MotoGP Warm Up/,
+    'old pass status must not appear beneath the upcoming Moto3 race');
   assert.doesNotMatch(timing.view.innerHTML,/Nästa: MotoGP · Warm Up|RIDER1|● LIVE/);
   assert.match(overview.view.innerHTML,/Nästa: Moto3 Race/,'overview also advances to future start');
+  // Reproduces the reported Qatar screenshot: Sprint in the future, Moto2 Q2
+  // already scheduled but its status remains stale/unknown.
+  now=Date.parse('2026-11-07T16:47:00+01:00');
+  push({'sensor.motogp_next_race':e('GRAND PRIX OF QATAR',{
+    date_start:'2026-11-06',date_end:'2026-11-08',
+    sessions_all:[
+      {id:'m2q2-qat',category:'Moto2',name:'Q2',
+       date:'2026-11-07T14:45:00+00:00',date_utc:'2026-11-07T14:45:00+00:00',
+       status:'NOT-STARTED'},
+      {id:'spr-qat',category:'MotoGP',name:'Sprint',
+       date:'2026-11-07T16:00:00+00:00',date_utc:'2026-11-07T16:00:00+00:00',
+       status:'NOT-STARTED'}
+    ]}),
+    'sensor.motogp_current_session':e('unknown'),
+    'sensor.motogp_session_status':e('unknown'),
+    'sensor.motogp_rider_positions':e('unknown')});
+  assert.match(timing.view.innerHTML,/Nästa: MotoGP · Sprint/);
+  assert.match(timing.view.innerHTML,/17:00/);
+  assert.match(timing.view.innerHTML,/MELLAN PASSEN/);
+  assert.doesNotMatch(timing.view.innerHTML,/STATUS OKÄND|Moto2 · Q2|Moto2 Q2/,
+    'previous Moto2 Q2 cannot be presented as the upcoming sprint status');
+
   now=Date.parse('2026-09-19T10:55:00+02:00');
   const q1=[{id:'gpq1',category:'MotoGP',name:'Q1',date:'2026-09-19T10:50:00+00:00',status:'IN-PROGRESS'},
     {id:'gpq2',category:'MotoGP',name:'Q2',date:'2026-09-19T11:15:00+00:00',status:'NOT-STARTED'}];

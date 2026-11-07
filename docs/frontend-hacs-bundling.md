@@ -210,3 +210,22 @@ grid. Spoiler mode blocks the panel and its Q1 attribute.
 
 Manifest candidate `2026.11.0b6` and Next `0.3.0-dev.13` are staged on
 **dev**. Existing beta b4 and main remain unchanged.
+
+## Upcoming pass status isolation (dev)
+
+When the timing card displays **Nästa: MotoGP · Sprint**, the status line
+describes the **upcoming** session, not an unrelated earlier class. A prior
+unconfirmed session such as Moto2 Q2 does not put `STATUS OKÄND: Moto2 Q2`
+under the Sprint title. The neutral status is **MELLAN PASSEN** when no
+matching live session is confirmed. Existing last-session rider results remain
+clearly marked **SENASTE PASS · EJ LIVE** if present. When a scheduled session
+just began but no authenticated matching live session is available, the
+existing **STARTTID PASSERAD · INVÄNTAR MATCHANDE DATA** guard is preserved.
+No event is assumed started/finished on wall-clock time alone.
+
+Regression covers the specific Qatar Moto2 Q2 -> MotoGP Sprint transition
+and the next-day MotoGP Warm Up -> Moto3 Race transition. No change to
+backend polling, archive, spoiler semantics or schedule timestamps.
+
+Staged dev `2026.11.0b7` / Next `0.3.0-dev.14`. After all CI gates
+pass this candidate can be promoted to HACS beta. Stable main untouched.

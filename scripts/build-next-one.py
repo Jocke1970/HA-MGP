@@ -101,9 +101,8 @@ def build(directory, destination):
         "            `${upcoming?`<small>Nästa: ${esc(upcoming.category)} ${esc(upcoming.name)} ${esc(upcoming.time)}</small>`:''}</span>`;\n"
         "        } else if (upcoming) {\n"
         "          title=`Nästa: ${upcoming.category} · ${upcoming.name}`;\n"
-        "          statusText=spoiler?'SPOILERLÄGE':hasRiders?'SENASTE PASS · EJ LIVE':pending?\n"
-        "            `STATUS OKÄND: ${category(pending.pass.category||'MotoGP')} ${sessionName(pending.pass.name||pending.pass.type||'')}`:'MELLAN PASSEN';",
-        'show genuine next start and accurately label unknown previous status')
+        "          statusText=spoiler?'SPOILERLÄGE':hasRiders?'SENASTE PASS · EJ LIVE':'MELLAN PASSEN';",
+        'show upcoming session status only; do not label previous pass beneath next header')
     split = swap(split,
         '.nt-row>span:not(.nt-person){text-align:right}',
         '.nt-heading>span:nth-child(2){text-align:center}.nt-row>span:not(.nt-person){text-align:right}',

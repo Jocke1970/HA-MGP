@@ -38,7 +38,7 @@ jobs:
           python3 tests/test_frontend_package.py
           node --check custom_components/motogp_sensor/www/ha-motogp-next.js
           node --check custom_components/motogp_sensor/www/ha-motogp-card.js
-          # Exact parity to the reviewed dev.13 dist is asserted by the Python package test.
+          # Exact parity to the reviewed dev.14 dist is asserted by the Python package test.
           # The historical frontend-next-one.cjs regression intentionally targets dev.3.
       - name: Reproduce and regress live-feed badge refresh
         env:
