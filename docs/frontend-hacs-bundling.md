@@ -229,3 +229,27 @@ backend polling, archive, spoiler semantics or schedule timestamps.
 
 Staged dev `2026.11.0b7` / Next `0.3.0-dev.14`. After all CI gates
 pass this candidate can be promoted to HACS beta. Stable main untouched.
+
+## White single-row event header (dev candidate)
+
+At the user's request, the top Overview panel is now ONE unified white
+`panel header` rather than a title row followed by two gray weather/track
+panels. On desktop, the first column holds the event title/circuit/date and
+existing VM toggle, the middle column holds **Banväder**, and the
+far-right column holds a compact, right-aligned schematic **Banlayout**.
+Both metadata blocks are unboxed, transparent and sit inside the
+same top-level header section. The weather panel's real HA sensor
+and its source/timestamp disclaimer remain unchanged.
+
+At container widths <=680px the metadata blocks move beneath the title
+within the SAME white header; weather is always to the left of the map,
+including on mobile. Nothing is rendered as a separate gray panel below
+the header. The original standalone overview weather card stays hidden,
+but the sensor remains registered.
+
+The fallback with missing weather, unknown track and spoiler mode is
+tested explicitly, including preservation of the existing VM-toggle.
+No backend poll, session timing, weather source or grid logic was modified.
+
+Candidate: manifest `2026.11.0b8`, Next UI `0.3.0-dev.15` on
+`dev`. Public beta b7 and main remain unchanged until release decision.
