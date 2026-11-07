@@ -32,31 +32,31 @@ def main(frontend, target):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     frontend = pathlib.Path(frontend)
-    addon = frontend / 'ha-motogp-next-ui-preview.js'
+    addon = frontend / 'ha-mgp-ui.js'
     if not addon.is_file() or addon.is_symlink():
         raise SystemExit('STOP: UI addon missing or symlink')
     ui = addon.read_bytes()
     if blob(ui) != UI_BLOB:
         raise SystemExit('STOP: unexpected UI source revision')
-    mobile = frontend / 'ha-motogp-next-mobile-laps.js'
+    mobile = frontend / 'ha-mgp-mobile-laps.js'
     if not mobile.is_file() or mobile.is_symlink():
         raise SystemExit('STOP: missing/unsafe mobile popup addon')
     mobile_bytes = mobile.read_bytes()
     if blob(mobile_bytes) != MOBILE_BLOB:
         raise SystemExit('STOP: unexpected mobile popup source revision')
-    qual = frontend / 'ha-motogp-next-qual-grid.js'
+    qual = frontend / 'ha-mgp-qual-grid.js'
     if not qual.is_file() or qual.is_symlink():
         raise SystemExit('STOP: missing/unsafe qualifying grid addon')
     qual_bytes = qual.read_bytes()
     if blob(qual_bytes) != QUAL_BLOB:
         raise SystemExit('STOP: unexpected qualifying grid source revision')
-    header = frontend / 'ha-motogp-next-header-track.js'
+    header = frontend / 'ha-mgp-header-track.js'
     if not header.is_file() or header.is_symlink():
         raise SystemExit('STOP: missing/unsafe event header track/weather addon')
     header_bytes = header.read_bytes()
     if blob(header_bytes) != HEADER_BLOB:
         raise SystemExit('STOP: unexpected event header track/weather source revision')
-    history = frontend / 'ha-motogp-next-session-history.js'
+    history = frontend / 'ha-mgp-session-history.js'
     if not history.is_file() or history.is_symlink():
         raise SystemExit('STOP: missing/unsafe session history addon')
     history_bytes = history.read_bytes()

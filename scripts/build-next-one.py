@@ -5,10 +5,10 @@ import pathlib
 import sys
 
 EXPECTED = {
-    'ha-motogp-next-card.js': '260b536a2d57456d2f5aa21e414422e610738dcd',
-    'ha-motogp-next-split.js': '71ec9b66918ad5786d0de95c6b32be413e0a08d3',
-    'ha-motogp-next-split-enhancements.js': '346df5046cc9301e426650cb36cb32449883414c',
-    'ha-motogp-next-gap-trends.js': 'd522624e0eb4ae87315232894d1566bb10e348f3',
+    'ha-mgp-core.js': '260b536a2d57456d2f5aa21e414422e610738dcd',
+    'ha-mgp-split.js': '71ec9b66918ad5786d0de95c6b32be413e0a08d3',
+    'ha-mgp-split-enhancements.js': '346df5046cc9301e426650cb36cb32449883414c',
+    'ha-mgp-gap-trends.js': 'd522624e0eb4ae87315232894d1566bb10e348f3',
 }
 BUILD = 'next-one-20260920-03'
 DISPLAY_VERSION = '0.3.0-dev.3'
@@ -36,7 +36,7 @@ def build(directory, destination):
             raise SystemExit(f'STOP: unexpected source revision {name}')
         source[name] = data.decode('utf-8')
 
-    base = source['ha-motogp-next-card.js']
+    base = source['ha-mgp-core.js']
     base = swap(base,
         "const past=s=>!isLive(s)&&(explicitFinish(s)||s._wall.date<now);",
         "const past=s=>!isLive(s)&&(explicitFinish(s)|| (s._wall.date<now && "
@@ -59,7 +59,7 @@ def build(directory, destination):
                 f'ha-motogp-next.js · {DISPLAY_VERSION} · samlad testversion',
                 'unified footer')
 
-    split = source['ha-motogp-next-split.js']
+    split = source['ha-mgp-split.js']
     split = swap(split, "if (seconds < 0) return 'Starttid passerad';",
         "if (seconds < 0) return 'Starttid passerad · inväntar status';",
         'started but no confirmed status')
@@ -168,8 +168,8 @@ def build(directory, destination):
         "${major?`<span${!isRace&&remaining?' data-live-remaining':''}>${esc(major)}</span>`:''}",
         'live countdown span only, never race lap counter')
     bundle = (f'/* MotoGP Next SINGLE Lovelace resource | build {BUILD} | read only. */\n' +
-              '\n;\n'.join([base, split, source['ha-motogp-next-split-enhancements.js'],
-                            source['ha-motogp-next-gap-trends.js']]) + '\n')
+              '\n;\n'.join([base, split, source['ha-mgp-split-enhancements.js'],
+                            source['ha-mgp-gap-trends.js']]) + '\n')
     destination.write_text(bundle, encoding='utf-8')
     print(f'Built single resource: {destination} ({len(bundle.encode("utf-8"))} bytes; git blob {git_sha(bundle.encode("utf-8"))})')
 
