@@ -22,7 +22,7 @@ def git_blob_sha(data: bytes) -> str:
 
 def check_bundle_integrity() -> None:
     manifest = json.loads((PKG / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "2026.11.0b9"
+    assert manifest["version"] == "2026.11.0b10"
     assert {"http", "frontend"}.issubset(manifest["dependencies"])
 
     # Beta is intentionally a minimal HACS tree (without frontend/ or dist/).
@@ -30,7 +30,7 @@ def check_bundle_integrity() -> None:
     pairs = {
         "ha-motogp-next.js": (
             "dist/ha-motogp-next.js",
-            "6a92c3a886a683bac09d6c55120fd59ac8766a74",
+            "c1b237f58dd2ec02c741e16e8064fd82663314a2",
         ),
         "ha-motogp-card.js": (
             "frontend/ha-motogp-card.js",
@@ -53,8 +53,13 @@ def check_bundle_integrity() -> None:
     next_js = (ASSETS / "ha-motogp-next.js").read_text(encoding="utf-8")
     assert "ha-motogp-next-overview-card" in next_js
     assert "ha-motogp-next-timing-card" in next_js
-    assert "0.3.0-dev.16" in next_js
-    assert "ui-preview-20261107-05" in next_js
+    assert "0.3.0-dev.17" in next_js
+    assert "ui-preview-20261107-06" in next_js
+    assert "history-20261107-01" in next_js
+    assert "motogp_sensor/session_history" in next_js
+    assert "data-motogp-history-session" in next_js
+    assert "Sorterat efter snabbaste observerade varv" in next_js
+    assert "np-standing-track{height:9px;width:100%;box-sizing:border-box" in next_js
     assert "nt-lap-pair" in next_js
     assert "Snabbaste: " in next_js
     assert "riderStart=/<div" in next_js
@@ -94,6 +99,19 @@ def check_bundle_integrity() -> None:
     assert "async def async_setup(" in setup
     assert "await async_register_frontend_paths(hass)" in setup
     assert "async_register_rider_laps(hass)" in setup
+    assert "async_register_session_history(hass)" in setup
+    # Custom HA 2026.3+ local brands: only the exact approved pair may ship.
+    expected_icons = (
+        ("icon.png", (256, 256), "18f8fb9a4ff64e079d726a33f2b5176295a2bb2f8ab43fc9688301245e8730f7"),
+        ("icon@2x.png", (512, 512), "30cbbaaa530097a47e8c08265ec7415f1e5efd9bbf08cb8dce0ffe8acb7202a5"),
+    )
+    for name, (width, height), expected_hash in expected_icons:
+        png = PKG / "brand" / name
+        assert png.is_file() and not png.is_symlink()
+        data = png.read_bytes()
+        assert data[:8] == b"\x89PNG\r\n\x1a\n"
+        assert (int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big")) == (width, height)
+        assert hashlib.sha256(data).hexdigest() == expected_hash
     assert "lovelace.resources" not in setup
 
 

@@ -6,12 +6,13 @@ import pathlib
 import sys
 import tempfile
 
-UI_BLOB = 'b2e0c48f2c7c8c28546535de40d1485958cd9dd1'
+UI_BLOB = 'e1379c9499bda77ff05d440213ef2a48ca99c422'
 QUAL_BLOB = '3cd24780166dcc578624221769a8a459c7b62819'
 HEADER_BLOB = '06ce075ad6f4222aee2dad7c3d5194674a6903fb'
+HISTORY_BLOB = '8b7038e64df05cb7ffbc1e6059a966c867733fac'
 MOBILE_BLOB = '9fad86bfd7fdc2e461371efb458b17f6029df794'
-BUILD = 'next-one-20261107-10'
-VERSION = '0.3.0-dev.16'
+BUILD = 'next-one-20261107-11'
+VERSION = '0.3.0-dev.17'
 
 
 def blob(data):
@@ -54,6 +55,12 @@ def main(frontend, target):
     header_bytes = header.read_bytes()
     if blob(header_bytes) != HEADER_BLOB:
         raise SystemExit('STOP: unexpected event header track/weather source revision')
+    history = frontend / 'ha-motogp-next-session-history.js'
+    if not history.is_file() or history.is_symlink():
+        raise SystemExit('STOP: missing/unsafe session history addon')
+    history_bytes = history.read_bytes()
+    if blob(history_bytes) != HISTORY_BLOB:
+        raise SystemExit('STOP: unexpected session history source revision')
     with tempfile.TemporaryDirectory() as temp:
         base = pathlib.Path(temp) / 'base.js'
         module.build(frontend, base)
@@ -66,7 +73,7 @@ def main(frontend, target):
     text = replace_one(text, '🏁 MOTOGP NEXT · 0.3.0-dev.3', '🏁 MOTOGP NEXT · ' + VERSION)
     text = replace_one(text, 'ha-motogp-next.js · 0.3.0-dev.3 · samlad testversion',
                        'ha-motogp-next.js · ' + VERSION + ' · UI-preview')
-    result = (text + '\n;\n' + ui.decode('utf-8') + '\n;\n' + mobile_bytes.decode('utf-8') + '\n;\n' + qual_bytes.decode('utf-8') + '\n;\n' + header_bytes.decode('utf-8')).encode('utf-8')
+    result = (text + '\n;\n' + ui.decode('utf-8') + '\n;\n' + mobile_bytes.decode('utf-8') + '\n;\n' + qual_bytes.decode('utf-8') + '\n;\n' + header_bytes.decode('utf-8') + '\n;\n' + history_bytes.decode('utf-8')).encode('utf-8')
     pathlib.Path(target).write_bytes(result)
     print(f'UI preview built: {target} ({len(result)} bytes, git blob {blob(result)})')
 

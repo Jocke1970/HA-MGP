@@ -281,3 +281,35 @@ order* of mobile popup and UI preview with interactive Sprint rows, latest and
 best being unequal, a PB row, an unclassified rider and spoiler safety.
 Version: `2026.11.0b9` / Next `0.3.0-dev.16`, on **dev** only.
 Latest released HACS beta b7 and main stay unchanged.
+
+## Finished-session lap viewer and outlined leaderboard (dev b10)
+
+**Visa varv** is available from an expanded weekend schedule tile only
+when the exact session status is `FINISHED`. It opens a read-only modal
+through a new authenticated `motogp_sensor/session_history` command and
+reads only matching previously observed laps from `/config/motogp_data/`.
+The viewer shows last observed time, best observed time, observed lap count
+and missing-lap notices. It sorts by fastest *observed* lap, NOT official
+finishing order. It never changes the current live snapshot or polling.
+
+Both the frontend and backend authorize the exact session ID within the
+current race event and recheck spoiler and event identity after file reads.
+No unobserved times are reconstructed. Absent archive yields a neutral
+no-data message. The new feature is covered by frontend/backend
+regressions, including spoofed session, missing/corrupt data, and mid-read
+spoiler/event change.
+
+Leaderboard bars now have a subtle 1px border on the entire relative-points
+track. The border uses the Home Assistant divider color and doesn't change
+team colors or values.
+
+The previously approved **MGP racing arc** logo is now checked into
+`custom_components/motogp_sensor/brand/icon.png` and
+`icon@2x.png` (256/512 px). It is built from a pinned approved artwork
+source under `assets/approved-mgp-racing-arc.webp`, with a deterministic
+GitHub workflow; the PNG pair and source SHA are checked during CI.
+Home Assistant 2026.3+ supports these local integration brand assets.
+Marketplace/HACS listing cache and branding may refresh separately.
+
+Candidate: backend `2026.11.0b10`, Next UI `0.3.0-dev.17` on **dev**.
+Public beta b9 and main unchanged until explicitly approved for release.

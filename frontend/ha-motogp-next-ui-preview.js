@@ -4,7 +4,7 @@
   const OVERVIEW='ha-motogp-next-overview-card';
   const TIMING='ha-motogp-next-timing-card';
   const REQUIRED='0.2.0-split.2';
-  const BUILD='ui-preview-20261107-05';
+  const BUILD='ui-preview-20261107-06';
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const valid=v=>v!==null&&v!==undefined&&!['','unknown','unavailable','none','null','hidden'].includes(String(v).trim().toLowerCase());
   const cat=v=>{const m=/moto\s*(gp|2|3|e)/i.exec(String(v||''));return m?({gp:'MotoGP','2':'Moto2','3':'Moto3',e:'MotoE'})[m[1].toLowerCase()]:String(v||'');};
@@ -66,7 +66,8 @@
     .np-standing-driver strong{font-size:13px;line-height:1.15;font-weight:850;overflow-wrap:anywhere}
     .np-standing-driver small{font-size:10.5px;color:var(--secondary-text-color);line-height:1.25;overflow-wrap:anywhere}
     .np-standing-visual{width:30%}
-    .np-standing-track{height:7px;width:100%;border-radius:99px;
+    .np-standing-track{height:9px;width:100%;box-sizing:border-box;border-radius:99px;
+      border:1px solid var(--divider-color,rgba(127,127,127,.24));
       background:var(--secondary-background-color,rgba(127,127,127,.13));overflow:hidden}
     .np-standing-fill{display:block;height:100%;border-radius:99px;max-width:100%;
       background:var(--divider-color,#b4b4b4)}

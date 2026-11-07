@@ -233,6 +233,47 @@ class SessionLapArchive:
             self._active_key, self._active_path, self._active_document = key, path, doc
             return path
 
+    def read_finished_session(
+        self, *, season: int, event_id: str, session_id: str,
+        category: str, no_spoiler: bool,
+    ) -> dict[str, Any] | None:
+        """Read a matching observed archive, without mutating live state.
+
+        The WebSocket caller must first authorize the *exact* session ID
+        against this event's current schedule with status FINISHED.
+        """
+        if no_spoiler:
+            raise SpoilerHidden("Archived sessions hidden in spoiler mode")
+        if type(season) is not int or not 1900 <= season <= 2100:
+            raise ArchiveError("Invalid year")
+        if any(not isinstance(value, str) or not value or len(value) > 128
+               for value in (event_id, session_id, category)):
+            raise ArchiveError("Invalid historical session ID")
+        with self._lock:
+            year_dir = self.root / str(season)
+            if self.root.is_symlink() or year_dir.is_symlink():
+                raise ArchiveError("Unsafe history root")
+            if not year_dir.is_dir():
+                return None
+            found = None
+            for index, path in enumerate(sorted(year_dir.glob("*/*.json"))):
+                if index >= 5000:
+                    raise ArchiveError("Archive directory too large")
+                if path.is_symlink() or path.parent.is_symlink():
+                    raise ArchiveError("Unsafe archive path")
+                doc = self._load(path)
+                ident = doc["identity"]
+                if (
+                    ident.get("season") == season
+                    and ident.get("event_id") == event_id
+                    and ident.get("session_id") == session_id
+                    and str(ident.get("category") or "").casefold() == category.casefold()
+                ):
+                    if found is not None:
+                        raise ArchiveError("Multiple archives for historical session")
+                    found = doc
+            return copy.deepcopy(found) if found is not None else None
+
     def read(self, identity: dict[str, Any], *, no_spoiler: bool) -> dict[str, Any] | None:
         """Restricted internal read: UI exposure needs a separate HA authorization gate."""
         if no_spoiler:

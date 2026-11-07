@@ -12,6 +12,7 @@ on:
       - 'frontend/ha-motogp-next-mobile-laps.js'
       - 'frontend/ha-motogp-next-qual-grid.js'
       - 'frontend/ha-motogp-next-header-track.js'
+      - 'frontend/ha-motogp-next-session-history.js'
       - 'scripts/build-next-one.py'
       - 'scripts/build-next-ui-preview.py'
       - 'tests/frontend-next-one.cjs'
@@ -20,6 +21,7 @@ on:
       - 'tests/frontend-next-qual-grid.cjs'
       - 'tests/frontend-next-header-track.cjs'
       - 'tests/frontend-next-lap-pair.cjs'
+      - 'tests/frontend-session-history.cjs'
       - '.github/workflows/next-one-distribute.yml'
 
 permissions:
@@ -56,6 +58,7 @@ jobs:
           node tests/frontend-next-qual-grid.cjs frontend/ha-motogp-next-qual-grid.js
           node tests/frontend-next-header-track.cjs frontend/ha-motogp-next-header-track.js
           node tests/frontend-next-lap-pair.cjs frontend/ha-motogp-next-ui-preview.js frontend/ha-motogp-next-mobile-laps.js
+          node tests/frontend-session-history.cjs frontend/ha-motogp-next-session-history.js
           python tests/test_frontend_package.py
       - name: Publish only when the compiled JS differs
         run: |
