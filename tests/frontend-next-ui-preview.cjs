@@ -81,6 +81,7 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   standing.attributes.standings_by_category.MotoGP.push(...Array.from({length:11},(_,i)=>({position:i+2,number:i+40,rider:'RIDER-'+(i+2),team:'Team',points:200-i})));
   overview._render();
   assert.match(overview.view.innerHTML,/RIDER-12/,'standings show riders beyond top ten');
+  assert.doesNotMatch(overview.view.innerHTML,/Moto3 · Moto2 · MotoGP/,'no duplicate category legend above class tabs');
   overview._click({target:{closest:sel=>sel==='[data-motogp-standing]'?{getAttribute:()=> 'Moto2'}:null}});
   assert.match(overview.view.innerHTML,/MOTO2 CHAMPION/);
   assert.match(overview.view.innerHTML,/#18/);
