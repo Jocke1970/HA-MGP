@@ -22,7 +22,7 @@ def git_blob_sha(data: bytes) -> str:
 
 def check_bundle_integrity() -> None:
     manifest = json.loads((PKG / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "2026.11.0b4"
+    assert manifest["version"] == "2026.11.0b5"
     assert {"http", "frontend"}.issubset(manifest["dependencies"])
 
     # Beta is intentionally a minimal HACS tree (without frontend/ or dist/).
@@ -30,7 +30,7 @@ def check_bundle_integrity() -> None:
     pairs = {
         "ha-motogp-next.js": (
             "dist/ha-motogp-next.js",
-            "de7c0fa25b930436b9014207307f6377e30afb37",
+            "6de20a9ac995ebfb64d32004b8bc34729295330e",
         ),
         "ha-motogp-card.js": (
             "frontend/ha-motogp-card.js",
@@ -53,7 +53,12 @@ def check_bundle_integrity() -> None:
     next_js = (ASSETS / "ha-motogp-next.js").read_text(encoding="utf-8")
     assert "ha-motogp-next-overview-card" in next_js
     assert "ha-motogp-next-timing-card" in next_js
-    assert "0.3.0-dev.11" in next_js
+    assert "0.3.0-dev.12" in next_js
+    assert "header-track-weather-20261107-01" in next_js
+    assert "mgp-venue-strip" in next_js
+    assert "mgp-track-svg" in next_js
+    assert "Senast rapporterat" in next_js
+    assert "GameDev-Toolkit/global-motorsport-circuits-json" in next_js
     assert "np-standing-track" in next_js
     assert "np-standing-rank" in next_js
     assert "np-standing-score" in next_js

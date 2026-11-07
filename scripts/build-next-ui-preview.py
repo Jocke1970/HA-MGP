@@ -8,9 +8,10 @@ import tempfile
 
 UI_BLOB = '58d7b0f650c1f8cc9c17f5133623378501268b5e'
 QUAL_BLOB = 'b4fa9c1d5eae23e59e5b1978a7b034e296fd8751'
+HEADER_BLOB = '5ca10cc598ac1287e0cb9bbd96cf775f93c5faf8'
 MOBILE_BLOB = '9fad86bfd7fdc2e461371efb458b17f6029df794'
-BUILD = 'next-one-20261107-05'
-VERSION = '0.3.0-dev.11'
+BUILD = 'next-one-20261107-06'
+VERSION = '0.3.0-dev.12'
 
 
 def blob(data):
@@ -47,6 +48,12 @@ def main(frontend, target):
     qual_bytes = qual.read_bytes()
     if blob(qual_bytes) != QUAL_BLOB:
         raise SystemExit('STOP: unexpected qualifying grid source revision')
+    header = frontend / 'ha-motogp-next-header-track.js'
+    if not header.is_file() or header.is_symlink():
+        raise SystemExit('STOP: missing/unsafe event header track/weather addon')
+    header_bytes = header.read_bytes()
+    if blob(header_bytes) != HEADER_BLOB:
+        raise SystemExit('STOP: unexpected event header track/weather source revision')
     with tempfile.TemporaryDirectory() as temp:
         base = pathlib.Path(temp) / 'base.js'
         module.build(frontend, base)
@@ -59,7 +66,7 @@ def main(frontend, target):
     text = replace_one(text, '🏁 MOTOGP NEXT · 0.3.0-dev.3', '🏁 MOTOGP NEXT · ' + VERSION)
     text = replace_one(text, 'ha-motogp-next.js · 0.3.0-dev.3 · samlad testversion',
                        'ha-motogp-next.js · ' + VERSION + ' · UI-preview')
-    result = (text + '\n;\n' + ui.decode('utf-8') + '\n;\n' + mobile_bytes.decode('utf-8') + '\n;\n' + qual_bytes.decode('utf-8')).encode('utf-8')
+    result = (text + '\n;\n' + ui.decode('utf-8') + '\n;\n' + mobile_bytes.decode('utf-8') + '\n;\n' + qual_bytes.decode('utf-8') + '\n;\n' + header_bytes.decode('utf-8')).encode('utf-8')
     pathlib.Path(target).write_bytes(result)
     print(f'UI preview built: {target} ({len(result)} bytes, git blob {blob(result)})')
 

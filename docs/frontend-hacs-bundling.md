@@ -154,3 +154,28 @@ for missing categories. Both light/dark themes use Home Assistant variables.
 
 Candidate only: `2026.11.0b4` and Next `0.3.0-dev.11` on **dev**.
 Public beta `2026.11.0b3` and `main` remain unchanged.
+
+## Integrated circuit header + track weather (next dev candidate)
+
+The Overview event header now includes a two-column circuit-layout and
+track-weather strip. It replaces the old independent weather card without
+changing the `sensor.motogp_track_weather` entity or its backend poller.
+Existing reports supply air temperature, ground/track temperature, humidity,
+surface condition and weather description; if metadata contains a category,
+session and report timestamp, those are shown as provenance. The card labels
+conditions **Senast rapporterat · inte livegaranti**, never an inferred live
+reading or forecast. Absent values show neutral placeholders.
+
+21 simplified SVG circuit outlines are bundled directly in the single Next
+JS file, with no runtime network or image-service dependency. They are
+derived from the Apache-2.0 dataset
+[GameDev-Toolkit/global-motorsport-circuits-json](https://github.com/GameDev-Toolkit/global-motorsport-circuits-json);
+see `docs/track-layout-attribution.md` and the bundled third-party licence.
+All outlines are *schematic*, not guaranteed to include official sector markers
+or start/finish. Qatar / Lusail is included. Unknown circuits show an honest
+missing-layout message instead of a guessed outline.
+
+Responsive container queries stack track/conditions on mobile and use four
+weather chips where width permits. The standings toggle stays in the header,
+and its open/closed state is unchanged. UI `0.3.0-dev.12` and backend manifest
+`2026.11.0b5` are staged on **dev** only. Public beta b4 and main are unchanged.
