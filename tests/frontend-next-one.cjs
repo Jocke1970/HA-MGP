@@ -21,7 +21,7 @@ class Element {
         toggle:(name,on)=>on?this.feedClasses.add(name):this.feedClasses.delete(name)
       }
     };
-    this.shadowRoot={innerHTML:'',addEventListener(){},contains(){return true;},
+    this.shadowRoot={innerHTML:'',addEventListener(){},removeEventListener(){},contains(){return true;},
       appendChild(){},getElementById:()=>this.view,
       querySelector:(sel)=>sel==='[data-live-remaining]'&&this.view.innerHTML.includes('data-live-remaining')?this.liveNode:
         sel==='[data-motogp-feed-age]'&&this.view.innerHTML.includes('data-motogp-feed-age')?this.feedBadge:null,
