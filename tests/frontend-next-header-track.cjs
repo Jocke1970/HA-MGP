@@ -11,7 +11,18 @@ class Overview {
   constructor(){
     this._ids={race:'sensor.motogp_next_race',weather:'sensor.motogp_track_weather'};
     this._hass={states:{
-      'sensor.motogp_next_race':{attributes:{circuit:'Lusail International Circuit',country:'Qatar',sessions_all:[{category:'MotoGP',name:'WUP',date_utc:'2099-11-08T11:40:00Z',status:'SCHEDULED'}]}},
+      'sensor.motogp_next_race':{attributes:{circuit:'Lusail International Circuit',country:'Qatar',
+         records_by_category:{
+           MotoGP:[
+             {type:'LAP_RECORD',time:'01:50.028',rider:'BEZZECCHI',year:2026,speed:176},
+             {type:'POLE_LAP',time:'01:50.028',rider:'BEZZECCHI',speed:176},
+             {type:'BEST_RACE_LAP',time:'01:52.561',rider:'MARQUEZ',year:2025,speed:172},
+             {type:'UNKNOWN_RECORD',time:'00:00.001',rider:'INJECTED'}
+           ],
+           Moto2:[{type:'LAP_RECORD',time:'01:01.001',rider:'OTHER CLASS'}]
+         },
+         records_session_by_category:{MotoGP:{type:'SPR'}},
+         sessions_all:[{category:'MotoGP',name:'WUP',date_utc:'2099-11-08T11:40:00Z',status:'SCHEDULED'}]}},
       'sensor.motogp_track_weather':{attributes:{
         category:'Moto2',session:'Q1',air:'31º',ground:'42°',humidity:'51%',track:'Dry',weather:'Clear',
         updated_at:'2026-11-07T14:01:00Z'
@@ -68,6 +79,17 @@ const context={customElements:{
   assert.match(card.root.innerHTML,/Backendversion hanteras separat/);
   assert.match(eventHeader[1],/mgp-weather-panel/);
   assert.match(eventHeader[1],/mgp-circuit-panel/);
+  assert.match(eventHeader[1],/mgp-records/,'record chips sit in circuit area');
+  assert.match(eventHeader[1],/Lap record/);
+  assert.match(eventHeader[1],/Pole lap/);
+  assert.match(eventHeader[1],/Best race lap/);
+  assert.match(eventHeader[1],/01:50\.028/);
+  assert.match(eventHeader[1],/01:52\.561/);
+  assert.match(eventHeader[1],/BEZZECCHI · 2026 · 176 km\/h/);
+  assert.match(eventHeader[1],/MotoGP · via SPR/,'show where records were read');
+  assert.doesNotMatch(eventHeader[1],/OTHER CLASS|INJECTED/,'wrong class and unknown types excluded');
+  assert.ok(eventHeader[1].indexOf('mgp-track-svg')<eventHeader[1].indexOf('mgp-records'),
+    'chips follow circuit diagram');
   assert.ok(eventHeader[1].indexOf('mgp-hero-copy')<eventHeader[1].indexOf('mgp-weather-panel'),
     'event info left, weather center');
   assert.ok(eventHeader[1].indexOf('mgp-weather-panel')<eventHeader[1].indexOf('mgp-circuit-panel'),
@@ -130,6 +152,12 @@ const context={customElements:{
     'no gray weather/track cards inside the white header');
   assert.match(docs[0].textContent,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
   const other=card._hass.states['sensor.motogp_next_race'];
+  other.attributes.records_by_category={MotoGP:[{type:'LAP_RECORD',time:'<script>x</script>',rider:'FAKE'}]};
+  card._render();
+  assert.doesNotMatch(card.root.innerHTML,/mgp-records|FAKE/,'invalid record time hidden');
+  other.attributes.records_by_category={MotoGP:[]};
+  card._render();
+  assert.doesNotMatch(card.root.innerHTML,/mgp-records/,'no empty chip container');
   other.attributes.country='Unknown Country';
   card._render();
   assert.doesNotMatch(card.root.innerHTML,/mgp-country-flag/,'unknown country cannot invent a flag');
