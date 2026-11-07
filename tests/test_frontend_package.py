@@ -65,7 +65,7 @@ def check_bundle_integrity() -> None:
     assert "data:image/webp;base64," in next_js
     assert "__MGP_APPROVED_BRAND_DATA_URI__" not in next_js
     assert "Flagga: " in next_js
-    assert "ui-preview-20261108-02" in next_js
+    assert "ui-preview-20261108-04" in next_js
     assert "history-20261107-01" in next_js
     assert "motogp_sensor/session_history" in next_js
     assert "data-motogp-history-session" in next_js
