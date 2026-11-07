@@ -4,14 +4,14 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const file=process.argv[2]||'frontend/ha-motogp-next-header-track.js';
 const src=fs.readFileSync(file,'utf8');
-assert.match(src,/header-track-weather-20261107-02/);
+assert.match(src,/header-track-weather-20261107-06/);
 const docs=[];
 class Overview {
   static buildInfo={version:'0.2.0-split.2'};
   constructor(){
     this._ids={race:'sensor.motogp_next_race',weather:'sensor.motogp_track_weather'};
     this._hass={states:{
-      'sensor.motogp_next_race':{attributes:{circuit:'Lusail International Circuit'}},
+      'sensor.motogp_next_race':{attributes:{circuit:'Lusail International Circuit',country:'Qatar'}},
       'sensor.motogp_track_weather':{attributes:{
         category:'Moto2',session:'Q1',air:'31º',ground:'42°',humidity:'51%',track:'Dry',weather:'Clear',
         updated_at:'2026-11-07T14:01:00Z'
@@ -46,6 +46,15 @@ const context={customElements:{
   const eventHeader=card.root.innerHTML.match(/<section class="panel header">([\s\S]*?)<\/section>/);
   assert.ok(eventHeader,'single event header exists');
   assert.match(eventHeader[1],/GRAND PRIX OF QATAR/);
+  assert.match(eventHeader[1],/mgp-brand-logo/,'approved MGP logo in header');
+  assert.match(eventHeader[1],/alt="MGP"/);
+  assert.doesNotMatch(eventHeader[1],/<div class="eyebrow">🏁 /,'emoji replaced by logo');
+  assert.match(eventHeader[1],/mgp-country-flag/,'host country flag beside event name');
+  assert.match(eventHeader[1],/🇶🇦/,'Qatar must use country flag, not guessed SVG');
+  assert.match(eventHeader[1],/aria-label="Flagga: Qatar"/);
+  assert.match(eventHeader[1],/UI-information/,'collapsible UI diagnostics');
+  assert.match(eventHeader[1],/Backendversion hanteras separat/);
+  assert.match(eventHeader[1],/Frontend: /);
   assert.match(eventHeader[1],/mgp-weather-panel/);
   assert.match(eventHeader[1],/mgp-circuit-panel/);
   assert.ok(eventHeader[1].indexOf('mgp-hero-copy')<eventHeader[1].indexOf('mgp-weather-panel'),
@@ -80,6 +89,10 @@ const context={customElements:{
     'no gray weather/track cards inside the white header');
   assert.match(docs[0].textContent,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
   const other=card._hass.states['sensor.motogp_next_race'];
+  other.attributes.country='Unknown Country';
+  card._render();
+  assert.doesNotMatch(card.root.innerHTML,/mgp-country-flag/,'unknown country cannot invent a flag');
+  other.attributes.country='Qatar';
   other.attributes.circuit='Unknown Track Name';
   card._render();
   assert.match(card.root.innerHTML,/Ingen verifierad banritning tillgänglig/);
