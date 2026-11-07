@@ -1,17 +1,18 @@
-# MotoGP status — 2026-11-07
+# MotoGP project status — 2026-11-07
 
-- `dev`: candidate 2026.11.0b4 with Next 0.3.0-dev.11, four green dev CI workflows.
-- `beta`: controlled prerelease 2026.11.0b4; on-host acceptance remains pending.
-- `main`: unchanged.
+- **dev:** validated b7 candidate, Next `0.3.0-dev.14`, screenshot regression for Qatar Moto2 Q2 → MotoGP Sprint and existing live/next/schedule tests.
+- **beta:** HACS prerelease `2026.11.0b7`, to be installed/tested on-host after live racing.
+- **main:** unchanged, pending manual acceptance.
 
-## Scope
+## Scope since b4
 
-Premium responsive leaderboard UI for the existing VM-standing cards: subdued podium rank markers, preserved rider number/team and team-color accent, a published-points bar relative to the *currently selected class leader*, explicit total points and the gap to first place. Supports fractional Moto2/Moto3 scores. On narrow cards the bar is hidden, leaving essentials readable.
+1. Event top card integrates 21 Apache-2.0-derived schematic track outlines, existing sensor's reported weather, provenance and responsive layout.
+2. 3–3–3 staggered grid, with verified Q1 non-transferees correctly assigned P13+ (MotoGP) and P19+ (Moto2/Moto3); never fabricate placements, and reject partial/contradictory public grids.
+3. Fixed cross-session timing subtitle: **Nästa: MotoGP Sprint** no longer incorrectly displays a prior **STATUS OKÄND: Moto2 Q2**. Uses **MELLAN PASSEN** or accurately labelled previous-pass rider data; retains safe unmatched start-time handling.
+4. Existing high-contrast three-class standings and on-demand rider popup are retained.
 
-Backend timing, poll, archive, static standings sources, spoiler guard and existing custom component names are unchanged. HACS Next remains one bundled JavaScript file at `/motogp_sensor/ha-motogp-next.js` (without `?v=`).
+## Verification and next steps
 
-## Verification
+Dev CI checks backend, archive, frontend, assembled JS and regressions. The b7 beta release gate additionally tests qualified Q1 projection, the actual bundled JS for header/grid and status, and HACS integrity. Manual Home Assistant inspection remains necessary.
 
-New frontend tests cover podium ranks, percent bars, category-specific gap calculation, neutral and malicious-color fallbacks, and narrow-card CSS. The beta gate executes the UI regression on JavaScript extracted from the actual HACS-distributed Next bundle, as well as package integrity, backend regression and syntax checks. Manual acceptance in Home Assistant is still required.
-
-MGP brand image files are separately approved but have not yet been committed; b4 intentionally excludes the icon. No promotion to main.
+Use existing clean Lovelace resource `/motogp_sensor/ha-motogp-next.js` without `?v=`. Preserve `/config/motogp_data/`. Wait until the current live session ends before updating or restarting HA. The custom MGP brand icon is approved but still uncommitted and not included in b7.

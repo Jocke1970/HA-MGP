@@ -14,6 +14,7 @@ from homeassistant.util import dt as dt_util
 
 from .api import MotogpApiClient, MotogpApiError
 from .session_lap_archive import ArchiveError, SessionLapArchive
+from .qualifying_grid import q1_eliminated_rows
 from .schedule_time import (
     canonical_time_zone,
     scheduled_session_start_near,
@@ -115,6 +116,7 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "constructor_standings": [],
             "last_race_results": [],
             "start_grids": {},
+            "qualifying_q1_eliminated": {},
             "records_by_category": {},
             "records_session_by_category": {},
             "categories": [],
@@ -607,6 +609,7 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             active_names = []
 
         grids: dict[str, list[dict[str, Any]]] = {}
+        q1_eliminated: dict[str, list[dict[str, Any]]] = {}
         records_by_category: dict[str, list[dict[str, Any]]] = {}
         record_sessions: dict[str, dict[str, Any]] = {}
 
@@ -651,6 +654,46 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     err,
                 )
                 sessions = []
+
+            # Never expose classified Q1 eliminations during Q1 itself.
+            # Only request them after this category's scheduled Q2 begins.
+            # Q1->Q2 promotion rules come from the 2026 FIM regulations.
+            q1_sessions = [
+                sess for sess in sessions
+                if isinstance(sess, dict) and str(sess.get("type") or "").upper() == "Q"
+                and str(sess.get("number")) == "1" and sess.get("id")
+            ]
+            q2_sessions = [
+                sess for sess in sessions
+                if isinstance(sess, dict) and str(sess.get("type") or "").upper() == "Q"
+                and str(sess.get("number")) == "2" and sess.get("id")
+            ]
+            if (
+                category_name in ("MotoGP", "Moto2", "Moto3")
+                and len(q1_sessions) == 1
+                and len(q2_sessions) == 1
+                and not self.no_spoiler
+            ):
+                q2 = q2_sessions[0]
+                q2_start = parse_api_date(
+                    session_wall_time_to_utc(
+                        q2.get("date"), self.static.get("schedule_time_zone")
+                    ) or q2.get("date")
+                )
+                if q2_start is not None and now >= q2_start:
+                    try:
+                        q1_payload = await self.api.async_get_classification(
+                            q1_sessions[0]["id"]
+                        )
+                    except MotogpApiError as err:
+                        _LOGGER.debug("%s Q1 classification unavailable: %s", category_name, err)
+                    else:
+                        q1_eliminated[category_name] = q1_eliminated_rows(
+                            q1_payload, category_name,
+                            self.static.get("rider_standings_by_category", {}).get(
+                                category_name, []
+                            ),
+                        )
 
             eligible: list[dict[str, Any]] = []
             for sess in sessions:
@@ -710,6 +753,7 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             record_sessions[category_name] = source_session
 
         self.static["start_grids"] = grids
+        self.static["qualifying_q1_eliminated"] = q1_eliminated
         self.static["records_by_category"] = records_by_category
         self.static["records_session_by_category"] = record_sessions
 
