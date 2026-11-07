@@ -4,7 +4,7 @@
   const OVERVIEW='ha-motogp-next-overview-card';
   const TIMING='ha-motogp-next-timing-card';
   const REQUIRED='0.2.0-split.2';
-  const BUILD='ui-preview-20261107-06';
+  const BUILD='ui-preview-20261107-07';
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const valid=v=>v!==null&&v!==undefined&&!['','unknown','unavailable','none','null','hidden'].includes(String(v).trim().toLowerCase());
   const cat=v=>{const m=/moto\s*(gp|2|3|e)/i.exec(String(v||''));return m?({gp:'MotoGP','2':'Moto2','3':'Moto3',e:'MotoE'})[m[1].toLowerCase()]:String(v||'');};
@@ -198,9 +198,9 @@
     Overview.prototype._click=function(e) {
       const target=e.target;
       const standings=target?.closest?.('[data-motogp-standings-toggle]');
-      if(standings){this._standingOpen=!this._standingOpen;this._render();return;}
+      if(standings){this._standingOpen=!this._standingOpen;if(this._standingOpen)this._scheduleOpen=false;this._render();return;}
       const schedule=target?.closest?.('[data-motogp-schedule-toggle]');
-      if(schedule){this._scheduleOpen=!this._scheduleOpen;this._render();return;}
+      if(schedule){this._scheduleOpen=!this._scheduleOpen;if(this._scheduleOpen)this._standingOpen=false;this._render();return;}
       const tab=target?.closest?.('[data-motogp-standing]');
       if(tab){this._standingTab=tab.getAttribute('data-motogp-standing');this._render();return;}
       return oldClick.call(this,e);
@@ -259,7 +259,7 @@
       const buttons=['Moto3','Moto2','MotoGP'].map(c=>`<button type="button" class="np-tab"`+
         ` data-motogp-standing="${c}" role="tab" aria-selected="${c===tab}">${c}</button>`).join('');
       const head=`<section class="np-card" aria-label="VM-ställning"><div class="np-heading">`+
-        `<span>🏆 VM-ställning</span><span class="np-note">Moto3 · Moto2 · MotoGP</span></div>`+
+        `<span>🏆 VM-ställning</span></div>`+
         `<div class="np-tabs" role="tablist" aria-label="VM-klass">${buttons}</div>`;
       // Use only the matching class from its own API category. The legacy
       // MotoGP key is a fallback for older backend versions, never for Moto2/3.
@@ -268,7 +268,7 @@
         classes[tab]:tab==='MotoGP'?state?.attributes?.standings:null;
       if(!Array.isArray(rows)||!rows.length)return head+`<div class="np-empty">${esc(tab)}: inväntar verifierad klassvis data från backend.</div></section>`;
       const note='<p class="np-note" style="padding:11px 13px 13px">Senast publicerad VM-ställning · uppdateras separat från livetiming.</p>';
-      const shown=rows.slice(0,10);
+      const shown=rows;
       const numericPoints=v=>valid(v)&&Number.isFinite(Number(v))&&Number(v)>=0?Number(v):null;
       const leader=Math.max(0,...shown.map(r=>numericPoints(r.points)??0));
       const formatted=n=>String(Math.round(n*100)/100).replace('.',',');
