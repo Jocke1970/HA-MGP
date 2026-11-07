@@ -16,6 +16,8 @@ on:
       - 'scripts/build-next-ui-preview.py'
       - 'tests/frontend-next-one.cjs'
       - 'tests/frontend-next-ui-preview.cjs'
+      - 'tests/frontend-mobile-laps.cjs'
+      - 'tests/frontend-next-qual-grid.cjs'
       - '.github/workflows/next-one-distribute.yml'
 
 permissions:
