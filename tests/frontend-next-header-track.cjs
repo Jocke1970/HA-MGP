@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const file=process.argv[2]||'frontend/ha-motogp-next-header-track.js';
 const src=fs.readFileSync(file,'utf8');
-assert.match(src,/header-track-weather-20261107-07/);
+assert.match(src,/header-track-weather-20261107-08/);
 const docs=[];
 class Overview {
   static buildInfo={version:'0.2.0-split.2'};
@@ -64,7 +64,8 @@ const context={customElements:{
   assert.doesNotMatch(card.root.innerHTML.slice(card.root.innerHTML.indexOf('</section>')+10),
     /mgp-venue-strip/,'venue is not duplicated below the event header');
   assert.match(eventHeader[1],/np-top-actions/,'existing standings toggle remains in left column');
-  assert.match(eventHeader[1],/data-mgp-schedule-jump/,'schedule navigation in hero');
+  assert.match(eventHeader[1],/data-mgp-schedule-jump/,'schedule toggle in hero');
+  assert.match(eventHeader[1],/aria-expanded="false"/,'schedule initially collapsed');
   assert.match(eventHeader[1],/mgp-next-chip/,'next session chip in hero');
   assert.match(eventHeader[1],/MotoGP · Warm Up/,'next session type is displayed');
   assert.match(eventHeader[1],/data-next-start=/,'chip uses existing countdown refresh selector');
@@ -83,6 +84,7 @@ const context={customElements:{
   assert.doesNotMatch(card.root.innerHTML,/OLD SEPARATE WEATHER PANEL/);
   assert.ok(eventHeader[1].indexOf('np-top-actions')<eventHeader[1].indexOf('mgp-weather-panel'),
     'VM toggle remains beside event title, before the weather and circuit');
+  assert.doesNotMatch(card.root.innerHTML,/<section>Schedule<\/section>/,'schedule hidden until opened');
   const first=card.root.innerHTML;
   card._render();assert.equal(card.root.innerHTML,first,'no duplicate panels');
   assert.equal(docs.length,1,'single style');
