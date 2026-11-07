@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const file=process.argv[2]||'frontend/ha-motogp-next-header-track.js';
 const src=fs.readFileSync(file,'utf8');
-assert.match(src,/header-track-weather-20261107-03/);
+assert.match(src,/header-track-weather-20261107-04/);
 const docs=[];
 class Overview {
   static buildInfo={version:'0.2.0-split.2'};
@@ -49,6 +49,9 @@ const context={customElements:{
   assert.match(eventHeader[1],/mgp-country-flag/,'host country flag beside event name');
   assert.match(eventHeader[1],/🇶🇦/,'Qatar must use country flag, not guessed SVG');
   assert.match(eventHeader[1],/aria-label="Flagga: Qatar"/);
+  assert.match(eventHeader[1],/UI-information/,'collapsible UI diagnostics');
+  assert.match(eventHeader[1],/Backendversion hanteras separat/);
+  assert.match(eventHeader[1],/Frontend: /);
   assert.match(eventHeader[1],/mgp-weather-panel/);
   assert.match(eventHeader[1],/mgp-circuit-panel/);
   assert.ok(eventHeader[1].indexOf('mgp-hero-copy')<eventHeader[1].indexOf('mgp-weather-panel'),
