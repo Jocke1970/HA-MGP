@@ -184,7 +184,7 @@ def check_websocket_dependencies() -> None:
 def check_beta_version() -> None:
     manifest = json.loads((INTEGRATION / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["domain"] == "motogp_sensor"
-    assert manifest["version"] == "2026.11.0b10"
+    assert manifest["version"] == "2026.11.0b11"
 
 
 if __name__ == "__main__":

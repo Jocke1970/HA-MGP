@@ -1,21 +1,22 @@
-# MotoGP Sensor 2026.11.0b10 — MGP-logga, nationsflagga och UI-information
+# MotoGP Sensor 2026.11.0b11 — snabbval i toppkortet
 
-**HACS beta:** `2026.11.0b10` · **MotoGP Next UI:** `0.3.0-dev.21`.
+**HACS beta:** `2026.11.0b11` · **MotoGP Next UI:** `0.3.0-dev.22`.
 
-## Sedan b9
+## Ändringar sedan b10
 
-- Godkänd **MGP-logga** i toppkortets övre vänstra del, inbäddad som SHA256-kontrollerad WebP i den samlade JS-filen.
-- **Nationsflagga** bredvid GP-rubriken för kända landvärden (t.ex. 🇶🇦 Qatar); inget gissas vid okänd landskod.
-- Hopfällbar **UI-information** med frontendversion, baskortversion och tydligt separerad backendversion.
-- Oförändrad vit toppkortslayout: GP-information till vänster, banväder i mitten och bana längst till höger.
-- Behåller senaste/snabbaste varv, tabeller och spoilerläge.
-- Experimentell knapp för arkiverade pass finns i UI men kräver backend-WS `motogp_sensor/session_history`, **som inte ingår i denna UI-fokuserade beta**. Knappen är inte verifierad i HACS-betan.
-- Ingen ändring av Red Flag, pollning, TV-delay eller `main`.
+- **Helgschema:** ny knapp i toppkortet som navigerar till befintligt helgschema.
+- **Nästa pass:** kompakt chip som visar klass, sessionsnamn och nedräkning med redan befintlig 1-sekundsuppdatering. Tid hämtas ur schemasensorn; ingen påhittad starttid.
+- **VM-ställning:** befintligt reglage behålls, men högerställs i samma rad som genvägen och sessionschipet.
+- **UI-information:** flyttad från GP-beskrivningen till kortets befintliga fot. Endast en versionspanel visas.
+- GP-flagga och MGP-logga samt väder/bana bevarade. GP-rubriken är justerad för att hålla flagga och rubrik ihop där bredden tillåter.
+- Backend, Red Flag, TV-delay, arkivfunktion och `main` är oförändrade. Experimentell historik kräver separat backendstöd.
 
-## Test och installation
+## Installation och verifiering
 
-Installera prerelease **2026.11.0b10** från HACS beta när inget pass pågår. Starta om HA och ladda om webbläsaren med `Ctrl+Shift+R`. Behåll EN Lovelace-resurs: `/motogp_sensor/ha-motogp-next.js` (utan extra `?v=`).
+Välj HACS beta **2026.11.0b11**, starta om HA när inget pass pågår och gör hård omladdning (`Ctrl+Shift+R`). Behåll exakt en JavaScript module-resurs: `/motogp_sensor/ha-motogp-next.js` utan `?v=`.
 
-Kontrollera MGP-logga, nationsflagga, `UI-information` (`0.3.0-dev.21`), väder/bana och mobilvy. Livevarvtider kan inte slutverifieras utan pågående pass.
+Verifiera toppkortets knappar, chip och UI-information i foten. Livevarvtider kan inte slutverifieras utan pågående pass.
 
-**Rollback:** HACS `2026.11.0b9`; bevara `/config/motogp_data/`, dashboard och konfigurationspost. Schematisk banform hämtad från [GameDev-Toolkit/global-motorsport-circuits-json](https://github.com/GameDev-Toolkit/global-motorsport-circuits-json) (Apache-2.0). Projektet är oberoende av officiella MotoGP.
+**Rollback:** Installera beta `2026.11.0b10` via HACS. Bevara `/config/motogp_data/`, dashboard och integrationens konfigurationspost.
+
+Banornas schematiska konturer: [GameDev-Toolkit/global-motorsport-circuits-json](https://github.com/GameDev-Toolkit/global-motorsport-circuits-json), Apache-2.0. Projektet är fristående från officiella MotoGP.
