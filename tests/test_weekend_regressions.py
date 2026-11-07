@@ -164,7 +164,7 @@ def check_live_poll_freshness_contract() -> None:
 def check_beta_version() -> None:
     manifest = json.loads((INTEGRATION / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["domain"] == "motogp_sensor"
-    assert manifest["version"] == "2026.10.0b5"
+    assert manifest["version"] == "2026.11.0b1"
 
 
 if __name__ == "__main__":
@@ -174,4 +174,4 @@ if __name__ == "__main__":
     check_near_session_standby_polling()
     check_live_poll_freshness_contract()
     check_beta_version()
-    print("Weekend regressions OK: R/D polling, Mandalika timezone, tiered session-start polling, poll freshness metadata, broadcast URL template, 2026.10.0b5")
+    print("Weekend regressions OK: R/D polling, Mandalika timezone, tiered session-start polling, poll freshness metadata, broadcast URL template, 2026.11.0b1")

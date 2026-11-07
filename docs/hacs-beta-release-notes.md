@@ -1,29 +1,29 @@
-# MotoGP Sensor 2026.10.0b5 — live-feed freshness beta
+# MotoGP Sensor 2026.11.0b1 — backend + bundled Next UI beta
 
-**Backend-only HACS prerelease.** Builds directly on the field-tested 2026.10.0b4 backend. The integration domain remains `motogp_sensor` and existing HA config entries and /config/motogp_data archives must be preserved.
+Combined HACS prerelease with the unchanged field-tested b5 timing backend and the fixed Next frontend. The integration domain remains `motogp_sensor`.
 
-## What changes from b4
+## What is new since 2026.10.0b5
 
-- Coordinator now records `live_poll_at` in UTC at **each successful live timing API poll**, whether the selected primary source or PulseLive fallback succeeded. A failed request does not advance this timestamp, and an unchanged payload still counts as a successful poll.
-- `sensor.motogp_rider_positions` now exposes `live_poll_at` (ISO 8601 string or null before the first success) and `live_poll_interval_seconds`. Poll metadata is scoped to this one entity rather than updating every live sensor on each refresh.
-- New weekend regression checks verify the backend timestamp contract and b5 manifest version.
-- Retains b4's tiered session-start polling and all earlier Red Flag/Delayed and IANA timezone fixes, without changing TV delay or session archive format.
+- **Both JS cards ship inside the HACS integration:** `custom_components/motogp_sensor/www/ha-motogp-next.js` and `www/ha-motogp-card.js`. No manual copying to `/config/www`.
+- **Read-only UI resource URLs:** `/motogp_sensor/ha-motogp-next.js` (overview + timing together) and `/motogp_sensor/ha-motogp-card.js` (legacy preview). These paths are served by Home Assistant after the integration loads.
+- **Next frontend 0.3.0-dev.7:** the live-feed freshness chip renders the correct green, amber, red or unknown status immediately on a card render. Previously it could remain on "Uppdateringstid okänd" because it waited for a timer that had not started on a card already connected to the DOM. The next connected render also restores its one-second timer.
+- **Grounded freshness:** the badge uses `sensor.motogp_rider_positions.attributes.live_poll_at` and `live_poll_interval_seconds`, never HA's `last_updated`.
+- **Tests:** package integrity and HTTP path registration, front-end syntax, timing badge first render, late attachment, poll interval, delayed/missing feed, spoiler mode and timer teardown.
 
-### Evidence from Mandalika, 9–11 October 2026
+## Unchanged
 
-Sunday JSON review: MotoGP Warm Up (142 observations), Moto3 Race (445), Moto2 Race (343), MotoGP Race (478). All four captured lap 1 for every recorded rider. Three archives report complete coverage; Moto2 Race reports one missing lap (Holgado, rider 8671, lap 13). This is not a session-start loss. The Warm Up contains one early timestamp for Zarco's lap 7; per operator decision, this historical anomaly is **not** treated as a blocker to the b5 freshness-only prerelease. The archive does not fabricate missing laps.
+- b5 successful live-poll timestamp, R/D and prestart polling, timezone correction, entity names, data source, TV delay and archive structure.
+- `/config/motogp_data` and the existing `/config/www/ha-motogp-next.js` remain untouched.
+- No duplicate Lovelace resource is automatically registered. **Do not add a second URL defining the same custom elements.**
+- Stable `main` is not changed. This is a beta for acceptance testing on HA.
 
-Current dev CI for the freshness change passed weekend regression, frontend, and one-resource Next checks. The HACS beta publishing workflow recompiles the integration and reruns weekend and archive tests before tagging the release.
+## Installation and controlled UI migration
 
-## Frontend remains separate
+1. Back up HA, keeping `/config/motogp_data/` and the existing JS under `/config/www/`.
+2. Upgrade the existing HACS MotoGP integration to prerelease **2026.11.0b1**, keeping the existing config entry; restart Home Assistant.
+3. Confirm that `/motogp_sensor/ha-motogp-next.js` returns JavaScript through your HA address.
+4. Go to **Settings → Dashboards → Resources**. **Edit the existing** JavaScript-module resource `/local/ha-motogp-next.js` to `/motogp_sensor/ha-motogp-next.js?v=2026.11.0b1`. Do not create a second Next resource.
+5. Reload the dashboard with `Ctrl+Shift+R`; confirm UI `0.3.0-dev.7`, preserved overview/timing, and a meaningful freshness indicator during a live session.
+6. Roll back the UI by restoring the old resource URL; roll back the backend by selecting HACS prerelease `2026.10.0b5` and restarting HA.
 
-The matching Next UI candidate is `0.3.0-dev.6`, maintained as `/config/www/ha-motogp-next.js` and loaded through `/local/ha-motogp-next.js`. It uses `sensor.motogp_rider_positions.attributes.live_poll_at` for its freshness indicator rather than Home Assistant's `last_updated`. This **is not bundled or installed by HACS**; backend b5 does not automatically upgrade the Lovelace JS. Frontend cache-busting/version verification remains a separate deployment step.
-
-## Install and rollback
-
-1. Back up HA and preserve `/config/motogp_data/` and `/config/www/ha-motogp-next.js`.
-2. In HACS with prereleases enabled, select exactly `2026.10.0b5`; retain the existing MotoGP config entry.
-3. Restart Home Assistant, confirm integration/entities, then check `sensor.motogp_rider_positions` attributes while live feed polls succeed.
-4. Roll back to `2026.10.0b4` via HACS and restart if needed; do not run old Python overlay scripts or delete the config entry.
-
-`main` is deliberately unchanged. Successful CI and prior b4 field evidence support a b5 beta, but are not a claim of b5 on-host validation.
+The bundled legacy JS card is optional and should not be added unless actually needed. A green CI run is not a substitute for an on-host HACS/HA smoke test.

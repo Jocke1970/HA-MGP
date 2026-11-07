@@ -1,48 +1,31 @@
-# HACS beta installation, upgrade and rollback — 2026.10.0b5
+# HACS beta installation and rollback — 2026.11.0b1
 
-**Do not use 2026.10.0b1.** It contains an import-time `NameError` in the Broadcast URL constant and cannot load the integration. Upgrade directly to **2026.10.0b5**.
+Keep the existing MotoGP config entry. The integration domain is `motogp_sensor`.
 
-This is an independent derived integration based on Liionboy/motogp_sensor, not an official MotoGP release. Domain remains `motogp_sensor`.
+## Upgrade via HACS
 
-## Upgrade from the installed ha-motogp beta
+1. Back up Home Assistant. Preserve `/config/motogp_data/` and `/config/www/ha-motogp-next.js`.
+2. Enable HACS prereleases and install **2026.11.0b1** for the existing MotoGP Sensor integration.
+3. Restart Home Assistant to load new Python files and register the HTTP resource paths.
+4. Check MotoGP entities. During live data, `sensor.motogp_rider_positions` should expose `live_poll_at` and `live_poll_interval_seconds`.
+5. Confirm `/motogp_sensor/ha-motogp-next.js` can be opened via your Home Assistant server.
 
-1. Make/confirm a Home Assistant backup. Preserve `/config/motogp_data/` and the independent `/config/www/ha-motogp-next.js`.
-2. Keep the existing MotoGP integration under **Settings → Devices & services**. Do **not** delete or re-add it.
-3. In HACS, keep **Pre-release** enabled for the ha-motogp repository and select the explicit prerelease **2026.10.0b5**.
-4. Confirm the downloaded manifest reports `2026.10.0b5`.
-5. Restart Home Assistant once after the Python integration update.
-6. Check existing MotoGP entities and HA logs before touching the dashboard.
+## Enable the bundled Next frontend
 
-Do not run the old `install-session-archive-beta.py` overlay or the historical upstream 1.0.10 patch over this HACS version.
+The JS files now come with HACS, but the integration **does not change Lovelace resources**.
 
-## What HACS updates
+In **Settings → Dashboards → Resources**, find your **existing** resource with URL `/local/ha-motogp-next.js`. Change **that same resource URL** to:
 
-HACS replaces the Python integration under `custom_components/motogp_sensor/`. It does not manage:
-- `/config/motogp_data/`;
-- the old observation JSONL;
-- `/config/www/ha-motogp-next.js`.
+```text
+/motogp_sensor/ha-motogp-next.js?v=2026.11.0b1
+```
 
-## Next dashboard dev.6 (separate deployment)
+Keep type **JavaScript module**; do not add a duplicate resource. If resources are configured via YAML, update the single existing `resources:` entry instead. Reload the dashboard with `Ctrl+Shift+R`.
 
-The timezone-corrected, feed-freshness-aware Next JS 0.3.0-dev.6 is a separate update. Backend b5 does not automatically replace the existing JS. It is still one resource at `/local/ha-motogp-next.js`; do not add a duplicate Lovelace resource. The pinned installer verifies the expected JS blob before replacing the file.
+This release's Next JS identifies as **0.3.0-dev.7**; overview and timing still share one JS resource. `/config/www/ha-motogp-next.js` is left intact for rollback. The optional `/motogp_sensor/ha-motogp-card.js` is the legacy preview only.
 
-After updating the JS, a hard browser reload may be needed if the browser still serves an older frontend file.
+## Acceptance and rollback
 
+Check that a valid recent `live_poll_at` immediately yields `● Feed OK · N s` during a live session. Delayed or missing polls should show amber or red states, and invalid/missing timestamps should show `Uppdateringstid okänd`. Confirm session/lap data and spoiler mode still work.
 
-## b5 feed freshness check
-
-Confirm that `sensor.motogp_rider_positions` has `live_poll_at` and `live_poll_interval_seconds` attributes. During successful API polling the timestamp should advance even when the rider table does not change. It should not advance on failed primary + fallback polls. The Next dev.6 freshness chip uses this timestamp instead of HA `last_updated`; verify that this JS build actually loaded before judging the chip.
-
-## Live acceptance checks
-
-During a session:
-- `sensor.motogp_session_status` may move `I/S → R → I/S` without leaving the session.
-- Under Red Flag/Delayed, live entities should continue receiving coordinator updates on the active cadence rather than pausing for five minutes.
-- `sensor.motogp_next_race` should expose `time_zone`; its `sessions_all` entries should contain `date_utc` when timezone metadata resolved.
-- In Sweden on 2026-10-09, the Mandalika Moto2 Practice wall time 14:05 should render as 08:05 in the Next dashboard.
-
-Archive checks remain read-only: inspect new JSON only after a qualifying session; do not fabricate missing laps or import the old JSONL automatically.
-
-## Rollback
-
-Preferred rollback is the Home Assistant backup. Alternatively, use HACS to select the previously known working tagged beta, then restart HA once. Do not delete the HA MotoGP config entry merely to change code versions. Preserve `/config/motogp_data/` and the separate frontend file.
+For a UI-only problem, revert the one resource URL to `/local/ha-motogp-next.js` and hard-reload. For backend problems, downgrade HACS to `2026.10.0b5` and restart. Do not remove the MotoGP config entry or run historical Python overlays.

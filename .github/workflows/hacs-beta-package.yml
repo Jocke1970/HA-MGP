@@ -9,6 +9,8 @@ on:
       - 'custom_components/motogp_sensor/**'
       - 'tests/test_weekend_regressions.py'
       - 'tests/test_session_lap_archive.py'
+      - 'tests/test_frontend_package.py'
+      - 'tests/frontend-live-freshness.cjs'
       - 'docs/hacs-beta-release-notes.md'
 
 permissions:
@@ -28,17 +30,22 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-
-      - name: Compile complete integration
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Compile integration
         run: python -m compileall -q custom_components/motogp_sensor
-
-      - name: Run October weekend regressions
-        run: python tests/test_weekend_regressions.py
-
-      - name: Run session archive regressions
-        run: python -m unittest discover -s tests -p 'test_session_lap_archive.py' -v
-
-      - name: Verify HACS package metadata and required runtime
+      - name: Run backend and archive regression tests
+        run: |
+          python tests/test_weekend_regressions.py
+          python -m unittest discover -s tests -p 'test_session_lap_archive.py' -v
+      - name: Verify bundled frontend and safe static registration
+        run: |
+          python tests/test_frontend_package.py
+          node --check custom_components/motogp_sensor/www/ha-motogp-next.js
+          node --check custom_components/motogp_sensor/www/ha-motogp-card.js
+          TZ=Europe/Stockholm node tests/frontend-live-freshness.cjs custom_components/motogp_sensor/www/ha-motogp-next.js
+      - name: Verify HACS package metadata and runtime files
         run: |
           python - <<'PY'
           import json
@@ -46,44 +53,36 @@ jobs:
 
           root = Path('custom_components/motogp_sensor')
           manifest = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
-
           assert manifest['domain'] == 'motogp_sensor'
-          assert manifest['version'] == '2026.10.0b5'
+          assert manifest['version'] == '2026.11.0b1'
           assert manifest.get('codeowners') == ['@Jocke1970']
-
+          assert {'http', 'frontend'}.issubset(manifest['dependencies'])
           required = {
-              '__init__.py',
-              'api.py',
-              'const.py',
-              'coordinator.py',
-              'helpers.py',
-              'schedule_time.py',
-              'sensor.py',
-              'session_lap_archive.py',
+              '__init__.py', 'api.py', 'const.py', 'coordinator.py',
+              'helpers.py', 'schedule_time.py', 'sensor.py',
+              'session_lap_archive.py', 'web_assets.py',
+              'www/ha-motogp-next.js', 'www/ha-motogp-card.js',
           }
           missing = sorted(name for name in required if not (root / name).is_file())
           assert not missing, f'Missing runtime files: {missing}'
-
           hacs = json.loads(Path('hacs.json').read_text(encoding='utf-8'))
           assert hacs.get('name')
           assert not hacs.get('content_in_root')
           assert not hacs.get('zip_release')
-
-          print('Verified HACS beta: 2026.10.0b5')
+          print('Verified HACS beta: 2026.11.0b1 including Next frontend 0.3.0-dev.7')
           PY
-
       - name: Publish tagged GitHub prerelease
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          TAG=2026.10.0b5
+          TAG=2026.11.0b1
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "$TAG already exists; leaving the immutable prerelease untouched."
             gh release view "$TAG" --json tagName,isPrerelease,url,targetCommitish
             exit 0
           fi
           gh release create "$TAG" --target "$(git rev-parse HEAD)" --prerelease \
-            --title 'MotoGP Sensor 2026.10.0b5 — weekend beta' \
+            --title 'MotoGP Sensor 2026.11.0b1 — bundled Next UI beta' \
             --notes-file docs/hacs-beta-release-notes.md
           gh release view "$TAG" --json tagName,isPrerelease,url,targetCommitish
