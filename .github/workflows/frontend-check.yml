@@ -21,22 +21,23 @@ jobs:
           node-version: '22'
       - name: JavaScript syntax (mobile legacy, isolated next, and split cards)
         run: |
-          node --check frontend/ha-motogp-card.js
-          node --check frontend/ha-motogp-next-card.js
-          node --check frontend/ha-motogp-next-split.js
-          node --check frontend/ha-motogp-next-split-enhancements.js
-          node --check frontend/ha-motogp-next-gap-trends.js
-          node --check frontend/ha-motogp-next-mobile-laps.js
-          node --check frontend/ha-motogp-next-qual-grid.js
-          node --check frontend/ha-motogp-next-header-track.js
-          node --check frontend/ha-motogp-next-session-history.js
+          node --check frontend/ha-mgp-legacy-card.js
+          node --check frontend/ha-mgp-core.js
+          node --check frontend/ha-mgp-split.js
+          node --check frontend/ha-mgp-split-enhancements.js
+          node --check frontend/ha-mgp-gap-trends.js
+          node --check frontend/ha-mgp-mobile-laps.js
+          node --check frontend/ha-mgp-qual-grid.js
+          node --check frontend/ha-mgp-header-track.js
+          node --check frontend/ha-mgp-session-history.js
       - name: Build ONE distributable Next resource (pinned source and syntax)
         run: |
-          python3 scripts/build-next-one.py frontend /tmp/ha-motogp-next.js
-          node --check /tmp/ha-motogp-next.js
+          python3 scripts/build-next-one.py frontend /tmp/ha-mgp.js
+          node --check /tmp/ha-mgp.js
       - name: Bundled HACS frontend package and static route checks
         run: |
           python3 tests/test_frontend_package.py
+          node --check custom_components/motogp_sensor/www/ha-mgp.js
           node --check custom_components/motogp_sensor/www/ha-motogp-next.js
           node --check custom_components/motogp_sensor/www/ha-motogp-card.js
           # Exact parity to the reviewed dev.18 dist is asserted by the Python package test.
@@ -44,32 +45,32 @@ jobs:
       - name: Reproduce and regress live-feed badge refresh
         env:
           TZ: Europe/Stockholm
-        run: node tests/frontend-live-freshness.cjs custom_components/motogp_sensor/www/ha-motogp-next.js
+        run: node tests/frontend-live-freshness.cjs custom_components/motogp_sensor/www/ha-mgp.js
       - name: Responsive mobile timing and rider history popup regression
         env:
           TZ: Europe/Stockholm
         run: |
-          node tests/frontend-mobile-laps.cjs custom_components/motogp_sensor/www/ha-motogp-next.js
+          node tests/frontend-mobile-laps.cjs custom_components/motogp_sensor/www/ha-mgp.js
       - name: Live qualifying grid and no-spoiler regression
         env:
           TZ: Europe/Stockholm
-        run: node tests/frontend-next-qual-grid.cjs frontend/ha-motogp-next-qual-grid.js
+        run: node tests/frontend-next-qual-grid.cjs frontend/ha-mgp-qual-grid.js
       - name: Revised overview UI and independent Moto2/3 standings
         env:
           TZ: Europe/Stockholm
-        run: node tests/frontend-next-ui-preview.cjs frontend/ha-motogp-next-ui-preview.js
+        run: node tests/frontend-next-ui-preview.cjs frontend/ha-mgp-ui.js
       - name: Sprint/Race last-lap plus fastest-lap regression with clickable rows
         env:
           TZ: Europe/Stockholm
-        run: node tests/frontend-next-lap-pair.cjs frontend/ha-motogp-next-ui-preview.js frontend/ha-motogp-next-mobile-laps.js
+        run: node tests/frontend-next-lap-pair.cjs frontend/ha-mgp-ui.js frontend/ha-mgp-mobile-laps.js
       - name: Responsive event-header track map and historical weather data
         env:
           TZ: Europe/Stockholm
-        run: node tests/frontend-next-header-track.cjs frontend/ha-motogp-next-header-track.js
+        run: node tests/frontend-next-header-track.cjs frontend/ha-mgp-header-track.js
       - name: Finished session archive viewer and spoiler fences
         env:
           TZ: Europe/Stockholm
-        run: node tests/frontend-session-history.cjs frontend/ha-motogp-next-session-history.js
+        run: node tests/frontend-session-history.cjs frontend/ha-mgp-session-history.js
       - name: Original frontend smoke tests
         env:
           TZ: Europe/Stockholm

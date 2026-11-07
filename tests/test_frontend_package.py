@@ -28,12 +28,16 @@ def check_bundle_integrity() -> None:
     # Beta is intentionally a minimal HACS tree (without frontend/ or dist/).
     # Lock bundled bytes to reviewed Git blobs in both dev and beta.
     pairs = {
+        "ha-mgp.js": (
+            "dist/ha-mgp.js",
+            None,
+        ),
         "ha-motogp-next.js": (
             "dist/ha-motogp-next.js",
             None,  # The current dev build is rebuilt from blob-locked sources and equality-checked below.
         ),
         "ha-motogp-card.js": (
-            "frontend/ha-motogp-card.js",
+            "frontend/ha-mgp-legacy-card.js",
             "fef8e3e4f09d30f01385d6e8417e96ae923cb65d",
         ),
     }
@@ -50,7 +54,8 @@ def check_bundle_integrity() -> None:
         assert len(actual) > 1000
         print(f"Bundled {filename}: {len(actual)} bytes, Git blob {git_blob_sha(actual)}")
 
-    next_js = (ASSETS / "ha-motogp-next.js").read_text(encoding="utf-8")
+    assert (ASSETS / "ha-mgp.js").read_bytes() == (ASSETS / "ha-motogp-next.js").read_bytes(), "legacy resource must exactly match canonical HA-MGP JS"
+    next_js = (ASSETS / "ha-mgp.js").read_text(encoding="utf-8")
     assert "ha-motogp-next-overview-card" in next_js
     assert "ha-motogp-next-timing-card" in next_js
     assert "0.3.0-dev.25" in next_js
@@ -159,8 +164,9 @@ def check_static_registration() -> None:
         asyncio.run(module.async_register_frontend_paths(hass))
         assert len(http.calls) == 1
         paths = http.calls[0]
-        assert len(paths) == 2
+        assert len(paths) == 3
         assert {x.url_path for x in paths} == {
+            "/motogp_sensor/ha-mgp.js",
             "/motogp_sensor/ha-motogp-next.js",
             "/motogp_sensor/ha-motogp-card.js",
         }

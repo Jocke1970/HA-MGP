@@ -1,18 +1,18 @@
-name: Publish single MotoGP Next JS
+name: Publish HA-MGP JS with compatibility alias
 
 on:
   push:
     branches: [dev]
     paths:
-      - 'frontend/ha-motogp-next-card.js'
-      - 'frontend/ha-motogp-next-split.js'
-      - 'frontend/ha-motogp-next-split-enhancements.js'
-      - 'frontend/ha-motogp-next-gap-trends.js'
-      - 'frontend/ha-motogp-next-ui-preview.js'
-      - 'frontend/ha-motogp-next-mobile-laps.js'
-      - 'frontend/ha-motogp-next-qual-grid.js'
-      - 'frontend/ha-motogp-next-header-track.js'
-      - 'frontend/ha-motogp-next-session-history.js'
+      - 'frontend/ha-mgp-core.js'
+      - 'frontend/ha-mgp-split.js'
+      - 'frontend/ha-mgp-split-enhancements.js'
+      - 'frontend/ha-mgp-gap-trends.js'
+      - 'frontend/ha-mgp-ui.js'
+      - 'frontend/ha-mgp-mobile-laps.js'
+      - 'frontend/ha-mgp-qual-grid.js'
+      - 'frontend/ha-mgp-header-track.js'
+      - 'frontend/ha-mgp-session-history.js'
       - 'scripts/build-next-one.py'
       - 'scripts/build-next-ui-preview.py'
       - 'tests/frontend-next-one.cjs'
@@ -49,21 +49,23 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p dist
-          node --check frontend/ha-motogp-next-ui-preview.js
-          node tests/frontend-next-ui-preview.cjs frontend/ha-motogp-next-ui-preview.js
-          python3 scripts/build-next-ui-preview.py frontend dist/ha-motogp-next.js
-          node --check dist/ha-motogp-next.js
-          cp dist/ha-motogp-next.js custom_components/motogp_sensor/www/ha-motogp-next.js
-          node tests/frontend-mobile-laps.cjs dist/ha-motogp-next.js
-          node tests/frontend-next-qual-grid.cjs frontend/ha-motogp-next-qual-grid.js
-          node tests/frontend-next-header-track.cjs frontend/ha-motogp-next-header-track.js
-          node tests/frontend-next-lap-pair.cjs frontend/ha-motogp-next-ui-preview.js frontend/ha-motogp-next-mobile-laps.js
-          node tests/frontend-session-history.cjs frontend/ha-motogp-next-session-history.js
+          node --check frontend/ha-mgp-ui.js
+          node tests/frontend-next-ui-preview.cjs frontend/ha-mgp-ui.js
+          python3 scripts/build-next-ui-preview.py frontend dist/ha-mgp.js
+          node --check dist/ha-mgp.js
+          cp dist/ha-mgp.js custom_components/motogp_sensor/www/ha-mgp.js
+          cp dist/ha-mgp.js custom_components/motogp_sensor/www/ha-motogp-next.js
+          cp dist/ha-mgp.js dist/ha-motogp-next.js
+          node tests/frontend-mobile-laps.cjs dist/ha-mgp.js
+          node tests/frontend-next-qual-grid.cjs frontend/ha-mgp-qual-grid.js
+          node tests/frontend-next-header-track.cjs frontend/ha-mgp-header-track.js
+          node tests/frontend-next-lap-pair.cjs frontend/ha-mgp-ui.js frontend/ha-mgp-mobile-laps.js
+          node tests/frontend-session-history.cjs frontend/ha-mgp-session-history.js
           python tests/test_frontend_package.py
       - name: Publish only when the compiled JS differs
         run: |
           set -euo pipefail
-          git add -- dist/ha-motogp-next.js custom_components/motogp_sensor/www/ha-motogp-next.js
+          git add -- dist/ha-mgp.js dist/ha-motogp-next.js custom_components/motogp_sensor/www/ha-mgp.js custom_components/motogp_sensor/www/ha-motogp-next.js
           if git diff --cached --quiet; then
             echo 'Distribution already current.'
             exit 0
