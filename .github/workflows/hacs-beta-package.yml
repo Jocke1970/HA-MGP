@@ -13,6 +13,7 @@ on:
       - 'tests/test_frontend_package.py'
       - 'tests/frontend-live-freshness.cjs'
       - 'tests/frontend-mobile-laps.cjs'
+      - 'tests/frontend-next-ui-preview.cjs'
       - 'tests/test_lap_history_ws.py'
       - 'tests/test_lap_history_response.py'
       - 'docs/hacs-beta-release-notes.md'
@@ -52,6 +53,20 @@ jobs:
           node --check custom_components/motogp_sensor/www/ha-motogp-card.js
           TZ=Europe/Stockholm node tests/frontend-live-freshness.cjs custom_components/motogp_sensor/www/ha-motogp-next.js
           TZ=Europe/Stockholm node tests/frontend-mobile-laps.cjs custom_components/motogp_sensor/www/ha-motogp-next.js
+      - name: Execute premium standings UI regressions on actual bundled Next JS
+        env:
+          TZ: Europe/Stockholm
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          source = Path("custom_components/motogp_sensor/www/ha-motogp-next.js").read_text(encoding="utf-8")
+          ui = source.index("/* MotoGP Next UI preview: bundled after lap-stats.")
+          mobile = source.index("/* MotoGP Next responsive timing and authenticated lap-history dialog.", ui)
+          assert ui < mobile and "leaderboard=shown.map" in source[ui:mobile]
+          Path("/tmp/ha-motogp-ui-preview-b4.js").write_text(source[ui:mobile], encoding="utf-8")
+          PY
+          node --check /tmp/ha-motogp-ui-preview-b4.js
+          node tests/frontend-next-ui-preview.cjs /tmp/ha-motogp-ui-preview-b4.js
       - name: Verify HACS package metadata and runtime files
         run: |
           python - <<'PY'
@@ -61,7 +76,7 @@ jobs:
           root = Path('custom_components/motogp_sensor')
           manifest = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
           assert manifest['domain'] == 'motogp_sensor'
-          assert manifest['version'] == '2026.11.0b3'
+          assert manifest['version'] == '2026.11.0b4'
           assert manifest.get('codeowners') == ['@Jocke1970']
           assert {'http', 'frontend'}.issubset(manifest['dependencies'])
           required = {
@@ -77,20 +92,20 @@ jobs:
           assert hacs.get('name')
           assert not hacs.get('content_in_root')
           assert not hacs.get('zip_release')
-          print('Verified HACS beta: 2026.11.0b3 including Next frontend 0.3.0-dev.10')
+          print('Verified HACS beta: 2026.11.0b4 including Next frontend 0.3.0-dev.11')
           PY
       - name: Publish tagged GitHub prerelease
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          TAG=2026.11.0b3
+          TAG=2026.11.0b4
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "$TAG already exists; leaving the immutable prerelease untouched."
             gh release view "$TAG" --json tagName,isPrerelease,url,targetCommitish
             exit 0
           fi
           gh release create "$TAG" --target "$(git rev-parse HEAD)" --prerelease \
-            --title 'MotoGP Sensor 2026.11.0b3 — rider numbers, teams and verified colors' \
+            --title 'MotoGP Sensor 2026.11.0b4 — premium MotoGP championship leaderboard' \
             --notes-file docs/hacs-beta-release-notes.md
           gh release view "$TAG" --json tagName,isPrerelease,url,targetCommitish

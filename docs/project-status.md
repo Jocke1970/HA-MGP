@@ -1,17 +1,17 @@
-# MotoGP project status — 2026-11-07
+# MotoGP status — 2026-11-07
 
-- `dev`: 2026.11.0b3, Next `0.3.0-dev.10`, four independent CI workflows passed.
-- `beta`: prerelease 2026.11.0b3, pending on-host acceptance.
+- `dev`: candidate 2026.11.0b4 with Next 0.3.0-dev.11, four green dev CI workflows.
+- `beta`: controlled prerelease 2026.11.0b4; on-host acceptance remains pending.
 - `main`: unchanged.
 
-## Added in b3
+## Scope
 
-Rider championship standings for MotoGP, Moto2 and Moto3 now display rider number, team and a verified provider-supplied team-color marker. The Results API provides rider/team data, while Broadcast API teams/colors are resolved by *broadcast* season/category UUID, not Results category UUID. Ambiguous or unavailable colors are neutral rather than guessed. The older MotoGP standings sensor retains its identity and all legacy data.
+Premium responsive leaderboard UI for the existing VM-standing cards: subdued podium rank markers, preserved rider number/team and team-color accent, a published-points bar relative to the *currently selected class leader*, explicit total points and the gap to first place. Supports fractional Moto2/Moto3 scores. On narrow cards the bar is hidden, leaving essentials readable.
 
-Added regression tests for category-scoped color matching, correct rider numbers, CSS-safe colors, mobile UI, missing data and exact JS package parity. Staged Next build is dev.10, backend b3.
+Backend timing, poll, archive, static standings sources, spoiler guard and existing custom component names are unchanged. HACS Next remains one bundled JavaScript file at `/motogp_sensor/ha-motogp-next.js` (without `?v=`).
 
-## Safety / UX
+## Verification
 
-No new frontend resource or URL query version; clean path: `/motogp_sensor/ha-motogp-next.js`. No HA restart or HACS updates during a live sprint. The approved MGP brand icon is prepared separately but remains uncommitted; it does not block timing/standings improvements.
+New frontend tests cover podium ranks, percent bars, category-specific gap calculation, neutral and malicious-color fallbacks, and narrow-card CSS. The beta gate executes the UI regression on JavaScript extracted from the actual HACS-distributed Next bundle, as well as package integrity, backend regression and syntax checks. Manual acceptance in Home Assistant is still required.
 
-Next: controlled HACS beta installation *after* sprint and manual verification before any promotion to main.
+MGP brand image files are separately approved but have not yet been committed; b4 intentionally excludes the icon. No promotion to main.
