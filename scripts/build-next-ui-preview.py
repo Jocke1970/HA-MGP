@@ -9,11 +9,11 @@ import tempfile
 
 UI_BLOB = 'b40e5065cc3bc9de4c11eefd56d977849a3a428e'
 QUAL_BLOB = '3cd24780166dcc578624221769a8a459c7b62819'
-HEADER_BLOB = 'f44ccca7e396dcb80154b90e96ff95ba8f596582'
+HEADER_BLOB = '1ec6542b62698dd4d2eec31c43b3fd15837726e9'
 HISTORY_BLOB = '8b7038e64df05cb7ffbc1e6059a966c867733fac'
 MOBILE_BLOB = '9fad86bfd7fdc2e461371efb458b17f6029df794'
-BUILD = 'next-one-20261107-18'
-VERSION = '0.3.0-dev.24'
+BUILD = 'next-one-20261107-19'
+VERSION = '0.3.0-dev.25'
 
 
 def blob(data):
@@ -71,9 +71,9 @@ def main(frontend, target):
         # reviewed source updates unnecessarily brittle.
         text = data.decode('utf-8')
     text = replace_one(text, 'build next-one-20260920-03', 'build ' + BUILD)
-    text = replace_one(text, '🏁 MOTOGP NEXT · 0.3.0-dev.3', '🏁 MOTOGP NEXT · ' + VERSION)
+    text = replace_one(text, '🏁 MOTOGP NEXT · 0.3.0-dev.3', '🏁 HA-MGP · ' + VERSION)
     text = replace_one(text, 'ha-motogp-next.js · 0.3.0-dev.3 · samlad testversion',
-                       'ha-motogp-next.js · ' + VERSION + ' · UI-preview')
+                       'HA-MGP UI · ' + VERSION + ' · UI-preview')
     # Keep the approved MGP logo self-contained in the single JS resource.
     artwork = pathlib.Path(__file__).resolve().parent.parent / 'assets' / 'approved-mgp-racing-arc.webp'
     logo_bytes = artwork.read_bytes()
