@@ -50,6 +50,7 @@ class StandingsColorTests(unittest.TestCase):
                 "points": 399,
                 "rider": {
                     "full_name": "Marc Marquez",
+                    "country": {"iso": "SPA"},
                     "number": 93,
                     "riders_api_uuid": "broadcast-93",
                 },
@@ -57,6 +58,7 @@ class StandingsColorTests(unittest.TestCase):
             }
         ])
         self.assertEqual(rows[0]["number"], 93)
+        self.assertEqual(rows[0]["nation"], "SPA")
         self.assertEqual(rows[0]["team"], "Ducati Lenovo Team")
         self.assertEqual(rows[0]["rider_api_uuid"], "broadcast-93")
         self.assertEqual(rows[0]["team_color"], "")
@@ -69,6 +71,7 @@ class StandingsColorTests(unittest.TestCase):
         enriched = helpers.add_official_standings_colors(rows, teams)
         self.assertEqual(enriched[0]["team_color"], "#CC0000")
         self.assertEqual(enriched[0]["number"], 93)
+        self.assertEqual(enriched[0]["nation"], "SPA")
         self.assertEqual(enriched[0]["points"], 399)
         self.assertEqual(rows[0]["team_color"], "", "must not mutate initial standings")
 
