@@ -2,7 +2,7 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),vm=require('node:vm');
 process.env.TZ='Europe/Stockholm';
-const bundle=fs.readFileSync(process.argv[2]||'/tmp/ha-motogp-next.js','utf8');
+const bundle=fs.readFileSync(process.argv[2]||'/tmp/ha-mgp.js','utf8');
 let now=Date.parse('2026-09-19T13:45:00+02:00');
 class Clock extends Date {constructor(...a){super(...(a.length?a:[now]));}static now(){return now;}}
 const timers=[];const registry=new Map([['ha-motogp-card',class Original{}]]);

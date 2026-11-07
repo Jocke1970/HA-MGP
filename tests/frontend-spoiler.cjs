@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 process.env.TZ = 'Europe/Stockholm';
-const script = fs.readFileSync(path.join(__dirname, '../frontend/ha-motogp-card.js'), 'utf8');
+const script = fs.readFileSync(path.join(__dirname, '../frontend/ha-mgp-legacy-card.js'), 'utf8');
 let now = Date.parse('2026-09-18T09:02:00+02:00');
 class Clock extends Date {
   constructor(...args) { super(...(args.length ? args : [now])); }

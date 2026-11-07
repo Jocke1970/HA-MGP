@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-const source = fs.readFileSync(path.join(__dirname, '../frontend/ha-motogp-card.js'), 'utf8');
+const source = fs.readFileSync(path.join(__dirname, '../frontend/ha-mgp-legacy-card.js'), 'utf8');
 const registry = new Map();
 let duplicateWarnings = 0;
 class Element {
