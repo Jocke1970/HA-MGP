@@ -37,7 +37,7 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   const standing={attributes:{
     standings:[{position:1,number:93,rider:'STANDINGS',nation:'SPA',team:'Ducati Lenovo',team_color:'#CC0000',points:250}],
     standings_by_category:{
-      MotoGP:[{position:1,number:93,rider:'STANDINGS',team:'Ducati Lenovo',team_color:'#CC0000',points:250}],
+      MotoGP:[{position:1,number:93,rider:'STANDINGS',nation:'SPA',team:'Ducati Lenovo',team_color:'#CC0000',points:250}],
       Moto2:[{position:1,number:18,rider:'MOTO2 CHAMPION',nation:'ESP',team:'Speed Up Moto2',team_color:'#123ABC',points:205},
         {position:2,number:99,rider:'RUNNER UP',team:'Other Moto2 Team',team_color:'#002244',points:202.5}],
       Moto3:[{position:1,number:28,rider:'MOTO3 CHAMPION',nation:'ITA',team:'Ajo Moto3',team_color:'#012',points:190}]
