@@ -92,6 +92,7 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   assert.match(overview.view.innerHTML,/Speed Up Moto2/);
   assert.match(overview.view.innerHTML,/background:#123ABC/);
   assert.match(overview.view.innerHTML,/RUNNER UP/);
+  assert.equal((overview.view.innerHTML.match(/class="mgp-rider-flag"/g)||[]).length,1,'never invent flag for rider with missing nation');
   assert.match(overview.view.innerHTML,/−2,5 p/);
   assert.match(overview.view.innerHTML,/width:98\.8%;background:#002244/);
   assert.match(overview.view.innerHTML,/np-standing-rank top-2/);
