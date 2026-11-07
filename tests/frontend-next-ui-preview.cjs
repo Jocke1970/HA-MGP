@@ -38,7 +38,8 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
     standings:[{position:1,number:93,rider:'STANDINGS',team:'Ducati Lenovo',team_color:'#CC0000',points:250}],
     standings_by_category:{
       MotoGP:[{position:1,number:93,rider:'STANDINGS',team:'Ducati Lenovo',team_color:'#CC0000',points:250}],
-      Moto2:[{position:1,number:18,rider:'MOTO2 CHAMPION',team:'Speed Up Moto2',team_color:'#123ABC',points:205}],
+      Moto2:[{position:1,number:18,rider:'MOTO2 CHAMPION',team:'Speed Up Moto2',team_color:'#123ABC',points:205},
+        {position:2,number:99,rider:'RUNNER UP',team:'Other Moto2 Team',team_color:'#002244',points:202.5}],
       Moto3:[{position:1,number:28,rider:'MOTO3 CHAMPION',team:'Ajo Moto3',team_color:'#012',points:190}]
     }
   }};
@@ -68,11 +69,22 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   assert.match(overview.view.innerHTML,/#93/);
   assert.match(overview.view.innerHTML,/Ducati Lenovo/);
   assert.match(overview.view.innerHTML,/background:#CC0000/);
+  assert.match(overview.view.innerHTML,/np-standing-rank top-1/);
+  assert.match(overview.view.innerHTML,/np-standing-track/);
+  assert.match(overview.view.innerHTML,/width:100\.0%;background:#CC0000/);
+  assert.match(overview.view.innerHTML,/LEDARE/);
+  assert.match(overview.view.innerHTML,/Relativ poäng/);
+  assert.match(overview.view.innerHTML,/np-standing-number/);
+  assert.match(overview.view.innerHTML,/np-standing-score/);
   overview._click({target:{closest:sel=>sel==='[data-motogp-standing]'?{getAttribute:()=> 'Moto2'}:null}});
   assert.match(overview.view.innerHTML,/MOTO2 CHAMPION/);
   assert.match(overview.view.innerHTML,/#18/);
   assert.match(overview.view.innerHTML,/Speed Up Moto2/);
   assert.match(overview.view.innerHTML,/background:#123ABC/);
+  assert.match(overview.view.innerHTML,/RUNNER UP/);
+  assert.match(overview.view.innerHTML,/−2,5 p/);
+  assert.match(overview.view.innerHTML,/width:98\.8%;background:#002244/);
+  assert.match(overview.view.innerHTML,/np-standing-rank top-2/);
   assert.doesNotMatch(overview.view.innerHTML,/STANDINGS/,'never relabel MotoGP as Moto2');
   overview._click({target:{closest:sel=>sel==='[data-motogp-standing]'?{getAttribute:()=> 'Moto3'}:null}});
   assert.match(overview.view.innerHTML,/MOTO3 CHAMPION/);
@@ -85,6 +97,12 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   overview._render();
   assert.doesNotMatch(overview.view.innerHTML,/position:fixed/);
   assert.match(overview.view.innerHTML,/background:var\(--divider-color,#b4b4b4\)/);
+  // A narrow card hides the visual comparison while keeping data visible.
+  const source=fs.readFileSync(process.argv[2]||'/mnt/data/ha-motogp-next-ui-preview.js','utf8');
+  assert.match(source,/@container \(max-width:760px\)/);
+  assert.match(source,/@container \(max-width:430px\)/);
+  assert.match(source,/np-standing-visual\{display:none\}/);
+  assert.match(source,/table-layout:fixed/);
   overview._standingOpen=false;
   overview._live={category:'MotoGP',name:'Q2'};
   assert.match(overview._schedule(race,new Clock()),/Visa schema/);
@@ -98,5 +116,5 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   assert.doesNotMatch(overview.view.innerHTML,/Startgrid · MotoGP Race/,'17 min before start');
   now=Date.parse('2026-09-20T13:46:00+02:00');overview.hidden=true;overview._render();
   assert.doesNotMatch(overview.view.innerHTML,/Startgrid|VM-ställning/,'no spoiler bypass');
-  console.log('PASS: timer, class-specific rider numbers/team names/verified team colors, safe fallback, live schedule, qualifying grid and spoiler');
+  console.log('PASS: premium leaderboard ranks, category-specific team colors, points comparison, numeric gap, compact layout, live schedule and spoiler');
 })().catch(e=>{console.error(e);process.exitCode=1;});

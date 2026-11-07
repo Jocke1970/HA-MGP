@@ -22,7 +22,7 @@ def git_blob_sha(data: bytes) -> str:
 
 def check_bundle_integrity() -> None:
     manifest = json.loads((PKG / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "2026.11.0b3"
+    assert manifest["version"] == "2026.11.0b4"
     assert {"http", "frontend"}.issubset(manifest["dependencies"])
 
     # Beta is intentionally a minimal HACS tree (without frontend/ or dist/).
@@ -30,7 +30,7 @@ def check_bundle_integrity() -> None:
     pairs = {
         "ha-motogp-next.js": (
             "dist/ha-motogp-next.js",
-            "c8c7d3d16b67a2247ed5ddcd5d802769f78b4f7e",
+            "de7c0fa25b930436b9014207307f6377e30afb37",
         ),
         "ha-motogp-card.js": (
             "frontend/ha-motogp-card.js",
@@ -53,7 +53,11 @@ def check_bundle_integrity() -> None:
     next_js = (ASSETS / "ha-motogp-next.js").read_text(encoding="utf-8")
     assert "ha-motogp-next-overview-card" in next_js
     assert "ha-motogp-next-timing-card" in next_js
-    assert "0.3.0-dev.10" in next_js
+    assert "0.3.0-dev.11" in next_js
+    assert "np-standing-track" in next_js
+    assert "np-standing-rank" in next_js
+    assert "np-standing-score" in next_js
+    assert "leaderboard=shown.map" in next_js
     assert "qual-grid-20261107-01" in next_js
     assert "data-motogp-standings-toggle" in next_js
     assert "standings_by_category" in next_js

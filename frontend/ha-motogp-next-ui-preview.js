@@ -4,7 +4,7 @@
   const OVERVIEW='ha-motogp-next-overview-card';
   const TIMING='ha-motogp-next-timing-card';
   const REQUIRED='0.2.0-split.2';
-  const BUILD='ui-preview-20261107-03';
+  const BUILD='ui-preview-20261107-04';
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const valid=v=>v!==null&&v!==undefined&&!['','unknown','unavailable','none','null','hidden'].includes(String(v).trim().toLowerCase());
   const cat=v=>{const m=/moto\s*(gp|2|3|e)/i.exec(String(v||''));return m?({gp:'MotoGP','2':'Moto2','3':'Moto3',e:'MotoE'})[m[1].toLowerCase()]:String(v||'');};
@@ -40,16 +40,63 @@
     .np-tabs{display:flex;gap:7px;padding:10px 12px;flex-wrap:wrap}
     .np-tab{border:1px solid var(--divider-color,#ddd);background:transparent;border-radius:15px;padding:6px 12px;color:inherit;font:inherit;font-size:11px;font-weight:800;cursor:pointer}
     .np-tab[aria-selected=true]{border-color:#0099dc;background:rgba(0,153,220,.12)}
-    .np-standings{width:100%;border-collapse:collapse;font-size:12px}
-    .np-standings th,.np-standings td{padding:8px 13px;border-top:1px solid var(--divider-color,#ddd);text-align:left}
-    .np-standings td:last-child,.np-standings th:last-child{text-align:right}
-    .np-standing-num{width:64px;white-space:nowrap;text-align:center!important;font-weight:850}
-    .np-standing-person{display:flex;align-items:center;gap:10px;min-width:0}
-    .np-standing-color{display:inline-block;flex:none;width:4px;height:33px;border-radius:3px;background:var(--divider-color,#b4b4b4)}
-    .np-standing-driver{min-width:0;display:flex;flex-direction:column;gap:3px}
-    .np-standing-driver strong{font-size:12px;line-height:1.2;overflow-wrap:anywhere}
-    .np-standing-driver small{font-size:10px;color:var(--secondary-text-color);line-height:1.3;overflow-wrap:anywhere}
-    .np-standing-points{font-variant-numeric:tabular-nums;font-weight:850}
+    /* Compact leaderboard rather than a full-width spreadsheet. */
+    .np-card{container-type:inline-size}
+    .np-standings{width:100%;table-layout:fixed;border-spacing:0;border-collapse:separate;font-size:12px}
+    .np-standings th,.np-standings td{padding:11px 13px;border-top:1px solid var(--divider-color,#ddd);text-align:left;vertical-align:middle}
+    .np-standings thead th{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.055em;
+      color:var(--secondary-text-color)}
+    .np-standings tbody tr{transition:background-color .15s ease}
+    .np-standings tbody tr:hover{background:var(--secondary-background-color,rgba(127,127,127,.045))}
+    .np-standings tbody tr:first-child{background:rgba(197,153,53,.055)}
+    .np-standings th:first-child{width:64px}
+    .np-standing-num{width:70px;white-space:nowrap;text-align:center!important}
+    .np-standing-rank{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:30px;
+      border:1px solid transparent;border-radius:9px;font-size:12px;font-weight:900;
+      font-variant-numeric:tabular-nums}
+    .np-standing-rank.top-1{background:rgba(192,148,30,.12);border-color:rgba(192,148,30,.25);color:var(--primary-text-color)}
+    .np-standing-rank.top-2{background:rgba(125,139,156,.12);border-color:rgba(125,139,156,.22)}
+    .np-standing-rank.top-3{background:rgba(170,107,58,.11);border-color:rgba(170,107,58,.20)}
+    .np-standing-number{display:inline-block;font-size:12px;font-weight:850;
+      padding:5px 7px;border-radius:7px;background:var(--secondary-background-color,rgba(127,127,127,.075))}
+    .np-standing-person{display:flex;align-items:center;gap:11px;min-width:0}
+    .np-standing-color{display:inline-block;flex:none;width:5px;height:39px;border-radius:4px;
+      background:var(--divider-color,#b4b4b4)}
+    .np-standing-driver{min-width:0;display:flex;flex-direction:column;gap:5px}
+    .np-standing-driver strong{font-size:13px;line-height:1.15;font-weight:850;overflow-wrap:anywhere}
+    .np-standing-driver small{font-size:10.5px;color:var(--secondary-text-color);line-height:1.25;overflow-wrap:anywhere}
+    .np-standing-visual{width:30%}
+    .np-standing-track{height:7px;width:100%;border-radius:99px;
+      background:var(--secondary-background-color,rgba(127,127,127,.13));overflow:hidden}
+    .np-standing-fill{display:block;height:100%;border-radius:99px;max-width:100%;
+      background:var(--divider-color,#b4b4b4)}
+    .np-standing-points{width:115px;text-align:right!important;font-variant-numeric:tabular-nums}
+    .np-standing-score{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+    .np-standing-score strong{font-size:14px;line-height:1.1;font-weight:900}
+    .np-standing-score small{font-size:9px;font-weight:750;color:var(--secondary-text-color);
+      letter-spacing:.01em;white-space:nowrap}
+    @container (max-width:760px){
+      .np-standings .np-standing-visual{display:none}
+      .np-standings th:first-child{width:52px}
+      .np-standing-num{width:55px}
+      .np-standing-points{width:90px}
+      .np-standings th,.np-standings td{padding:9px 9px}
+      .np-standing-driver strong{font-size:12px}
+    }
+    @container (max-width:430px){
+      .np-standings th:first-child{width:39px}
+      .np-standing-num{width:45px}
+      .np-standing-points{width:67px}
+      .np-standings th,.np-standings td{padding:8px 5px}
+      .np-standing-person{gap:6px}
+      .np-standing-color{width:4px;height:36px}
+      .np-standing-driver strong{font-size:11px}
+      .np-standing-driver small{font-size:9px}
+      .np-standing-number{font-size:10px;padding:4px 3px}
+      .np-standing-rank{min-width:26px;height:27px;font-size:11px}
+      .np-standing-score strong{font-size:12px}
+      .np-standing-score small{font-size:8px}
+    }
     .np-empty{padding:13px;color:var(--secondary-text-color);font-size:12px}
     .np-top-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
     .np-hide-row{display:flex;justify-content:flex-end;padding:7px 12px}
@@ -59,12 +106,7 @@
     .np-show-button[aria-expanded=true]{border-color:var(--primary-color,#039be5);
       background:rgba(0,153,220,.1)}
     .np-grid.note{grid-template-columns:repeat(2,minmax(0,1fr))}
-    @media(max-width:600px){.np-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.np-note{font-size:10px}
-      .np-standings th,.np-standings td{padding:8px 7px}
-      .np-standing-num{width:44px}
-      .np-standing-person{gap:6px}
-      .np-standing-driver strong{font-size:11px}
-      .np-standing-driver small{font-size:9px}}
+    @media(max-width:600px){.np-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.np-note{font-size:10px}}
   `;
   function ensureStyle(card) {
     if(!card.shadowRoot||card.shadowRoot.querySelector('[data-motogp-ui-preview]'))return;
@@ -219,15 +261,32 @@
       const rows=classes&&Object.prototype.hasOwnProperty.call(classes,tab)?
         classes[tab]:tab==='MotoGP'?state?.attributes?.standings:null;
       if(!Array.isArray(rows)||!rows.length)return head+`<div class="np-empty">${esc(tab)}: inväntar verifierad klassvis data från backend.</div></section>`;
-      const note='<p class="np-note" style="padding:3px 13px 10px">Senast publicerad VM-ställning – uppdateras separat från livetiming.</p>';
-      return head+'<table class="np-standings"><thead><tr><th>Pos</th><th class="np-standing-num">Nr</th>'+
-        '<th>Förare / team</th><th>Poäng</th></tr></thead><tbody>'+
-        rows.slice(0,10).map(r=>
-          `<tr><td>${esc(r.position??'—')}</td><td class="np-standing-num">${r.number===null||r.number===undefined||r.number===''?'—':'#'+esc(r.number)}</td>`+
-          `<td><div class="np-standing-person"><span class="np-standing-color" style="background:${teamColor(r.team_color)}"></span>`+
+      const note='<p class="np-note" style="padding:11px 13px 13px">Senast publicerad VM-ställning · uppdateras separat från livetiming.</p>';
+      const shown=rows.slice(0,10);
+      const numericPoints=v=>valid(v)&&Number.isFinite(Number(v))&&Number(v)>=0?Number(v):null;
+      const leader=Math.max(0,...shown.map(r=>numericPoints(r.points)??0));
+      const formatted=n=>String(Math.round(n*100)/100).replace('.',',');
+      const leaderboard=shown.map(r=>{
+        const rank=Number(r.position);
+        const podium=Number.isInteger(rank)&&rank>=1&&rank<=3?' top-'+rank:'';
+        const accent=teamColor(r.team_color);
+        const score=numericPoints(r.points);
+        const proportion=leader>0&&score!==null?Math.max(0,Math.min(100,score/leader*100)):0;
+        const gap=leader>0&&score!==null?Math.max(0,Math.round((leader-score)*100)/100):null;
+        const gapText=gap===null?'':gap===0?'LEDARE':'−'+formatted(gap)+' p';
+        const bar=leader>0&&score!==null?
+          `<div class="np-standing-track" role="img" aria-label="Poäng relativt ledaren: ${esc(formatted(proportion))} procent">`+
+          `<span class="np-standing-fill" style="width:${proportion.toFixed(1)}%;background:${accent}"></span></div>`:'';
+        return `<tr><td><span class="np-standing-rank${podium}">${esc(r.position??'—')}</span></td>`+
+          `<td class="np-standing-num"><span class="np-standing-number">${r.number===null||r.number===undefined||r.number===''?'—':'#'+esc(r.number)}</span></td>`+
+          `<td><div class="np-standing-person"><span class="np-standing-color" style="background:${accent}"></span>`+
           `<span class="np-standing-driver"><strong>${esc(r.rider||'—')}</strong><small>${esc(r.team||'Team saknas')}</small></span></div></td>`+
-          `<td class="np-standing-points">${esc(r.points??'—')}</td></tr>`
-        ).join('')+'</tbody></table>'+note+'</section>';
+          `<td class="np-standing-visual">${bar}</td>`+
+          `<td class="np-standing-points"><div class="np-standing-score"><strong>${esc(r.points??'—')}</strong><small>${esc(gapText)}</small></div></td></tr>`;
+      }).join('');
+      return head+'<table class="np-standings"><thead><tr><th>Pos</th><th class="np-standing-num">Nr</th>'+
+        '<th>Förare / team</th><th class="np-standing-visual">Relativ poäng</th><th class="np-standing-points">Poäng</th></tr></thead><tbody>'+
+        leaderboard+'</tbody></table>'+note+'</section>';
     }
     const oldRender=Overview.prototype._render;
     Overview.prototype._render=function() {
