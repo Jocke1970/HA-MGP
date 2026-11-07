@@ -1,4 +1,4 @@
-/* MotoGP Next SINGLE Lovelace resource | build next-one-20261107-19 | read only. */
+/* MotoGP Next SINGLE Lovelace resource | build next-one-20261108-01 | read only. */
 /* MotoGP Next: isolated frontend for motogp-test. No HA writes or service calls. */
 (() => {
   'use strict';
@@ -303,9 +303,9 @@
       this._track(now,race);
       const event=valid(race?.state)?race.state:'Inget evenemang tillgängligt';
       const meta=[a.circuit,a.country,a.date_start&&a.date_end?dateRange(a.date_start,a.date_end):''].filter(valid);
-      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.25</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
+      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.26</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
         this._schedule(race,now)+`<div class="root">${this._weather()}${this._timing()}</div>`+
-        `<div class="foot">HA-MGP UI · 0.3.0-dev.25 · UI-preview</div></div>`;
+        `<div class="foot">HA-MGP UI · 0.3.0-dev.26 · UI-preview</div></div>`;
     }
     getCardSize(){return 8;}
     getGridOptions(){return {columns:12,rows:'auto',min_columns:6};}
@@ -911,10 +911,34 @@
   const OVERVIEW='ha-motogp-next-overview-card';
   const TIMING='ha-motogp-next-timing-card';
   const REQUIRED='0.2.0-split.2';
-  const BUILD='ui-preview-20261107-07';
+  const BUILD='ui-preview-20261108-01';
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const valid=v=>v!==null&&v!==undefined&&!['','unknown','unavailable','none','null','hidden'].includes(String(v).trim().toLowerCase());
   const cat=v=>{const m=/moto\s*(gp|2|3|e)/i.exec(String(v||''));return m?({gp:'MotoGP','2':'Moto2','3':'Moto3',e:'MotoE'})[m[1].toLowerCase()]:String(v||'');};
+  // Country codes originate from the feed. Unknown codes are not guessed.
+  const countryFlag=value=>{
+    const raw=String(value||'').trim().toUpperCase();
+    const codes={ITA:'IT',SPA:'ES',ESP:'ES',AUS:'AU',FRA:'FR',GBR:'GB',JPN:'JP',
+      NED:'NL',BEL:'BE',CZE:'CZ',COL:'CO',INA:'ID',IDN:'ID',ARG:'AR',BRA:'BR',
+      USA:'US',TUR:'TR',THA:'TH',GER:'DE',POR:'PT',RSA:'ZA',ZAF:'ZA',SUI:'CH',
+      AUT:'AT',FIN:'FI',DEN:'DK',SWE:'SE',IRL:'IE',UKR:'UA',POL:'PL',CAN:'CA',
+      NZL:'NZ',MAL:'MY',MAS:'MY',IND:'IN',CHN:'CN',KOR:'KR',PHI:'PH',PHL:'PH',
+      MEX:'MX',HUN:'HU',SVK:'SK',CRO:'HR',HRV:'HR',ROU:'RO',ROM:'RO',
+      VEN:'VE',ECU:'EC',CHI:'CL',CHL:'CL',PER:'PE',URU:'UY'};
+    const iso=/^[A-Z]{2}$/.test(raw)?raw:codes[raw];
+    return iso?String.fromCodePoint(...Array.from(iso,c=>127397+c.charCodeAt(0))):'';
+  };
+  const riderFlag=value=>{
+    const flag=countryFlag(value);
+    return flag?'<span class="mgp-rider-flag" role="img" aria-label="Nation: '+esc(String(value).toUpperCase())+'">'+flag+'</span>':'';
+  };
+  // Local vector marks are an interim graphic until verified original logo assets are located.
+  const classMark=value=>{
+    const name=String(value||'');
+    if(!['MotoGP','Moto2','Moto3'].includes(name))return esc(name);
+    return '<svg class="mgp-class-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 146 34" role="img" aria-label="'+name+'">'+
+      '<text x="8" y="26" fill="currentColor" font-size="28" font-family="Arial,Helvetica,sans-serif" font-style="italic" font-weight="900" letter-spacing="-2.2" transform="skewX(-8)">'+name+'</text></svg>';
+  };
   const session=v=>({RAC:'Race',SPR:'Sprint'})[String(v||'').toUpperCase()]||String(v||'');
   const number=v=>/^#?\d+$/.test(String(v??'').trim())?String(Number(String(v).replace('#',''))):'';
   // Use only colors explicitly supplied by the provider; neutral fallback.
@@ -944,8 +968,12 @@
     .np-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;padding:10px}
     .np-slot{border:1px solid var(--divider-color,#ddd);border-radius:9px;padding:9px;min-width:0}
     .np-slot b{font-size:12px}.np-slot small{display:block;font-size:10px;color:var(--secondary-text-color);margin-top:3px;overflow:hidden;text-overflow:ellipsis}
-    .np-tabs{display:flex;gap:7px;padding:10px 12px;flex-wrap:wrap}
-    .np-tab{border:1px solid var(--divider-color,#ddd);background:transparent;border-radius:15px;padding:6px 12px;color:inherit;font:inherit;font-size:11px;font-weight:800;cursor:pointer}
+    .np-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:10px 12px}
+    .mgp-class-mark{display:block;width:min(100%,146px);height:31px;overflow:visible}
+    .mgp-rider-flag{display:inline-block;vertical-align:-.08em;line-height:1;margin-right:6px;font-size:15px;white-space:nowrap}
+    .nt-person-text .mgp-rider-flag{font-size:15px}
+    @media(max-width:480px){.np-tabs{gap:5px;padding:8px}.mgp-class-mark{height:24px}.mgp-rider-flag{font-size:13px}}
+    .np-tab{border:1px solid var(--divider-color,#ddd);background:transparent;border-radius:13px;padding:7px 9px;color:inherit;font:inherit;font-size:11px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;min-height:41px}
     .np-tab[aria-selected=true]{border-color:#0099dc;background:rgba(0,153,220,.12)}
     /* Compact leaderboard rather than a full-width spreadsheet. */
     .np-card{container-type:inline-size}
@@ -1083,6 +1111,8 @@
       html=parts.map((row,i)=>{
         if(!i||!riderStart.test(row.slice(0,400)))return row;
         const r=this._snapshot.riders[n++];if(!r)return row;
+        if(r.nation)row=row.replace('<span class="nt-person-text"><b>',
+          '<span class="nt-person-text"><b>'+riderFlag(r.nation));
         const range=lapCellRange(row,r);
         if(range) {
           const original=row.slice(range.begin,range.end),best=lap(r.best_lap_time);
@@ -1164,7 +1194,7 @@
       const state=card._hass?.states?.['sensor.motogp_rider_standings'];
       const live=card._live;
       const buttons=['Moto3','Moto2','MotoGP'].map(c=>`<button type="button" class="np-tab"`+
-        ` data-motogp-standing="${c}" role="tab" aria-selected="${c===tab}">${c}</button>`).join('');
+        ` data-motogp-standing="${c}" role="tab" aria-label="${c}" aria-selected="${c===tab}">${classMark(c)}</button>`).join('');
       const head=`<section class="np-card" aria-label="VM-ställning"><div class="np-heading">`+
         `<span>🏆 VM-ställning</span></div>`+
         `<div class="np-tabs" role="tablist" aria-label="VM-klass">${buttons}</div>`;
@@ -1193,7 +1223,7 @@
         return `<tr><td><span class="np-standing-rank${podium}">${esc(r.position??'—')}</span></td>`+
           `<td class="np-standing-num"><span class="np-standing-number">${r.number===null||r.number===undefined||r.number===''?'—':'#'+esc(r.number)}</span></td>`+
           `<td><div class="np-standing-person"><span class="np-standing-color" style="background:${accent}"></span>`+
-          `<span class="np-standing-driver"><strong>${esc(r.rider||'—')}</strong><small>${esc(r.team||'Team saknas')}</small></span></div></td>`+
+          `<span class="np-standing-driver"><strong>${riderFlag(r.nation)}${esc(r.rider||'—')}</strong><small>${esc(r.team||'Team saknas')}</small></span></div></td>`+
           `<td class="np-standing-visual">${bar}</td>`+
           `<td class="np-standing-points"><div class="np-standing-score"><strong>${esc(r.points??'—')}</strong><small>${esc(gapText)}</small></div></td></tr>`;
       }).join('');
