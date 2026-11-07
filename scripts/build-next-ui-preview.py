@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Compose a preview UI onto the verified Next dev.3 single resource."""
+import base64
 import hashlib
 import importlib.util
 import pathlib
@@ -8,11 +9,11 @@ import tempfile
 
 UI_BLOB = 'e1379c9499bda77ff05d440213ef2a48ca99c422'
 QUAL_BLOB = '3cd24780166dcc578624221769a8a459c7b62819'
-HEADER_BLOB = '90a0a9c87abf365172674933b11e7243817ada97'
+HEADER_BLOB = '8371ffafe3278a6d5f28dbe0cb7191071887417d'
 HISTORY_BLOB = '8b7038e64df05cb7ffbc1e6059a966c867733fac'
 MOBILE_BLOB = '9fad86bfd7fdc2e461371efb458b17f6029df794'
-BUILD = 'next-one-20261107-13'
-VERSION = '0.3.0-dev.19'
+BUILD = 'next-one-20261107-14'
+VERSION = '0.3.0-dev.20'
 
 
 def blob(data):
@@ -73,7 +74,17 @@ def main(frontend, target):
     text = replace_one(text, '🏁 MOTOGP NEXT · 0.3.0-dev.3', '🏁 MOTOGP NEXT · ' + VERSION)
     text = replace_one(text, 'ha-motogp-next.js · 0.3.0-dev.3 · samlad testversion',
                        'ha-motogp-next.js · ' + VERSION + ' · UI-preview')
-    result = (text + '\n;\n' + ui.decode('utf-8') + '\n;\n' + mobile_bytes.decode('utf-8') + '\n;\n' + qual_bytes.decode('utf-8') + '\n;\n' + header_bytes.decode('utf-8') + '\n;\n' + history_bytes.decode('utf-8')).encode('utf-8')
+    # Keep the approved MGP logo self-contained in the single JS resource.
+    artwork = pathlib.Path(__file__).resolve().parent.parent / 'assets' / 'approved-mgp-racing-arc.webp'
+    logo_bytes = artwork.read_bytes()
+    if hashlib.sha256(logo_bytes).hexdigest() != '05db82a11b3182c4e2525f69589d4b02279f5da8a40bef543a57916ef79c480c':
+        raise SystemExit('STOP: unexpected approved MGP artwork')
+    logo_uri = 'data:image/webp;base64,' + base64.b64encode(logo_bytes).decode('ascii')
+    header_source = header_bytes.decode('utf-8')
+    if header_source.count('__MGP_APPROVED_BRAND_DATA_URI__') != 1:
+        raise SystemExit('STOP: missing or duplicate MGP logo placeholder')
+    header_source = header_source.replace('__MGP_APPROVED_BRAND_DATA_URI__', logo_uri)
+    result = (text + '\n;\n' + ui.decode('utf-8') + '\n;\n' + mobile_bytes.decode('utf-8') + '\n;\n' + qual_bytes.decode('utf-8') + '\n;\n' + header_source + '\n;\n' + history_bytes.decode('utf-8')).encode('utf-8')
     pathlib.Path(target).write_bytes(result)
     print(f'UI preview built: {target} ({len(result)} bytes, git blob {blob(result)})')
 

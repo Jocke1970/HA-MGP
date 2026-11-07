@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const file=process.argv[2]||'frontend/ha-motogp-next-header-track.js';
 const src=fs.readFileSync(file,'utf8');
-assert.match(src,/header-track-weather-20261107-04/);
+assert.match(src,/header-track-weather-20261107-05/);
 const docs=[];
 class Overview {
   static buildInfo={version:'0.2.0-split.2'};
@@ -46,6 +46,9 @@ const context={customElements:{
   const eventHeader=card.root.innerHTML.match(/<section class="panel header">([\s\S]*?)<\/section>/);
   assert.ok(eventHeader,'single event header exists');
   assert.match(eventHeader[1],/GRAND PRIX OF QATAR/);
+  assert.match(eventHeader[1],/mgp-brand-logo/,'approved MGP logo in header');
+  assert.match(eventHeader[1],/alt="MGP"/);
+  assert.doesNotMatch(eventHeader[1],/<div class="eyebrow">🏁 /,'emoji replaced by logo');
   assert.match(eventHeader[1],/mgp-country-flag/,'host country flag beside event name');
   assert.match(eventHeader[1],/🇶🇦/,'Qatar must use country flag, not guessed SVG');
   assert.match(eventHeader[1],/aria-label="Flagga: Qatar"/);
