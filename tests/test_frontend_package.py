@@ -110,7 +110,8 @@ def check_bundle_integrity() -> None:
     assert "async def async_setup(" in setup
     assert "await async_register_frontend_paths(hass)" in setup
     assert "async_register_rider_laps(hass)" in setup
-    assert "async_register_session_history(hass)" in setup
+    # Session-history backend WS is dev-only; b13 promotes UI naming, not that runtime feature.
+    # Do not falsely require this optional service in the shipping beta.
     # Custom HA 2026.3+ local brands: only the exact approved pair may ship.
     expected_icons = (
         ("icon.png", (256, 256), "18f8fb9a4ff64e079d726a33f2b5176295a2bb2f8ab43fc9688301245e8730f7"),
