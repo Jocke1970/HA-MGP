@@ -61,8 +61,10 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   assert.match(h,/Startgrid · MotoGP Race/);assert.match(h,/P8 · #93/);
   assert.match(h,/Visa VM-ställning/);
   assert.doesNotMatch(h,/STANDINGS/,'standings must be collapsed by default');
+  overview._scheduleOpen=true;
   overview._click({target:{closest:sel=>sel==='[data-motogp-standings-toggle]'?{}:null}});
-  assert.match(overview.view.innerHTML,/Moto3 · Moto2 · MotoGP/);
+  assert.equal(overview._scheduleOpen,false,'opening standings closes schedule');
+  assert.doesNotMatch(overview.view.innerHTML,/Moto3 · Moto2 · MotoGP/);
   assert.match(overview.view.innerHTML,/STANDINGS/);
   assert.match(overview.view.innerHTML,/<th class="np-standing-num">Nr<\/th>/);
   assert.match(overview.view.innerHTML,/Förare \/ team/);
@@ -76,6 +78,9 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   assert.match(overview.view.innerHTML,/Relativ poäng/);
   assert.match(overview.view.innerHTML,/np-standing-number/);
   assert.match(overview.view.innerHTML,/np-standing-score/);
+  standing.attributes.standings_by_category.MotoGP.push(...Array.from({length:11},(_,i)=>({position:i+2,number:i+40,rider:'RIDER-'+(i+2),team:'Team',points:200-i})));
+  overview._render();
+  assert.match(overview.view.innerHTML,/RIDER-12/,'standings show riders beyond top ten');
   overview._click({target:{closest:sel=>sel==='[data-motogp-standing]'?{getAttribute:()=> 'Moto2'}:null}});
   assert.match(overview.view.innerHTML,/MOTO2 CHAMPION/);
   assert.match(overview.view.innerHTML,/#18/);
@@ -110,7 +115,9 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   overview._live={category:'MotoGP',name:'Q2'};
   assert.match(overview._schedule(race,new Clock()),/Visa schema/);
   assert.doesNotMatch(overview._schedule(race,new Clock()),/FULL WEEKEND SCHEDULE/);
+  overview._standingOpen=true;
   overview._click({target:{closest:sel=>sel==='[data-motogp-schedule-toggle]'?{}:null}});
+  assert.equal(overview._standingOpen,false,'opening schedule closes standings');
   assert.match(overview._schedule(race,new Clock()),/Dölj schema[\s\S]*FULL WEEKEND SCHEDULE/);
   overview._scheduleOpen=false;
   overview._live=null;
