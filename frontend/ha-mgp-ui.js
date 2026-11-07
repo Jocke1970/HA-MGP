@@ -4,7 +4,7 @@
   const OVERVIEW='ha-motogp-next-overview-card';
   const TIMING='ha-motogp-next-timing-card';
   const REQUIRED='0.2.0-split.2';
-  const BUILD='ui-preview-20261108-03';
+  const BUILD='ui-preview-20261108-04';
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const valid=v=>v!==null&&v!==undefined&&!['','unknown','unavailable','none','null','hidden'].includes(String(v).trim().toLowerCase());
   const cat=v=>{const m=/moto\s*(gp|2|3|e)/i.exec(String(v||''));return m?({gp:'MotoGP','2':'Moto2','3':'Moto3',e:'MotoE'})[m[1].toLowerCase()]:String(v||'');};
@@ -53,7 +53,7 @@
       const type=recordKind(record.type);
       if(!type||found.has(type))continue;
       const time=String(record.time??'').trim();
-      if(!/^(?:\\d{1,2}[:'])?\\d{1,2}\\.\\d{3}$/.test(time))continue;
+      if(!/^(?:\d{1,2}[:'])?\d{1,2}\.\d{3}$/.test(time))continue;
       const rider=String(record.rider||'').trim();
       const year=Number(record.year);
       const speed=Number(record.speed);
