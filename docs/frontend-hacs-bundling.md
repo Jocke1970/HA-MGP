@@ -313,3 +313,23 @@ Marketplace/HACS listing cache and branding may refresh separately.
 
 Candidate: backend `2026.11.0b10`, Next UI `0.3.0-dev.17` on **dev**.
 Public beta b9 and main unchanged until explicitly approved for release.
+
+## Country flag in the event hero (dev candidate)
+
+The event name in the same white MotoGP Next hero now shows a small
+country flag immediately before the Grand Prix heading, e.g.
+**🇶🇦 GRAND PRIX OF QATAR**. It uses the current weekend's
+`sensor.motogp_next_race.attributes.country` and a strict country→ISO
+lookup limited to destinations in the season calendar. Flags render
+as native Unicode emoji; no external country-flag service, image, or
+second Lovelace resource is required. Unknown/unmapped countries show
+no flag at all. The existing GP title remains unchanged and accessible.
+
+The enhancement preserves the unified white hero, center weather,
+far-right circuit SVG, VM-standings toggle, spoiler protections and
+responsive mobile layout.
+
+Staged candidate `2026.11.0b11` / Next UI `0.3.0-dev.18`
+on **dev**, plus the previously staged b10 session-history viewer,
+leaderboard outline, and approved MGP brand assets. Published b9 and
+main are unchanged.
