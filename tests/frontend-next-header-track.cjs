@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const file=process.argv[2]||'frontend/ha-mgp-header-track.js';
 const src=fs.readFileSync(file,'utf8');
-assert.match(src,/header-track-records-20261108-01/);
+assert.match(src,/header-track-weather-20261108-02/);
 const docs=[];
 class Overview {
   static buildInfo={version:'0.2.0-split.2'};
@@ -79,19 +79,7 @@ const context={customElements:{
   assert.match(card.root.innerHTML,/Backendversion hanteras separat/);
   assert.match(eventHeader[1],/mgp-weather-panel/);
   assert.match(eventHeader[1],/mgp-circuit-panel/);
-  assert.match(eventHeader[1],/mgp-records/,'record chips sit in circuit area');
-  assert.match(eventHeader[1],/Lap record/);
-  assert.match(eventHeader[1],/Pole lap/);
-  assert.match(eventHeader[1],/Best race lap/);
-  assert.match(eventHeader[1],/01:50\.028/);
-  assert.match(eventHeader[1],/01:52\.561/);
-  assert.match(eventHeader[1],/BEZZECCHI · 2026 · 176 km\/h/);
-  assert.match(eventHeader[1],/MotoGP · via SPR/,'show where records were read');
-  assert.doesNotMatch(eventHeader[1],/OTHER CLASS|INJECTED/,'wrong class and unknown types excluded');
-  assert.equal((eventHeader[1].match(/class="mgp-record-chip"/g)||[]).length,3,'exactly three known record chips');
-  assert.doesNotMatch(eventHeader[1],/01:01\.001/,'do not mix in Moto2 records');
-  assert.ok(eventHeader[1].indexOf('mgp-track-svg')<eventHeader[1].indexOf('mgp-records'),
-    'chips follow circuit diagram');
+  assert.doesNotMatch(eventHeader[1],/mgp-records|mgp-record-chip/,'records moved to timing card');
   assert.ok(eventHeader[1].indexOf('mgp-hero-copy')<eventHeader[1].indexOf('mgp-weather-panel'),
     'event info left, weather center');
   assert.ok(eventHeader[1].indexOf('mgp-weather-panel')<eventHeader[1].indexOf('mgp-circuit-panel'),
@@ -154,12 +142,6 @@ const context={customElements:{
     'no gray weather/track cards inside the white header');
   assert.match(docs[0].textContent,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
   const other=card._hass.states['sensor.motogp_next_race'];
-  other.attributes.records_by_category={MotoGP:[{type:'LAP_RECORD',time:'<script>x</script>',rider:'FAKE'}]};
-  card._render();
-  assert.doesNotMatch(card.root.innerHTML,/mgp-records|FAKE/,'invalid record time hidden');
-  other.attributes.records_by_category={MotoGP:[]};
-  card._render();
-  assert.doesNotMatch(card.root.innerHTML,/mgp-records/,'no empty chip container');
   other.attributes.country='Unknown Country';
   card._render();
   assert.doesNotMatch(card.root.innerHTML,/mgp-country-flag/,'unknown country cannot invent a flag');
