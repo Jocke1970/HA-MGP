@@ -4,7 +4,7 @@
   const OVERVIEW='ha-motogp-next-overview-card';
   const TIMING='ha-motogp-next-timing-card';
   const REQUIRED='0.2.0-split.2';
-  const BUILD='ui-preview-20261108-02';
+  const BUILD='ui-preview-20261108-03';
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const valid=v=>v!==null&&v!==undefined&&!['','unknown','unavailable','none','null','hidden'].includes(String(v).trim().toLowerCase());
   const cat=v=>{const m=/moto\s*(gp|2|3|e)/i.exec(String(v||''));return m?({gp:'MotoGP','2':'Moto2','3':'Moto3',e:'MotoE'})[m[1].toLowerCase()]:String(v||'');};
@@ -32,6 +32,42 @@
     return '<svg class="mgp-class-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 146 34" role="img" aria-label="'+name+'">'+
       '<text x="8" y="26" fill="currentColor" font-size="28" font-family="Arial,Helvetica,sans-serif" font-style="italic" font-weight="900" letter-spacing="-2.2" transform="skewX(-8)">'+name+'</text></svg>';
   };
+  // Current GP records are supplied by sensor.motogp_next_race, separately per class.
+  // No new API calls and no fallback to records belonging to another class.
+  const recordKind=value=>{
+    const key=String(value||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+    const types={LAPRECORD:'lap',LAP:'lap',ALLTIMELAPRECORD:'lap',ALLTIMERECORD:'lap',
+      CIRCUITRECORD:'lap',ALLTIME:'lap',POLELAP:'pole',POLE:'pole',POLERECORD:'pole',
+      POLEPOSITION:'pole',BESTRACELAP:'race',BESTRACE:'race',
+      RACELAPRECORD:'race',BESTRACERECORD:'race'};
+    return types[key]||'';
+  };
+  const recordChips=(card,category)=>{
+    if(!['MotoGP','Moto2','Moto3'].includes(category))return '';
+    const attrs=card._hass?.states?.[card._ids?.race]?.attributes||{};
+    const rows=attrs.records_by_category?.[category];
+    if(!Array.isArray(rows)||!rows.length)return '';
+    const found=new Map(),names={lap:'Lap record',pole:'Pole lap',race:'Race lap'};
+    for(const record of rows){
+      if(!record||typeof record!=='object')continue;
+      const type=recordKind(record.type);
+      if(!type||found.has(type))continue;
+      const time=String(record.time??'').trim();
+      if(!/^(?:\\d{1,2}[:'])?\\d{1,2}\\.\\d{3}$/.test(time))continue;
+      const rider=String(record.rider||'').trim();
+      const year=Number(record.year);
+      const speed=Number(record.speed);
+      const detail=[rider,
+        Number.isInteger(year)&&year>=1949&&year<=new Date().getFullYear()+1?String(year):'',
+        Number.isFinite(speed)&&speed>0&&speed<500?String(Math.round(speed*10)/10)+' km/h':''
+      ].filter(Boolean).join(' · ');
+      found.set(type,'<span class="mgp-timing-record-chip" title="'+esc(detail)+'" aria-label="'+esc(names[type]+': '+time+(detail?', '+detail:''))+'">'+
+        '<small>'+names[type]+'</small><strong>'+esc(time)+'</strong></span>');
+    }
+    if(!found.size)return '';
+    return '<div class="mgp-timing-records" role="group" aria-label="'+esc(category)+' circuit records">'+
+      ['lap','pole','race'].map(k=>found.get(k)||'').join('')+'</div>';
+  };
   const session=v=>({RAC:'Race',SPR:'Sprint'})[String(v||'').toUpperCase()]||String(v||'');
   const number=v=>/^#?\d+$/.test(String(v??'').trim())?String(Number(String(v).replace('#',''))):'';
   // Use only colors explicitly supplied by the provider; neutral fallback.
@@ -55,6 +91,11 @@
     .nt-position-zero{color:var(--secondary-text-color);font-weight:750}
     .nt-position-empty{color:var(--secondary-text-color)}
     .nt-session-record strong{color:var(--motogp-fastest-lap-color,var(--error-color,#b71c1c))}
+    .mgp-timing-records{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:6px 10px 9px;border-bottom:1px solid var(--divider-color,#ddd)}
+    .mgp-timing-record-chip{display:flex;align-items:center;justify-content:space-between;gap:4px 8px;min-width:0;border:1px solid var(--divider-color,#ddd);border-radius:9px;padding:6px 8px;background:var(--secondary-background-color,rgba(127,127,127,.045))}
+    .mgp-timing-record-chip small{font-size:9px;font-weight:700;color:var(--secondary-text-color);white-space:nowrap}
+    .mgp-timing-record-chip strong{font-size:12px;font-weight:850;font-variant-numeric:tabular-nums;white-space:nowrap}
+    @media(max-width:560px){.mgp-timing-records{gap:4px;padding:6px}.mgp-timing-record-chip{display:flex;flex-direction:column;gap:2px;padding:6px 3px}.mgp-timing-record-chip small{font-size:8px}.mgp-timing-record-chip strong{font-size:11px}}
     .np-card{background:var(--ha-card-background,var(--card-background-color,#fff));color:var(--primary-text-color);border:1px solid var(--divider-color,#ddd);border-radius:15px;overflow:hidden;min-width:0}
     .np-heading{display:flex;align-items:center;justify-content:space-between;gap:9px;border-bottom:1px solid var(--divider-color,#ddd);padding:11px 13px;font-size:14px;font-weight:900}
     .np-note{font-size:11px;color:var(--secondary-text-color);font-weight:550}
@@ -189,7 +230,14 @@
     Timing.prototype._timing=function() {
       let html=oldTiming.call(this);
       ensureStyle(this);
-      if(this._spoiler()||!this._snapshot?.riders?.length||this._snapshot.day!==this._today)return html;
+      if(this._spoiler())return html;
+      const category=this._live?.category||this._snapshot?.category;
+      // Keep records directly under the timing header, including collapsed timing views.
+      if(html.includes('<button type="button" class="nt-head"')&&html.includes('</button>')){
+        const chips=recordChips(this,category);
+        if(chips)html=html.replace('</button>','</button>'+chips);
+      }
+      if(!this._snapshot?.riders?.length||this._snapshot.day!==this._today)return html;
       if(this._live)html=html.replace('<span class="nt-label">🏁 ',
         '<span class="nt-label"><span class="nt-live-dot" aria-label="Live"></span>');
       // In the single-file lap-stats addon the lightning bolt only denotes
