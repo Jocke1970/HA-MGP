@@ -1,4 +1,4 @@
-/* MotoGP Next SINGLE Lovelace resource | build next-one-20261011-01 | read only. */
+/* MotoGP Next SINGLE Lovelace resource | build next-one-20261107-01 | read only. */
 /* MotoGP Next: isolated frontend for motogp-test. No HA writes or service calls. */
 (() => {
   'use strict';
@@ -303,9 +303,9 @@
       this._track(now,race);
       const event=valid(race?.state)?race.state:'Inget evenemang tillgängligt';
       const meta=[a.circuit,a.country,a.date_start&&a.date_end?dateRange(a.date_start,a.date_end):''].filter(valid);
-      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 MOTOGP NEXT · 0.3.0-dev.6</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
+      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 MOTOGP NEXT · 0.3.0-dev.7</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
         this._schedule(race,now)+`<div class="root">${this._weather()}${this._timing()}</div>`+
-        `<div class="foot">ha-motogp-next.js · 0.3.0-dev.6 · UI-preview</div></div>`;
+        `<div class="foot">ha-motogp-next.js · 0.3.0-dev.7 · UI-preview</div></div>`;
     }
     getCardSize(){return 8;}
     getGridOptions(){return {columns:12,rows:'auto',min_columns:6};}

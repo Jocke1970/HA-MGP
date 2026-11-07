@@ -7,8 +7,8 @@ import sys
 import tempfile
 
 UI_BLOB = 'c5c24ffb612ac6ffa52e877975f4fb44ae5f7610'
-BUILD = 'next-one-20261011-01'
-VERSION = '0.3.0-dev.6'
+BUILD = 'next-one-20261107-01'
+VERSION = '0.3.0-dev.7'
 
 
 def blob(data):

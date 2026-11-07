@@ -33,7 +33,7 @@ jobs:
           python3 scripts/build-next-ui-preview.py frontend /tmp/ha-motogp-next.js
           node --check /tmp/ha-motogp-next.js
           node tests/frontend-next-ui-preview.cjs frontend/ha-motogp-next-ui-preview.js
-          sed -e 's/dev\\.3/dev\\.6/g' -e 's/samlad testversion/UI-preview/g' tests/frontend-next-one.cjs > /tmp/frontend-next-preview.cjs
+          sed -e 's/dev\\.3/dev\\.7/g' -e 's/samlad testversion/UI-preview/g' tests/frontend-next-one.cjs > /tmp/frontend-next-preview.cjs
           node /tmp/frontend-next-preview.cjs /tmp/ha-motogp-next.js
       - name: Installer syntax, verified dev.5 upgrade, repeatability and tamper rejection
         run: |
@@ -43,7 +43,9 @@ jobs:
           trap 'rm -rf -- "$staging"' EXIT
           mkdir -p "$staging/www"
           export MOTOGP_WWW_DIR="$staging/www"
-          export MOTOGP_BUNDLE_FILE="$PWD/dist/ha-motogp-next.js"
+          # Historical standalone installer targets frozen dev.6, not HACS dev.7.
+          git show acd520a12390877ef5e18a70044f0ac029004f08:dist/ha-motogp-next.js > "$staging/frozen-dev6.js"
+          export MOTOGP_BUNDLE_FILE="$staging/frozen-dev6.js"
           target="$staging/www/ha-motogp-next.js"
           git show 246b455e3d0aa2baf2e373a35993b864369cda3d:dist/ha-motogp-next.js > "$target"
           test "$(git hash-object "$target")" = 4c73aa7f22ec8876b77beede369d565e86e08e0d
@@ -67,6 +69,6 @@ jobs:
             exit 1
           fi
           test ! -e "$target"
-          export MOTOGP_BUNDLE_FILE="$PWD/dist/ha-motogp-next.js"
+          export MOTOGP_BUNDLE_FILE="$staging/frozen-dev6.js"
           bash scripts/install-next-one.sh
           test "$(git hash-object "$target")" = "$sha"
