@@ -91,6 +91,12 @@ class StandingsColorTests(unittest.TestCase):
                 self.assertEqual(result[0]["team_color"], color)
                 self.assertEqual(result[0]["number"], number)
 
+    def test_no_guessed_nation_when_provider_omits_country(self):
+        rows = helpers.parse_standings([
+            {"rider": {"full_name": "Unknown origin", "number": 9}, "points": 10}
+        ])
+        self.assertEqual(rows[0]["nation"], "")
+
     def test_no_color_without_verified_source(self):
         standings = helpers.parse_standings([{
             "position": 1,
