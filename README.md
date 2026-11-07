@@ -2,10 +2,11 @@
 
 Home Assistant MotoGP Sensor fork. Independent project derived from [Liionboy/motogp_sensor](https://github.com/Liionboy/motogp_sensor); no affiliation with MotoGP.
 
-**Latest HACS prerelease: `2026.11.0b11` · Next `0.3.0-dev.22`.** SOP: **dev → beta → main**. Stable main is unchanged.
+**Latest HACS prerelease: `2026.11.0b12` · Next `0.3.0-dev.23`.** SOP: **dev → beta → main**. Stable main is unchanged.
 
 ## Next UI
 
+- **Smart visning:** Helgschema stängt från början; livetiming syns från 30 minuter före nästa pass eller när sessionen är verifierat aktiv.
 - **Navigation i toppkortet:** Helgschema-knapp, nästa pass med nedräkning och högerställd VM-ställning. UI-information ligger i kortets fot.
 - **Branding:** Godkänd MGP-logga i toppkortet och nationsflagga vid GP-namnet.
 - **White event hero:** Grand Prix details and VM toggle left, real reported track weather center, locally bundled schematic circuit layout far right. On narrow cards everything remains inside the same white header.

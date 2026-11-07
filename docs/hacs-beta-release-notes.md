@@ -1,22 +1,20 @@
-# MotoGP Sensor 2026.11.0b11 — snabbval i toppkortet
+# MotoGP Sensor 2026.11.0b12 — dolt helgschema och sessionsstyrd livetiming
 
-**HACS beta:** `2026.11.0b11` · **MotoGP Next UI:** `0.3.0-dev.22`.
+**HACS beta:** `2026.11.0b12` · **MotoGP Next UI:** `0.3.0-dev.23`.
 
-## Ändringar sedan b10
+## Ändringar sedan b11
 
-- **Helgschema:** ny knapp i toppkortet som navigerar till befintligt helgschema.
-- **Nästa pass:** kompakt chip som visar klass, sessionsnamn och nedräkning med redan befintlig 1-sekundsuppdatering. Tid hämtas ur schemasensorn; ingen påhittad starttid.
-- **VM-ställning:** befintligt reglage behålls, men högerställs i samma rad som genvägen och sessionschipet.
-- **UI-information:** flyttad från GP-beskrivningen till kortets befintliga fot. Endast en versionspanel visas.
-- GP-flagga och MGP-logga samt väder/bana bevarade. GP-rubriken är justerad för att hålla flagga och rubrik ihop där bredden tillåter.
-- Backend, Red Flag, TV-delay, arkivfunktion och `main` är oförändrade. Experimentell historik kräver separat backendstöd.
+- **Helgschema är dolt från början.** Knappen 🗓️ Helgschema i toppkortet öppnar och stänger det. Sessionschip och nedräkning fortsätter visas även när schemat är dolt.
+- **Livetiming visas automatiskt från 30 minuter före schemalagd start**, samt alltid när en session är verifierat aktiv av befintlig sessionmatchning. Inget extra reglage i toppkortet.
+- **Förseningar:** Ej avslutade schemalagda sessioner får en tidsmarginal på högst tre timmar efter planerad start. Markerade FINISHED/CANCELLED/CANCELED öppnar inte timingkortet på grund av schemat.
+- Befintligt spoilerläge, liveidentifiering, MGP-logga, Qatarflagga, banväder och banlayout lämnas i övrigt oförändrade.
+- Regressionstester för stängt/öppet schema, 35/31/25 minuter före start, försening, avslutad och verifierat aktiv session.
+- Backend, Red Flag, polling, TV-delay och `main` är oförändrade. Arkivläget kräver fortsatt separat backendstöd.
 
-## Installation och verifiering
+## Installera och kontrollera
 
-Välj HACS beta **2026.11.0b11**, starta om HA när inget pass pågår och gör hård omladdning (`Ctrl+Shift+R`). Behåll exakt en JavaScript module-resurs: `/motogp_sensor/ha-motogp-next.js` utan `?v=`.
+Välj beta **2026.11.0b12** i HACS när inget pass pågår. Starta om HA och gör en hård omladdning (`Ctrl+Shift+R`). Behåll exakt en Lovelace JS-module-resurs: `/motogp_sensor/ha-motogp-next.js` utan `?v=`.
 
-Verifiera toppkortets knappar, chip och UI-information i foten. Livevarvtider kan inte slutverifieras utan pågående pass.
+Kontrollera att schemat först är dolt, går att öppna/stänga med Helgschema-knappen, att nästa-pass-chipet fortsätter räkna ner och att timingkortet saknas när nästa pass är längre än 30 minuter bort. Visa en ny skärmbild inför nästa layoutdiskussion. Verifiering av skiftet till aktivt pass kräver en riktig livesession.
 
-**Rollback:** Installera beta `2026.11.0b10` via HACS. Bevara `/config/motogp_data/`, dashboard och integrationens konfigurationspost.
-
-Banornas schematiska konturer: [GameDev-Toolkit/global-motorsport-circuits-json](https://github.com/GameDev-Toolkit/global-motorsport-circuits-json), Apache-2.0. Projektet är fristående från officiella MotoGP.
+**Rollback:** HACS beta `2026.11.0b11`. Bevara `/config/motogp_data/`, dashboard och konfigurationspost. Projektet är fristående från officiella MotoGP.
