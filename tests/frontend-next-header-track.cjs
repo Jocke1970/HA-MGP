@@ -88,6 +88,8 @@ const context={customElements:{
   assert.match(eventHeader[1],/BEZZECCHI · 2026 · 176 km\/h/);
   assert.match(eventHeader[1],/MotoGP · via SPR/,'show where records were read');
   assert.doesNotMatch(eventHeader[1],/OTHER CLASS|INJECTED/,'wrong class and unknown types excluded');
+  assert.equal((eventHeader[1].match(/class="mgp-record-chip"/g)||[]).length,3,'exactly three known record chips');
+  assert.doesNotMatch(eventHeader[1],/01:01\.001/,'do not mix in Moto2 records');
   assert.ok(eventHeader[1].indexOf('mgp-track-svg')<eventHeader[1].indexOf('mgp-records'),
     'chips follow circuit diagram');
   assert.ok(eventHeader[1].indexOf('mgp-hero-copy')<eventHeader[1].indexOf('mgp-weather-panel'),
