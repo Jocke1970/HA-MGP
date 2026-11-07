@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const file=process.argv[2]||'frontend/ha-motogp-next-header-track.js';
 const src=fs.readFileSync(file,'utf8');
-assert.match(src,/header-track-weather-20261107-06/);
+assert.match(src,/header-track-weather-20261107-07/);
 const docs=[];
 class Overview {
   static buildInfo={version:'0.2.0-split.2'};
@@ -52,9 +52,9 @@ const context={customElements:{
   assert.match(eventHeader[1],/mgp-country-flag/,'host country flag beside event name');
   assert.match(eventHeader[1],/🇶🇦/,'Qatar must use country flag, not guessed SVG');
   assert.match(eventHeader[1],/aria-label="Flagga: Qatar"/);
-  assert.match(eventHeader[1],/UI-information/,'collapsible UI diagnostics');
-  assert.match(eventHeader[1],/Backendversion hanteras separat/);
-  assert.match(eventHeader[1],/Frontend: /);
+  assert.doesNotMatch(eventHeader[1],/UI-information/,'diagnostics moved out of hero');
+  assert.match(card.root.innerHTML,/ⓘ UI-information/,'diagnostics in footer');
+  assert.match(card.root.innerHTML,/Backendversion hanteras separat/);
   assert.match(eventHeader[1],/mgp-weather-panel/);
   assert.match(eventHeader[1],/mgp-circuit-panel/);
   assert.ok(eventHeader[1].indexOf('mgp-hero-copy')<eventHeader[1].indexOf('mgp-weather-panel'),
@@ -64,6 +64,8 @@ const context={customElements:{
   assert.doesNotMatch(card.root.innerHTML.slice(card.root.innerHTML.indexOf('</section>')+10),
     /mgp-venue-strip/,'venue is not duplicated below the event header');
   assert.match(eventHeader[1],/np-top-actions/,'existing standings toggle remains in left column');
+  assert.match(eventHeader[1],/data-mgp-schedule-jump/,'schedule navigation in hero');
+  assert.match(eventHeader[1],/mgp-next-chip/,'next session chip in hero');
   assert.ok(card.root.innerHTML.indexOf('mgp-hero-grid')<card.root.innerHTML.indexOf('Schedule'),
     'venue lives in header above the separate schedule');
   assert.match(card.root.innerHTML,/Schematisk banform/);
