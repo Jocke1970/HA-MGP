@@ -10,11 +10,12 @@ custom_components/motogp_sensor/
   sensor.py
   web_assets.py
   www/
-    ha-motogp-next.js     # Aktiv HA-MGP UI-modul; historiskt filnamn
-    ha-motogp-card.js     # Äldre valfritt kort – ladda inte parallellt
+    ha-mgp.js             # Ny huvudresurs från kommande beta
+    ha-motogp-next.js     # Gammal URL, byte-identiskt kompatibilitetsalias
+    ha-motogp-card.js     # Äldre separat kort; ladda inte parallellt
 ```
 
-Home Assistant serverar den aktiva resursen på `/motogp_sensor/ha-motogp-next.js`. Registrera den som **JavaScript module**, exakt en gång i dashboardens resurser. Byt inte URL eller korttaggar bara för att projektet nu heter HA-MGP.
+I **publicerade b12** gäller `/motogp_sensor/ha-motogp-next.js`. I **kommande beta** kan samma UI laddas från `/motogp_sensor/ha-mgp.js`. De två filerna är byte-identiska, och **endast en** ska registreras som JavaScript module. Se [resursmigrering](js-resource-migration.md) före byte. Korttyperna ändras inte.
 
 ## Uppdatering och rollback
 
@@ -24,4 +25,4 @@ Home Assistant serverar den aktiva resursen på `/motogp_sensor/ha-motogp-next.j
 4. Kontrollera den faktiska UI-versionen under `ⓘ UI-information`.
 5. Vid problem: återgå till tidigare betaversion. Radera inte integrationen eller sessionsarkivet.
 
-Den byggda JS-filen i `dist/` och HACS-kopian ska vara byte-identiska, kontrollerat av byggskript och CI. Namnet `next` är bakåtkompatibelt tekniskt arv, inte produktnamnet. Se [versionsguiden](frontend-versioning.md).
+Den byggda JS-filen i `dist/` och HACS-kopian ska vara byte-identiska, kontrollerat av byggskript och CI. Källmodulerna ligger nu under `frontend/ha-mgp-*.js`. Den äldre JS-resursen ligger kvar för kompatibilitet. Se [versionsguiden](frontend-versioning.md).

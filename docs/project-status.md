@@ -18,6 +18,10 @@ I den ännu opublicerade dev-versionen är helgschema och VM-ställning ömsesid
 
 ## Kompatibilitet
 
-Vi behåller `motogp_sensor` som intern HA-domän, resursen `/motogp_sensor/ha-motogp-next.js`, korttaggarna `ha-motogp-next-*` och sessionslagringen `/config/motogp_data/`. NEXT är bara ett äldre internt identifierarnamn. Repo/produkt heter HA-MGP.
+Vi behåller `motogp_sensor` som intern HA-domän, den gamla resursen `/motogp_sensor/ha-motogp-next.js` som alias och nya `/motogp_sensor/ha-mgp.js` som avsedd huvudresurs från nästa beta, korttaggarna `ha-motogp-next-*` och sessionslagringen `/config/motogp_data/`. NEXT är bara ett äldre internt identifierarnamn. Repo/produkt heter HA-MGP.
 
 Övriga äldre anteckningar dokumenterar tidigare tester och ska inte följas som aktuella installationsinstruktioner. Se [installation](hacs-beta-installation.md) och [dokumentationsindex](README.md).
+
+## Namnbyte av JavaScript (dev)
+
+Källmodulerna är nu omdöpta till `frontend/ha-mgp-*.js`, den byggda huvudfilen heter `ha-mgp.js` och den gamla HACS-filen behålls byte-identisk som kompatibilitetsalias. Samma interna Lovelace-taggar används. **Inte publicerat till beta eller verifierat i HA ännu.** Se [migrationsguide](js-resource-migration.md).

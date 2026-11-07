@@ -10,4 +10,4 @@
 
 **Rollback:** använd tidigare känd fungerande beta och bevara data och konfigurationspost. Ta inte bort integrationen eller skapa en till med samma domän.
 
-GitHub-repot och produktnamnet har bytts till **HA-MGP**, men domänen `motogp_sensor`, gamla korttaggar och resursfilens namn ändras inte. Vi gör ingen automatisk omdöpning av befintliga entiteter.
+GitHub-repot och produktnamnet heter **HA-MGP**. Den nya resursadressen `/motogp_sensor/ha-mgp.js` introduceras i en **kommande beta**, inte i b12. Följ [migrationsguiden](js-resource-migration.md) när den betan har släppts. Domänen och korttaggarna ändras inte. Vi gör ingen automatisk omdöpning av befintliga entiteter.
