@@ -7,7 +7,7 @@ const vm=require('node:vm');
 
 const code=fs.readFileSync(process.argv[2]||
   'custom_components/motogp_sensor/www/ha-motogp-next.js','utf8');
-assert.match(code,/0\.3\.0-dev\.23/);
+assert.match(code,/0\.3\.0-dev\.24/);
 const anchor='/* MotoGP Next: approved lap records, personal bests, gap trends and feed freshness.';
 const start=code.indexOf(anchor);
 const end=code.indexOf('\n})();',start);
