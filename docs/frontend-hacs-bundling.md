@@ -37,7 +37,7 @@ Existing `/local/ha-motogp-next.js` remains the user's live UI until explicit mi
 2. Open `/motogp_sensor/ha-motogp-next.js` in a browser on the HA host to verify the path.
 3. In **Settings → Dashboards → Resources**, edit the **existing** Next resource
    `/local/ha-motogp-next.js` instead of adding a second one.
-4. Change only the resource URL to `/motogp_sensor/ha-motogp-next.js?v=2026.11.0b1`
+4. Change only the resource URL to `/motogp_sensor/ha-motogp-next.js`
    and retain type `JavaScript module`.
 5. Hard reload the dashboard (Ctrl+Shift+R). Confirm the expected card build identity
    and that overview/timing, no-spoiler mode, live states and session archive work.
@@ -49,7 +49,7 @@ Do not include both URLs for the same card. The legacy `ha-motogp-card.js` is av
 but should not be added unless that original custom card is actually used.
 
 HACS updates the JS **files** along with the integration on future beta/main releases.
-Browsers still need a query-string version bump when bundled JavaScript changes.
+Do not append query-string version parameters to bundled JS resources. The stable resource URL remains unchanged across HACS upgrades. Reload the dashboard with Ctrl+Shift+R after updating the integration.
 The freshness badge previously rendered a placeholder and depended on a timer
 which might not have started on a pre-connected card. The bundled Next
 `0.3.0-dev.7` renders a green/amber/red/unknown label from `live_poll_at`
@@ -60,7 +60,7 @@ spoiler guard and timer cleanup.
 ## Release boundary
 
 - **dev:** new, safe read-only package candidate; CI checks Python registration and both bundled JS.
-- **beta:** stays `2026.10.0b5` until the full frontend + backend CI gates pass.
+- **beta:** `2026.11.0b1` published after frontend and backend CI passed; awaiting on-host acceptance.
 - **main:** unchanged.
 - `/config/motogp_data/` and integration entity IDs are untouched.
 
