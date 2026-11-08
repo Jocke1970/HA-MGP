@@ -1,4 +1,4 @@
-/* MotoGP Next SINGLE Lovelace resource | build next-one-20261108-16 | read only. */
+/* MotoGP Next SINGLE Lovelace resource | build next-one-20261108-17 | read only. */
 /* MotoGP Next: isolated frontend for motogp-test. No HA writes or service calls. */
 (() => {
   'use strict';
@@ -303,9 +303,9 @@
       this._track(now,race);
       const event=valid(race?.state)?race.state:'Inget evenemang tillgängligt';
       const meta=[a.circuit,a.country,a.date_start&&a.date_end?dateRange(a.date_start,a.date_end):''].filter(valid);
-      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.41</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
+      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.42</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
         this._schedule(race,now)+`<div class="root">${this._weather()}${this._timing()}</div>`+
-        `<div class="foot">HA-MGP UI · 0.3.0-dev.41 · UI-preview</div></div>`;
+        `<div class="foot">HA-MGP UI · 0.3.0-dev.42 · UI-preview</div></div>`;
     }
     getCardSize(){return 8;}
     getGridOptions(){return {columns:12,rows:'auto',min_columns:6};}
@@ -1211,8 +1211,6 @@
       const target=e.target;
       const standings=target?.closest?.('[data-motogp-standings-toggle]');
       if(standings){this._standingOpen=!this._standingOpen;if(this._standingOpen)this._scheduleOpen=false;this._render();return;}
-      const schedule=target?.closest?.('[data-motogp-schedule-toggle]');
-      if(schedule){this._scheduleOpen=!this._scheduleOpen;if(this._scheduleOpen)this._standingOpen=false;this._render();return;}
       const tab=target?.closest?.('[data-motogp-standing]');
       if(tab){this._standingTab=tab.getAttribute('data-motogp-standing');this._render();return;}
       return oldClick.call(this,e);
@@ -1225,17 +1223,9 @@
         (_full,start,name,end,close)=>start+name+end+classMark(name)+close)
         .replace(/(<button type="button" class="cat" data-category="Total"[^>]*>)Total(<\/button>)/g,
           '$1<span class="mgp-all-mark">🏁 ALL</span>$2');
-      if(!this._live||this._spoiler())return formatted;
-      const open=this._scheduleOpen===true;
-      const control='<section class="panel" aria-label="Helgens schema">'+
-        '<div class="np-heading"><span>🗓️ Helgens schema</span>'+
-        '<button type="button" class="np-show-button" data-motogp-schedule-toggle '+
-        'aria-expanded="'+open+'">'+(open?'Dölj schema':'Visa schema')+'</button></div></section>';
-      if(!open)return control;
-      const header='<section class="panel">';
-      const close='<div class="np-hide-row"><button type="button" class="np-show-button" '+
-        'data-motogp-schedule-toggle aria-expanded="true">Dölj schema</button></div>';
-      return formatted.includes(header)?formatted.replace(header,header+close):control+formatted;
+      // Weekend schedule visibility is owned solely by the event-header modal.
+      // Never insert a second panel above the separately rendered timing card.
+      return formatted;
     };
     function gridHtml(card,now) {
       if(card._spoiler())return '';
