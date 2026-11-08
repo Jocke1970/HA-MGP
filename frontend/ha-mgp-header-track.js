@@ -84,7 +84,7 @@ function timingWindow(card){
 }
 function toolbar(card){
   const next=nextSession(card);
-  const session=next?esc(next.category)+' · '+esc(next.name):'Inga fler schemalagda pass';
+  const session=next?esc(next.category)+' · '+esc(next.name):'Helgschema inväntar publicerade pass';
   const chip=next?'<span class="mgp-next-chip" title="Nästa schemalagda pass">⏱ '+session+
     ' · <span class="next-countdown" data-next-start="'+next.time+'">—</span></span>':
     '<span class="mgp-next-chip">'+session+'</span>';
