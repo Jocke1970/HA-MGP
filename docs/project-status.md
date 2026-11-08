@@ -37,3 +37,13 @@ Frontend `0.3.0-dev.30` innehåller de första fem inbyggda språkfilerna för `
 ## Säsongskalender utanför racehelg (dev)
 
 I frontend `0.3.0-dev.32` ersätter en responsiv säsongskalender översiktskortet utanför racehelger. Data kommer från `sensor.motogp_next_race.attributes.season_calendar`, som redan innehåller hela säsongen. Nästa Grand Prix markeras separat med nedräkning, återstående tävlingar visas som kort och tidigare tävlingar ligger under en hopfällbar sektion. Racehelgen (primärt `binary_sensor.motogp_race_weekend_active`, alternativt `binary_sensor.motogp_race_week`, med datumbaserad reserv) lämnar det befintliga livegränssnittet orört. Ingen ny backendhämtning eller ny Lovelace-resurs. Kalendern har de fem befintliga UI-språken och engelsk fallback. **Endast på dev; inte testad visuellt i HA eller publicerad till beta.**
+
+## Status- och klockchips för livetiming (dev.35, ej beta)
+
+- Toppchipet visar en verifierad pågående session från kortets befintliga live-matchning innan nästa schemalagda pass; annars kvarstår nedräkningen till nästa pass.
+- `binary_sensor.motogp_live_timing_online` ger en separat grön/grå/orange API-indikator i eventheadern. Detta är inte detsamma som att ett pass är live.
+- `sensor.motogp_session_status` ger gul/grön/grå/orange sessionsindikator endast när klass **och** sessionstitel matchar, i livetimingens rubrik samt i motsvarande schemapass; aldrig ärvs en sessions status av andra klasser.
+- Starttid har klockikon och nedräkningen timerikon; nedräkningen blir röd under fem minuter. Inga backend- eller väderändringar i dessa UI-commits.
+- En synlighetstest bör säkerställa att `Helgschema` inte öppnas automatiskt av live-data och att manuellt öppet schema fortfarande respekteras.
+- Väder från Open-Meteo vid banans koordinater är en separat möjlig backendfeature, med tydlig källmärkning och attribution. **Inte implementerat.**
+
