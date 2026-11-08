@@ -36,6 +36,7 @@ jobs:
           node --check frontend/ha-mgp-timing-icons.js
           node --check frontend/ha-mgp-active-chip.js
           node --check frontend/ha-mgp-finish-settling.js
+          node --check frontend/ha-mgp-pre-session.js
           node --check frontend/ha-mgp-session-history.js
       - name: Build ONE distributable Next resource (pinned source and syntax)
         run: |
