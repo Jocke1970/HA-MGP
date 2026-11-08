@@ -1,21 +1,10 @@
-# HA-MGP 2026.11.0b22 — startgrid, weather diagnostics and local track SVG
+# HA-MGP 2026.11.0b23 — startup hotfix
 
-**Beta:** `2026.11.0b22` · **UI:** `0.3.0-dev.51`
+**Beta:** `2026.11.0b23` · **UI:** `0.3.0-dev.51` (unchanged)
 
-## Added over b21
+**Critical fix:** b22's `__init__.py` imported `session_history_ws.py`, which imported the absent `session_history_response.py`. As a result, Home Assistant could not load `motogp_sensor`. This release includes the missing module and tests the package-local import graph and session history read-only WebSocket path.
 
-- Race/sprint pre-session official grid in staggered 3×3 rows, subject to full roster and contiguous-position validation. A partial or unknown grid remains an entry list.
-- Session-bound Results API weather report with successful poll timestamp, first/last observed change, counts, missing-data/error states, and age. **Never claims verified live weather.**
-- Optional local circuit SVGs from `/config/www/ha-mgp/circuits/<id>.svg` (browser `/local/ha-mgp/circuits/<id>.svg`) with graceful schematic fallback. SVG artwork is not included in the HACS release; consult `docs/local-circuit-svgs.md`.
-- Authenticated session history viewing support in backend.
+All b22 features remain: race/sprint pre-session grid, session-bound observed weather diagnostics, optional local circuit SVGs with fallback, and b21 journal/finish-settling behavior.
 
-## Existing behavior retained
+Upgrade to b23 via HACS beta and restart Home Assistant. If necessary, roll back to b21 (b22 cannot load on installations affected by the missing module).
 
-- b21's append-only Pulselive event journal and bounded four-minute final-session refresh.
-- Five locales, schedule modal, spoiler/TV-delay protection, best lap and timing indicators.
-
-## Installation and rollback
-
-Install/update HACS beta **between sessions**, restart Home Assistant, and refresh browser JS cache if necessary. Revert to `2026.11.0b21` if needed.
-
-Track SVGs are optional and never gate availability of the dashboard. Review backend weather timestamps as **observation times**, not measurement timestamps.
