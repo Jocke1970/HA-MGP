@@ -53,6 +53,69 @@ class TestEventJournal(unittest.TestCase):
             j2.append([{"observed_at":t.isoformat(),"event":"feed_offline","tv_delay_ready":False}])
             self.assertEqual(len(file.read_text().splitlines()),len(saved)+1)
 
+    def test_first_gap_precedes_completed_lap_and_gap_updates_throttled(self):
+        with tempfile.TemporaryDirectory() as directory:
+            d=tracker.PulseliveDiagnostics()
+            j=journal.PulseliveEventArchive(directory)
+            t=datetime(2026,11,8,15,0,tzinfo=timezone.utc)
+            def sample(lap, gap=None, last="", ready=True, session="race-a"):
+                return {
+                    "event_id":"event-qatar", "category":"Moto2",
+                    "session_id":session, "session_status_id":"S",
+                    "tv_delay_ready":ready,
+                    "riders":[{"rider_id":11,"position":1,"num_lap":lap,
+                               "gap_first":"", "gap_prev":""},
+                              {"rider_id":96,"position":2,"num_lap":lap,
+                               "gap_first":gap, "gap_prev":gap,
+                               "last_lap_time":last}],
+                }
+            changes=d.observe(sample(1),True,t)
+            self.assertIn("first_lap_started",[x["event"] for x in changes])
+            self.assertIn("first_position",[x["event"] for x in changes])
+            self.assertNotIn("first_lap_completed",[x["event"] for x in changes])
+            j.append(changes)
+            changes=d.observe(sample(1,"0.594"),True,t+timedelta(seconds=5))
+            self.assertIn("first_gap_reported",[x["event"] for x in changes])
+            self.assertNotIn("first_lap_completed",[x["event"] for x in changes])
+            j.append(changes)
+            changes=d.observe(sample(1,"0.665"),True,t+timedelta(seconds=8))
+            self.assertTrue(any(x["event"]=="gap_updated" for x in changes))
+            j.append(changes)
+            changes=d.observe(sample(1,"0.750"),True,t+timedelta(seconds=10))
+            self.assertFalse(any(x["event"]=="gap_updated" for x in changes),
+                             "gap log limited to one summary per 15 seconds")
+            changes=d.observe(sample(2,"0.820","1'59.910"),True,t+timedelta(seconds=25))
+            self.assertIn("first_lap_completed",[x["event"] for x in changes])
+            self.assertIn("gap_updated",[x["event"] for x in changes])
+            j.append(changes)
+            saved=[json.loads(x) for x in
+                   (Path(directory)/"api_diagnostics"/"2026-11-08.jsonl").read_text().splitlines()]
+            names=[x["event"] for x in saved]
+            self.assertLess(names.index("first_gap_reported"),
+                            names.index("first_lap_completed"))
+            self.assertNotIn("0.594",str(saved), "no full raw gap values archived")
+            self.assertEqual(d.attributes()["first_lap_started_at"],t.isoformat())
+            self.assertEqual(d.attributes()["first_lap_completed_at"],
+                             (t+timedelta(seconds=25)).isoformat())
+
+    def test_no_unverified_gap_or_lap_and_session_reset(self):
+        d=tracker.PulseliveDiagnostics()
+        t=datetime(2026,11,8,15,0,tzinfo=timezone.utc)
+        base={"event_id":"event","category":"MotoGP","session_id":"race-a",
+              "session_status_id":"S","tv_delay_ready":False,
+              "riders":[{"rider_id":1,"position":1,"num_lap":1,
+                         "gap_first":"0.250","last_lap_time":"1'52.300"}]}
+        changes=d.observe(base,True,t)
+        self.assertNotIn("first_gap_reported",[r["event"] for r in changes])
+        self.assertIsNone(d.attributes()["first_gap_at"])
+        ready=dict(base,tv_delay_ready=True)
+        changes=d.observe(ready,True,t+timedelta(seconds=5))
+        self.assertIn("first_lap_completed",[r["event"] for r in changes])
+        reset=dict(ready,session_id="race-b",riders=[])
+        d.observe(reset,True,t+timedelta(minutes=1))
+        self.assertIsNone(d.attributes()["first_gap_at"])
+        self.assertIsNone(d.attributes()["first_lap_completed_at"])
+
     def test_invalid_event_and_symlink_fail_closed(self):
         with tempfile.TemporaryDirectory() as directory:
             j=journal.PulseliveEventArchive(directory)
