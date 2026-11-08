@@ -58,7 +58,7 @@ def check_bundle_integrity() -> None:
     next_js = (ASSETS / "ha-mgp.js").read_text(encoding="utf-8")
     assert "ha-motogp-next-overview-card" in next_js
     assert "ha-motogp-next-timing-card" in next_js
-    assert "0.3.0-dev.32" in next_js
+    assert "0.3.0-dev.33" in next_js
     assert "header-track-weather-20261108-02" in next_js
     assert "mgp-country-flag" in next_js
     assert "mgp-brand-logo" in next_js
@@ -104,6 +104,8 @@ def check_bundle_integrity() -> None:
     assert "Championship standings" in next_js
     assert "mgp-season" in next_js
     assert "calendar-20261108-02" in next_js
+    assert "api-status-20261108-01" in next_js
+    assert "binary_sensor.motogp_live_timing_online" in next_js
     assert '"es":{' in next_js, "Spanish must be bundled alongside the English fallback"
     assert "records_by_category" in next_js
     assert "data-motogp-schedule-toggle" in next_js

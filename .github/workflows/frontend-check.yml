@@ -31,6 +31,7 @@ jobs:
           node --check frontend/ha-mgp-header-track.js
           node --check frontend/ha-mgp-i18n.js
           node --check frontend/ha-mgp-calendar.js
+          node --check frontend/ha-mgp-api-status.js
           node --check frontend/ha-mgp-session-history.js
       - name: Build ONE distributable Next resource (pinned source and syntax)
         run: |
@@ -41,6 +42,7 @@ jobs:
           python3 tests/test_frontend_package.py
           node tests/frontend-i18n.cjs
           node tests/frontend-calendar.cjs
+          node tests/frontend-api-status.cjs
           node --check custom_components/motogp_sensor/www/ha-mgp.js
           node --check custom_components/motogp_sensor/www/ha-motogp-next.js
           node --check custom_components/motogp_sensor/www/ha-motogp-card.js
