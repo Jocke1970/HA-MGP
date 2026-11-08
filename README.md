@@ -8,11 +8,15 @@ Grand Prix-översikt med MGP-logga, land, bana, banlayout och banväder; helgsch
 
 ## Installera
 
-**Senaste publicerade HACS-beta: `2026.11.0b12`** (UI `0.3.0-dev.23`). Uppdatera endast från **beta**, aldrig direkt från `dev`. Se [installations- och rollbackguide](docs/hacs-beta-installation.md).
+**Senaste publicerade HACS-beta: `2026.11.0b17`** (UI `0.3.0-dev.37`). Uppdatera endast från **beta**, aldrig direkt från `dev`. Se [installations- och rollbackguide](docs/hacs-beta-installation.md).
 
-**I publicerade b12:** Lovelace-resursen är `/motogp_sensor/ha-motogp-next.js` (JavaScript module). **I kommande beta:** ny huvudresurs `/motogp_sensor/ha-mgp.js`; den gamla URL:en finns kvar som kompatibilitetsalias. Registrera aldrig båda samtidigt. Korttyperna är `custom:ha-motogp-next-overview-card` och `custom:ha-motogp-next-timing-card`.
+**I b17:** Lovelace-resursen är `/motogp_sensor/ha-mgp.js` (JavaScript module); `/motogp_sensor/ha-motogp-next.js` är ett byte-identiskt alias. Registrera aldrig båda samtidigt. Korttyperna är `custom:ha-motogp-next-overview-card` och `custom:ha-motogp-next-timing-card`.
 
-**Viktigt vid namnbytet:** Repo och visningsnamn blir HA-MGP, men integrationsdomänen `motogp_sensor`, befintliga interna korttyper, entiteter och `/config/motogp_data/` behålls för bakåtkompatibilitet. Frontendens källmoduler heter numera `frontend/ha-mgp-*.js`. Äldre JS-resursnamn finns kvar enbart som övergångsadresser. Se [migrering av resursnamn](docs/js-resource-migration.md).
+**Viktigt vid namnbytet:** Repo och visningsnamn blir HA-MGP, men integrationsdomänen `motogp_sensor`, befintliga interna korttyper, entiteter och `/config/motogp_data/` behålls för bakåtkompatibilitet. Frontendens källmoduler heter numera `frontend/ha-mgp-*.js`. Äldre JS-resursnamn finns kvar som kompatibilitetsalias. Se [migrering av resursnamn](docs/js-resource-migration.md).
+
+## Pågående utveckling
+
+På `dev` förbereds UI `0.3.0-dev.38`: helgschemat öppnas i dialog i stället för att skjuta ned live-timingen. De grafiska klassknapparna **Moto3, Moto2 och MotoGP** är regressionstestade med bibehållen klassisolering; markörerna är egna textbaserade SVG, inte officiella logotyper. En valfri, som standard inaktiverad **Pulselive API debug**-sensor protokollför tidpunkter för sessionsbyte, statusbyte, första förarlista och första varv med befintlig polling och bevarat spoilerskydd. Inte publicerat på beta ännu.
 
 ## Utveckling
 
