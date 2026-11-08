@@ -26,6 +26,7 @@ from .const import (
 from .coordinator import MotogpCoordinator
 from .web_assets import async_register_frontend_paths
 from .lap_history_ws import async_register_rider_laps
+from .session_history_ws import async_register_session_history
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -34,6 +35,7 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
     """Serve bundled dashboard assets without adding duplicate Lovelace resources."""
     await async_register_frontend_paths(hass)
     async_register_rider_laps(hass)
+    async_register_session_history(hass)
     return True
 
 

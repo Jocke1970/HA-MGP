@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const file=process.argv[2]||'frontend/ha-mgp-header-track.js';
 const src=fs.readFileSync(file,'utf8');
-assert.match(src,/header-track-weather-20261108-02/);
+assert.match(src,/header-track-weather-20261108-05/);
 const docs=[];
 class Overview {
   static buildInfo={version:'0.2.0-split.2'};
@@ -65,6 +65,14 @@ const context={customElements:{
   assert.match(card.root.innerHTML,/mgp-venue-strip/);
   assert.match(card.root.innerHTML,/data-mgp-hero-grid/,'header contains the unified hero');
   assert.match(card.root.innerHTML,/mgp-track-svg/,'Lusail verified layout rendered');
+  assert.match(card.root.innerHTML,/\/local\/ha-mgp\/circuits\/lusail\.svg/,'local SVG is preferred when installed');
+  assert.match(card.root.innerHTML,/mgp-track-fallback/,'fallback remains while SVG is unavailable');
+  assert.match(src,/addEventListener\('load'/,'verified local image can replace fallback');
+  assert.match(src,/addEventListener\('error'/,'missing local image safely keeps fallback');
+  assert.match(card.root.innerHTML,/5,38 km/,'verified lap length shown in header');
+  assert.match(card.root.innerHTML,/1 068 m/,'longest straight shown in header');
+  assert.match(card.root.innerHTML,/10 · ↰ 6/,'right and left turns shown');
+  assert.match(card.root.innerHTML,/qat-info\.svg/,'official SVG is linked, not loaded as an unverified replacement');
   const eventHeader=card.root.innerHTML.match(/<section class="panel header">([\s\S]*?)<\/section>/);
   assert.ok(eventHeader,'single event header exists');
   assert.match(eventHeader[1],/GRAND PRIX OF QATAR/);
@@ -104,6 +112,22 @@ const context={customElements:{
   assert.match(card.root.innerHTML,/Clear/);
   assert.match(card.root.innerHTML,/Moto2 · Q1/);
   assert.match(card.root.innerHTML,/Senast rapporterat · inte livegaranti/);
+  const report=card._hass.states['sensor.motogp_track_weather'];
+  report.attributes={...report.attributes,fetch_status:'ok',poll_count:4,change_count:2,
+    checked_at:'2026-11-08T14:05:00Z',last_success_at:'2026-11-08T14:05:00Z',
+    data_age_seconds:600};
+  card._render();
+  assert.match(card.root.innerHTML,/Kontroller 4/);
+  assert.match(card.root.innerHTML,/Ändringar 2/);
+  assert.match(card.root.innerHTML,/Ändrat för 10 min sedan/);
+  report.attributes.fetch_status='error';
+  card._render();
+  assert.match(card.root.innerHTML,/API-fel · senast kända rapport/);
+  report.attributes.fetch_status='no_data';
+  card._render();
+  assert.match(card.root.innerHTML,/Ingen ny sessionsrapport/);
+  delete report.attributes.fetch_status;
+  card._render();
   assert.doesNotMatch(card.root.innerHTML,/OLD SEPARATE WEATHER PANEL/);
   assert.ok(eventHeader[1].indexOf('np-top-actions')<eventHeader[1].indexOf('mgp-weather-panel'),
     'VM toggle remains beside event title, before the weather and circuit');
@@ -152,6 +176,13 @@ const context={customElements:{
   card._render();
   assert.match(card.root.innerHTML,/Ingen verifierad banritning tillgänglig/);
   assert.doesNotMatch(card.root.innerHTML,/mgp-track-svg/,'no fabricated outline');
+  other.attributes.circuit='Balaton Park Circuit';
+  card._render();
+  assert.match(card.root.innerHTML,/\/local\/ha-mgp\/circuits\/balatonpark\.svg/,'Hungarian MotoGP track uses Balaton Park');
+  other.attributes.circuit='Le Mans Bugatti Circuit';
+  card._render();
+  assert.match(card.root.innerHTML,/\/local\/ha-mgp\/circuits\/lemans\.svg/,'Le Mans local-only asset mapped');
+  assert.match(card.root.innerHTML,/Lokal SVG saknas/,'Le Mans without SVG uses an explicit neutral placeholder');
   other.attributes.circuit='Misano World Circuit';
   card._render();
   assert.match(card.root.innerHTML,/mgp-track-svg/,'other track mapped too');

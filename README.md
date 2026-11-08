@@ -1,13 +1,17 @@
-# HA-MGP — HACS beta
+# HA-MGP — Home Assistant MotoGP beta
 
-**HACS beta `2026.11.0b21` · UI `0.3.0-dev.46`.**
+Unofficial Home Assistant integration for MotoGP, Moto2 and Moto3.
 
-Uppdateringen är komplett från b20 och inkluderar befintlig, beständig Pulselive-händelselogg i `/config/motogp_data/api_diagnostics/YYYY-MM-DD.jsonl`.
+**HACS beta candidate: `2026.11.0b22` · UI `0.3.0-dev.51`.**
 
-**Nytt:** `session_started`, `first_lap_started`, `first_position`, `first_gap_reported`, begränsade `gap_updated`, `first_lap_completed`; befintliga events kvar. Observationer kommer från redan TV-delay-godkänd polling utan extra HTTP-anrop eller råa riders-data. UI visar pågående varv inklusive nuvarande och **Sista varvet** när `num_lap == num_laps`, inte målgång förrän officiellt C/F. Efter F/C fortsätter samma sessions polling var 15 s under fyra minuter för att fånga senare korrigeringar.
+## What's included
 
-Helgschema-modal, klassfilter och röd sessionens snabbaste varvtid från b20 består.
+- Read-only live timing, standings, current/next session and spoilers/TV-delay protections.
+- Staggered race/sprint start grid before the session when the official grid can be validated.
+- Session-bound track weather reports with polling and changed-value diagnostics (not claimed as true live measurements).
+- Local optional SVG circuit illustrations; schematic outlines used as fallback.
+- B21 persistent Pulselive diagnostic event journal, including the final-lap and bounded finish-settling behavior.
 
-**Installera via HACS beta**, starta om Home Assistant mellan pass. Behåll `/config/motogp_data/` och en JS module: `/motogp_sensor/ha-mgp.js`. Rollback b20; main orörd.
+See [beta release notes](docs/hacs-beta-release-notes.md), [HACS installation](docs/hacs-beta-installation.md), and [local circuit SVG setup](docs/local-circuit-svgs.md).
 
-[Release notes](docs/hacs-beta-release-notes.md) · [Installation](docs/hacs-beta-installation.md) · [Status](docs/project-status.md).
+**Release workflow:** dev → candidate → beta → main. Do not install a release candidate as a published beta until CI passes.

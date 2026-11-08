@@ -149,10 +149,14 @@ async def async_setup_entry(
         entities.append(
             MotogpSensor(coordinator, device_name, description, key, sensor_type)
         )
-    # Opt-in diagnostic; existing production sensor selections stay untouched.
-    entities.append(MotogpSensor(
-        coordinator, device_name, SENSOR_DESCRIPTIONS["api_debug"], "api_debug", STATIC
-    ))
+    # Diagnostic entity is opt-in via the HA entity registry, independent of
+    # the existing selectable production sensor set.
+    entities.append(
+        MotogpSensor(
+            coordinator, device_name, SENSOR_DESCRIPTIONS["api_debug"],
+            "api_debug", STATIC,
+        )
+    )
     async_add_entities(entities)
 
 
@@ -569,6 +573,7 @@ def _static_attributes(key: str, coordinator: MotogpCoordinator) -> dict[str, An
             attrs["sponsored_name"] = event.get("sponsored_name")
             attrs["time_zone"] = static.get("schedule_time_zone")
             attrs["start_grids"] = static.get("start_grids", {})
+            attrs["entry_lists"] = static.get("entry_lists", {})
             attrs["qualifying_q1_eliminated"] = (
                 {} if coordinator.no_spoiler
                 else static.get("qualifying_q1_eliminated", {})
@@ -666,6 +671,17 @@ def _static_attributes(key: str, coordinator: MotogpCoordinator) -> dict[str, An
         weather = static.get("track_weather")
         if weather:
             attrs.update(weather)
+            # Age since an observed payload change, not an asserted sensor measurement.
+            stamp = weather.get("updated_at")
+            if stamp:
+                try:
+                    last_change = datetime.fromisoformat(str(stamp).replace("Z", "+00:00"))
+                    if last_change.tzinfo is not None:
+                        attrs["data_age_seconds"] = max(0, int(
+                            (datetime.now(timezone.utc) - last_change).total_seconds()
+                        ))
+                except (TypeError, ValueError, OverflowError):
+                    pass
     return attrs
 
 
