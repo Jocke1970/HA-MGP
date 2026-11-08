@@ -1,20 +1,17 @@
-# MotoGP project status — 2026-11-07
+# HA-MGP — status 8 november 2026
 
-- **dev:** `2026.11.0b9`, MotoGP Next `0.3.0-dev.16`; four required GitHub Action suites green before beta promotion.
-- **beta:** HACS prerelease `2026.11.0b9`; install and validate on host after live session.
-- **main:** unchanged; user acceptance required.
+**Senaste bekräftade publicerade beta innan b18-gate:** `2026.11.0b17` · UI `0.3.0-dev.37`.
+**b18-releasekandidat:** `2026.11.0b18` · UI `0.3.0-dev.40`.
 
-## Since prior released beta b7
+## Innehåll i kandidat
+- Helgschema öppnas i modal från toppkortets knapp i stället för mellan toppkort och separat livetiming.
+- Kategorifilter med grafiska textmärken: Moto3, Moto2, MotoGP. Klickbarhet och klassisolerad filtrering omfattas av regressioner. Märkena är inte officiella logotyper.
+- Förarens snabbaste giltiga varv rött. Sessionens snabbaste **observerade** varv visas även med fryst avslutat sessionssnapshot.
+- Pulselive API debug: separat diagnostiksensor avstängd som standard, använder befintlig TV-delay-godkänd live-feed utan nya anrop. Attribut för status, sessions-ID, första observerade roster och varv, med betydelsefulla ändringstider och utan massdump av JSON.
+- B17:s backend, T−30-grid, historik och spoilerskydd bevaras. Inget `/event/.../entry`-anrop på beta.
 
-1. White unified top hero: Grand Prix title/standings toggle left, reported weather center, right-aligned schematic circuit drawing, container responsive.
-2. Per-rider latest lap and fastest lap shown together. A race screenshot revealed that enhanced clickable row tags caused Next UI preview per-rider formatting to be skipped. The row matcher now supports attributes; PB formatting, rider-lap popup and spoiler remain.
-3. Added an asynchronous addon-install-order regression, verified against the HACS bundle in the beta-release gate.
-
-## Separate issues / limitations
-
-- **Red Flag**: observed 2026-11-07 MotoGP Sprint sensor remained `session_status_id: N`, poll 30 s, while schedule said CURRENT and archive held observed laps. No polling/backend change in b9; need targeted tests before future fix.
-- Public grid numbers can be `null` in source. Remains a known issue to review before claiming every official grid is complete.
-- The agreed MGP brand icon was not shipped.
-- Circuit drawings are schematic; weather data may legitimately be unavailable during Sprint.
-
-Keep one JS module resource at `/motogp_sensor/ha-motogp-next.js`, no cache query or duplicate resource; preserve `/config/motogp_data/`.
+## Verifierat och kvar
+- I GitHub Actions har 2026 års Results/Broadcast, sessions-API, live-lite, race-grid och classification svarat HTTP 200. Deltagar-`entry` gav HTTP 400 och får inte vara en produktionsförutsättning.
+- `/riders` och `/teams` returnerar kataloguppgifter, inte bekräftat deltagande i ett pass.
+- Nästa steg: b18 CI/release, installation endast via HACS-beta, visuellt test av modal, klassfilter och varvtider vid verklig avflaggning. Main först efter verifiering.
+- [PyMotoGP](https://github.com/tejred213/PyMotoGP) beskriver historisk Analysis-PDF via `session_files.analysis.url`. Potentiell separat framtida källa för kontroll av historiskt PB/varv, men ingår **inte** i b18.
