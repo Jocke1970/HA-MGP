@@ -77,7 +77,7 @@ jobs:
               "/* MotoGP Next qualifying grid: echelon",
               "/* MotoGP Next circuit layout & track weather",
               "/* MotoGP Next: observed historical lap summaries",
-              "/* HA-MGP UI localization.
+              "/* HA-MGP UI localization.",
           ]
           positions = [source.index(marker) for marker in markers]
           assert positions == sorted(positions) and len(set(positions)) == 6
