@@ -1,0 +1,106 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "HA-MGP",
+        "data": {
+          "device_name": "Nome dispositivo",
+          "enabled_sensors": "Sensori abilitati",
+          "live_source": "Fonte cronometraggio live",
+          "race_week_start_day": "Inizio settimana di gara"
+        }
+      }
+    },
+    "error": {
+      "required": "È richiesto un nome dispositivo"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opzioni",
+        "data": {
+          "device_name": "Nome dispositivo",
+          "enabled_sensors": "Sensori abilitati",
+          "live_source": "Fonte cronometraggio live",
+          "race_week_start_day": "Inizio settimana di gara"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "session_status": {
+        "name": "Stato della sessione"
+      },
+      "current_session": {
+        "name": "Sessione attuale"
+      },
+      "race_lap_count": {
+        "name": "Giri di gara"
+      },
+      "rider_positions": {
+        "name": "Posizioni piloti"
+      },
+      "top_three": {
+        "name": "Primi tre"
+      },
+      "leader": {
+        "name": "Leader"
+      },
+      "fastest_lap": {
+        "name": "Giro veloce"
+      },
+      "session_time_remaining": {
+        "name": "Tempo rimanente della sessione"
+      },
+      "track_weather": {
+        "name": "Meteo in pista"
+      },
+      "pit_stops": {
+        "name": "Pit stop"
+      },
+      "next_race": {
+        "name": "Prossima gara"
+      },
+      "next_race_in": {
+        "name": "Giorni alla prossima gara"
+      },
+      "current_season": {
+        "name": "Stagione attuale"
+      },
+      "rider_standings": {
+        "name": "Classifica piloti"
+      },
+      "constructor_standings": {
+        "name": "Classifica costruttori"
+      },
+      "last_race_results": {
+        "name": "Risultati ultima gara"
+      }
+    },
+    "binary_sensor": {
+      "race_week": {
+        "name": "Settimana di gara"
+      },
+      "live_timing_online": {
+        "name": "Cronometraggio live disponibile"
+      }
+    },
+    "switch": {
+      "no_spoiler": {
+        "name": "Protezione spoiler"
+      }
+    },
+    "select": {
+      "live_source": {
+        "name": "Fonte cronometraggio live",
+        "state": {
+          "pulselive": "Pulselive (consigliato)",
+          "official": "MotoGP ufficiale (sperimentale)",
+          "auto": "Automatico (Pulselive con riserva ufficiale)"
+        }
+      }
+    }
+  }
+}

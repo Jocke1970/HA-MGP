@@ -14,6 +14,9 @@ on:
       - 'tests/frontend-live-freshness.cjs'
       - 'tests/frontend-mobile-laps.cjs'
       - 'tests/frontend-next-ui-preview.cjs'
+      - 'tests/frontend-i18n.cjs'
+      - 'frontend/locales/**'
+      - 'custom_components/motogp_sensor/translations/**'
       - 'tests/frontend-next-one.cjs'
       - 'tests/frontend-next-qual-grid.cjs'
       - 'tests/frontend-next-header-track.cjs'
@@ -74,20 +77,24 @@ jobs:
               "/* MotoGP Next qualifying grid: echelon",
               "/* MotoGP Next circuit layout & track weather",
               "/* MotoGP Next: observed historical lap summaries",
+              "/* HA-MGP UI localization.
           ]
           positions = [source.index(marker) for marker in markers]
-          assert positions == sorted(positions) and len(set(positions)) == 5
+          assert positions == sorted(positions) and len(set(positions)) == 6
           assert "STATUS OKÄND:" not in source
           assert "qualifying_q1_eliminated" in source
           assert "MELLAN PASSEN" in source
           assert "leaderboard=shown.map" in source
-          assert "ui-preview-20261108-02" in source
-          assert "header-track-weather-20261107-10" in source
+          assert "ui-preview-20261108-04" in source
+          assert "header-track-weather-20261108-02" in source
           assert "mgp-brand-logo" in source
           assert "mgp-rider-flag" in source
           assert "mgp-class-mark" in source
           assert "mgp-all-mark" in source
-          assert 'HA-MGP UI · 0.3.0-dev.27' in source
+          assert "mgp-timing-record-chip" in source
+          assert "Championship standings" in source
+          assert '"es":{' in source
+          assert 'HA-MGP UI · 0.3.0-dev.30' in source
           assert source == Path('custom_components/motogp_sensor/www/ha-motogp-next.js').read_text(encoding='utf-8')
           assert "mgp-ui-footer" in source
           assert "data-mgp-schedule-jump" in source
@@ -104,17 +111,19 @@ jobs:
               "mobile": source[positions[1]:positions[2]],
               "qual": source[positions[2]:positions[3]],
               "header": source[positions[3]:positions[4]],
-              "history": source[positions[4]:],
+              "history": source[positions[4]:positions[5]],
+              "i18n": source[positions[5]:],
           }
           for name, content in parts.items():
               assert len(content) > 1000, f"Unexpectedly short {name} source"
               Path(f"/tmp/ha-mgp-b13-{name}.js").write_text(content, encoding="utf-8")
           PY
-          for name in base ui mobile qual header history; do
+          for name in base ui mobile qual header history i18n; do
             node --check "/tmp/ha-mgp-b13-$name.js"
           done
           node tests/frontend-next-one.cjs /tmp/ha-mgp-b13-base.js
           node tests/frontend-next-ui-preview.cjs /tmp/ha-mgp-b13-ui.js
+          node tests/frontend-i18n.cjs
           node tests/frontend-next-lap-pair.cjs /tmp/ha-mgp-b13-ui.js /tmp/ha-mgp-b13-mobile.js
           node tests/frontend-next-qual-grid.cjs /tmp/ha-mgp-b13-qual.js
           node tests/frontend-next-header-track.cjs /tmp/ha-mgp-b13-header.js
@@ -129,7 +138,8 @@ jobs:
           manifest = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
           assert manifest['domain'] == 'motogp_sensor'
           assert manifest['name'] == 'HA-MGP'
-          assert manifest['version'] == '2026.11.0b14'
+          assert manifest['version'] == '2026.11.0b15'
+          assert all((root / 'translations' / (lang + '.json')).is_file() for lang in ('en','sv','es','it','fr'))
           assert manifest.get('codeowners') == ['@Jocke1970']
           assert {'http', 'frontend'}.issubset(manifest['dependencies'])
           required = {
@@ -146,20 +156,20 @@ jobs:
           assert hacs.get('name')
           assert not hacs.get('content_in_root')
           assert not hacs.get('zip_release')
-          print('Verified HACS beta: 2026.11.0b14 including Next frontend 0.3.0-dev.27')
+          print('Verified HA-MGP beta: 2026.11.0b15 with five locales and timing records')
           PY
       - name: Publish tagged GitHub prerelease
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          TAG=2026.11.0b14
+          TAG=2026.11.0b15
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "$TAG already exists; leaving the immutable prerelease untouched."
             gh release view "$TAG" --json tagName,isPrerelease,url,targetCommitish
             exit 0
           fi
           gh release create "$TAG" --target "$(git rev-parse HEAD)" --prerelease \
-            --title 'HA-MGP 2026.11.0b14 — rider flags and graphical class filters' \
+            --title 'HA-MGP 2026.11.0b15 — five languages and timing records' \
             --notes-file docs/hacs-beta-release-notes.md
           gh release view "$TAG" --json tagName,isPrerelease,url,targetCommitish

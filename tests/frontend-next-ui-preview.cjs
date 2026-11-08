@@ -12,7 +12,7 @@ class Base {
   _render(){this.view.innerHTML='<div class="root">OVERVIEW<div class="foot">old footer</div></div>';}
   _timing(){
     if(this.hidden)return 'HIDDEN';
-    let text='<section><span class="nt-label">🏁 MotoGP · Race</span><div class="nt-session-record"><strong>⚡ fastest</strong></div><div class="nt-scroll"><div class="nt-table">'+
+    let text='<section class="nt-card"><button type="button" class="nt-head"><span class="nt-label">🏁 MotoGP · Race</span></button><div class="nt-session-record"><strong>⚡ fastest</strong></div><div class="nt-scroll"><div class="nt-table">'+
       '<div class="nt-row nt-heading"><span>POS</span><span>FÖRARE / TEAM</span><span>VARV</span><span>SENASTE</span><span>Δ FRAMFÖR</span><span>Δ LEDARE</span><span>STATUS</span></div>';
     for(const r of this._snapshot.riders)text+=`<div class="nt-row"><span>${r.position}</span>`+
       `<span class="nt-person"><span class="nt-color"></span><span class="nt-person-text"><b>${r.surname}</b><small>${r.team}</small></span></span>`+
@@ -31,7 +31,16 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   for(let i=0;i<4;i++)await Promise.resolve();
   const r={position:3,number:93,surname:'TEST',team:'TEAM',nation:'ITA',num_lap:12,
     last_lap_time:"1'30.450",best_lap_time:"1'29.980",status_name:'RUNNING'};
-  const race={state:'GP',attributes:{start_grids:{MotoGP:[{position:8,number:93,rider:'TEST',team:'TEAM'},
+  const race={state:'GP',attributes:{
+     records_by_category:{
+       MotoGP:[{type:'LAP_RECORD',time:'01:50.028',rider:'BEZZECCHI',year:2026,speed:176},
+         {type:'POLE_LAP',time:'01:50.028',rider:'BEZZECCHI'},
+         {type:'BEST_RACE_LAP',time:'01:52.561',rider:'MARQUEZ',year:2025,speed:172},
+         {type:'FAKE',time:'00:00.001'}],
+       Moto2:[{type:'LAP_RECORD',time:'01:43.111',rider:'MOTO2 RIDER'}],
+       Moto3:[{type:'POLE_LAP',time:'01:55.222',rider:'MOTO3 RIDER'}]
+     },
+     start_grids:{MotoGP:[{position:8,number:93,rider:'TEST',team:'TEAM'},
     {position:1,number:1,rider:'A',team:'B'}]},sessions_all:[{category:'MotoGP',name:'Race',type:'RAC',
     date:'2026-09-20T14:00:00+00:00',status:'NOT-STARTED'}]}};
   const standing={attributes:{
@@ -50,6 +59,26 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   assert.match(h,/nt-last-main[\s\S]*nt-pb-chip[\s\S]*Snabbaste: 1&#39;29\.980/);
   assert.match(h,/▲ \+5/);assert.match(h,/RUNNING/);
   assert.match(h,/Nation: ITA[^>]*>🇮🇹/,'live timing uses supplied nationality');
+  assert.match(h,/mgp-timing-records/,'records belong inside timing header');
+  assert.equal((h.match(/class="mgp-timing-record-chip"/g)||[]).length,3);
+  assert.match(h,/01:50\.028/);assert.match(h,/01:52\.561/);
+  assert.doesNotMatch(h,/MOTO2 RIDER|MOTO3 RIDER|00:00\.001/);
+  assert.ok(h.indexOf('mgp-timing-records')<h.indexOf('nt-scroll'),'chips above rider table');
+  timing._snapshot.riders=[];
+  assert.match(timing._timing(),/mgp-timing-records/,'chips remain when rider rows are collapsed or absent');
+  timing._snapshot.riders=[r];
+  timing._live.category='Moto2';timing._snapshot.category='Moto2';
+  h=timing._timing();assert.match(h,/01:43\.111/);
+  assert.doesNotMatch(h,/01:50\.028|01:55\.222/,'Moto2 never inherits MotoGP records');
+  timing._live.category='Moto3';timing._snapshot.category='Moto3';
+  h=timing._timing();assert.match(h,/01:55\.222/);
+  assert.doesNotMatch(h,/01:43\.111|01:50\.028/,'Moto3 class isolation');
+  timing._live.category='MotoGP';timing._snapshot.category='MotoGP';
+  race.attributes.records_by_category.MotoGP=[{type:'LAP_RECORD',time:'<script>x</script>',rider:'FAKE'}];
+  assert.doesNotMatch(timing._timing(),/mgp-timing-records|FAKE/,'unsafe records are hidden');
+  race.attributes.records_by_category.MotoGP=[];
+  assert.doesNotMatch(timing._timing(),/mgp-timing-records/,'no empty record strips');
+
   timing._snapshot.name='Q1';timing._live.name='Q1';
   assert.match(timing._timing(),/nt-position-empty/,'no progression in qualifying');
   timing._snapshot.name='Race';timing._live.name='Race';

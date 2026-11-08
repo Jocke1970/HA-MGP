@@ -1,17 +1,23 @@
-# HA-MGP 2026.11.0b14 — nationsflaggor och grafiska klassval
+# HA-MGP 2026.11.0b15 — fem språk och banrekord
 
-**HACS beta:** `2026.11.0b14` · **Frontend:** `0.3.0-dev.27`.
+**HACS beta:** `2026.11.0b15` · **UI:** `0.3.0-dev.30`.
 
-## Sedan b13
+## Nytt
 
-- **VM-ställning:** Förarnas verifierade nationalitetskod följer med från API till backendens klassvisa poängtabeller.
-- **Livetiming:** Nationalsflagga bredvid förarnamnet, baserat på befintlig `nation` i sessionens data.
-- **Klassknappar:** Grafiska MotoGP/Moto2/Moto3-etiketter i både schema och VM, och 🏁 ALL i helgschemat. Grafiken är lokal, stiliserad SVG; de äldre originalbilderna har ännu inte återfunnits i repot.
-- **Säkerhet:** Saknad/okänd nationalitetsuppgift ger ingen påhittad flagga. Spoilerläget och klassisoleringen bevaras.
-- **Kompatibilitet:** `ha-mgp.js` samt det byte-identiska gamla resursaliaset. Backendens integrationsdomän och `main` oförändrade.
+- Fem Home Assistant-översättningar: **en**, **sv**, **es**, **it**, **fr** (konfiguration och entitetsnamn).
+- Fem inbyggda UI-språkkataloger med **engelska som standard/fallback** och automatiskt språkval från Home Assistant. Samtliga ryms i samma `ha-mgp.js`, utan extra fetch eller Lovelace-resurs.
+- Klassvisa banrekord (Lap record, Pole lap och Race lap) som kompakta chips **direkt under livetimingens header**. Hämtas ur befintliga `records_by_category`; inga nya API-anrop. Rekord visas bara om datan är giltig, och aldrig från en annan klass eller under spoilerskydd.
+- Varken GP-toppkortets banlayout eller förarlistans layout behöver byggas om.
+- Bibehållen kompatibilitetsresurs `ha-motogp-next.js`; interna korttaggar och HA-domän är oförändrade.
 
-## Installera
+## Testa i HA
 
-Välj HACS-beta `2026.11.0b14`, starta om HA efter tävlingspass och gör `Ctrl+Shift+R`. Använd **endast en** Lovelace JavaScript module-resurs: `/motogp_sensor/ha-mgp.js` (äldre `ha-motogp-next.js` fungerar också och ska inte läggas till parallellt). Kontrollera både live-/VM-flaggor och filterknappar. Flaggor kräver att den aktuella API-posten faktiskt innehåller nationalitet.
+1. Uppdatera från **HACS-beta**, inte `dev`; starta om HA när ingen session pågår.
+2. Använd exakt en JavaScript module-resurs: `/motogp_sensor/ha-mgp.js`.
+3. Ladda om med `Ctrl+Shift+R`.
+4. Kontrollera `0.3.0-dev.30`, UI-rubriker och rekordchips i respektive klass.
+5. Byt språk i Home Assistant och kontrollera särskilt engelska, svenska, spanska, italienska och franska; även långa rubriker på mobil.
 
-**Rollback:** HACS-beta `2026.11.0b13`. Behåll dashboard, entiteter och `/config/motogp_data/`.
+**Begränsning:** första språkversionen täcker inställningar/entitetsnamn och viktiga korttexter. Vissa dynamiska strängar och experimentella historikdialoger kan fortfarande vara på svenska; rapportera dessa för kompletteringar. Språkbytet ska inte påverka API-data, förar-/teamnamn eller entitets-ID:n.
+
+**Rollback:** `2026.11.0b14`. Behåll `/config/motogp_data/`, konfigurationspost och dashboard.

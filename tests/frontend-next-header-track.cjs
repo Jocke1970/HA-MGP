@@ -4,14 +4,25 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const file=process.argv[2]||'frontend/ha-mgp-header-track.js';
 const src=fs.readFileSync(file,'utf8');
-assert.match(src,/header-track-weather-20261107-10/);
+assert.match(src,/header-track-weather-20261108-02/);
 const docs=[];
 class Overview {
   static buildInfo={version:'0.2.0-split.2'};
   constructor(){
     this._ids={race:'sensor.motogp_next_race',weather:'sensor.motogp_track_weather'};
     this._hass={states:{
-      'sensor.motogp_next_race':{attributes:{circuit:'Lusail International Circuit',country:'Qatar',sessions_all:[{category:'MotoGP',name:'WUP',date_utc:'2099-11-08T11:40:00Z',status:'SCHEDULED'}]}},
+      'sensor.motogp_next_race':{attributes:{circuit:'Lusail International Circuit',country:'Qatar',
+         records_by_category:{
+           MotoGP:[
+             {type:'LAP_RECORD',time:'01:50.028',rider:'BEZZECCHI',year:2026,speed:176},
+             {type:'POLE_LAP',time:'01:50.028',rider:'BEZZECCHI',speed:176},
+             {type:'BEST_RACE_LAP',time:'01:52.561',rider:'MARQUEZ',year:2025,speed:172},
+             {type:'UNKNOWN_RECORD',time:'00:00.001',rider:'INJECTED'}
+           ],
+           Moto2:[{type:'LAP_RECORD',time:'01:01.001',rider:'OTHER CLASS'}]
+         },
+         records_session_by_category:{MotoGP:{type:'SPR'}},
+         sessions_all:[{category:'MotoGP',name:'WUP',date_utc:'2099-11-08T11:40:00Z',status:'SCHEDULED'}]}},
       'sensor.motogp_track_weather':{attributes:{
         category:'Moto2',session:'Q1',air:'31º',ground:'42°',humidity:'51%',track:'Dry',weather:'Clear',
         updated_at:'2026-11-07T14:01:00Z'
@@ -68,6 +79,7 @@ const context={customElements:{
   assert.match(card.root.innerHTML,/Backendversion hanteras separat/);
   assert.match(eventHeader[1],/mgp-weather-panel/);
   assert.match(eventHeader[1],/mgp-circuit-panel/);
+  assert.doesNotMatch(eventHeader[1],/mgp-records|mgp-record-chip/,'records moved to timing card');
   assert.ok(eventHeader[1].indexOf('mgp-hero-copy')<eventHeader[1].indexOf('mgp-weather-panel'),
     'event info left, weather center');
   assert.ok(eventHeader[1].indexOf('mgp-weather-panel')<eventHeader[1].indexOf('mgp-circuit-panel'),

@@ -1,0 +1,106 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "HA-MGP",
+        "data": {
+          "device_name": "Nom de l’appareil",
+          "enabled_sensors": "Capteurs activés",
+          "live_source": "Source du chronométrage en direct",
+          "race_week_start_day": "Début de la semaine de course"
+        }
+      }
+    },
+    "error": {
+      "required": "Un nom d’appareil est requis"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options",
+        "data": {
+          "device_name": "Nom de l’appareil",
+          "enabled_sensors": "Capteurs activés",
+          "live_source": "Source du chronométrage en direct",
+          "race_week_start_day": "Début de la semaine de course"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "session_status": {
+        "name": "Statut de la séance"
+      },
+      "current_session": {
+        "name": "Séance en cours"
+      },
+      "race_lap_count": {
+        "name": "Tours de course"
+      },
+      "rider_positions": {
+        "name": "Positions des pilotes"
+      },
+      "top_three": {
+        "name": "Trois premiers"
+      },
+      "leader": {
+        "name": "Leader"
+      },
+      "fastest_lap": {
+        "name": "Meilleur tour"
+      },
+      "session_time_remaining": {
+        "name": "Temps restant de la séance"
+      },
+      "track_weather": {
+        "name": "Météo sur piste"
+      },
+      "pit_stops": {
+        "name": "Arrêts aux stands"
+      },
+      "next_race": {
+        "name": "Prochaine course"
+      },
+      "next_race_in": {
+        "name": "Jours avant la prochaine course"
+      },
+      "current_season": {
+        "name": "Saison actuelle"
+      },
+      "rider_standings": {
+        "name": "Classement des pilotes"
+      },
+      "constructor_standings": {
+        "name": "Classement des constructeurs"
+      },
+      "last_race_results": {
+        "name": "Résultats de la dernière course"
+      }
+    },
+    "binary_sensor": {
+      "race_week": {
+        "name": "Semaine de course"
+      },
+      "live_timing_online": {
+        "name": "Chronométrage en direct disponible"
+      }
+    },
+    "switch": {
+      "no_spoiler": {
+        "name": "Protection anti-spoiler"
+      }
+    },
+    "select": {
+      "live_source": {
+        "name": "Source du chronométrage en direct",
+        "state": {
+          "pulselive": "Pulselive (recommandé)",
+          "official": "MotoGP officiel (expérimental)",
+          "auto": "Automatique (Pulselive avec secours officiel)"
+        }
+      }
+    }
+  }
+}
