@@ -108,7 +108,7 @@ def check_bundle_integrity() -> None:
     assert "binary_sensor.motogp_live_timing_online" in next_js
     assert "session-dots-20261108-01" in next_js
     assert "timing-icons-20261108-01" in next_js
-    assert "active-chip-20261108-01" in next_js
+    assert "active-chip-20261108-02" in next_js
     assert "finish-settling-20261108-01" in next_js
     assert '"es":{' in next_js, "Spanish must be bundled alongside the English fallback"
     assert "records_by_category" in next_js
