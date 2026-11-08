@@ -37,9 +37,9 @@ const meta={category:'MotoGP',event:'Qatar Airways Grand Prix of Austria',sessio
 push({'sensor.motogp_current_session':ent('Sprint',meta),'sensor.motogp_session_status':ent('In Progress',{...meta,session_status_id:'S',tv_delay_effective_seconds:20}),
 'sensor.motogp_rider_positions':ent('1 rider',{...meta,tv_delay_ready:true,riders:[{position:1,surname:'SPRINTRIDER',number:7,num_lap:8,last_lap_time:"1'27.100"}]}),
 'sensor.motogp_race_lap_count':ent('8',{num_laps:14}),'sensor.motogp_session_time_remaining':ent('0')});
-assert.match(html(),/Varv 8\/14/);assert.match(html(),/6 varv kvar/);assert.doesNotMatch(html(),/RIDERA/);
-click({timing:''});assert.match(html(),/data-timing aria-expanded="false"/);assert.match(html(),/6 varv kvar/);
-push({'sensor.motogp_race_lap_count':ent('9',{num_laps:14})});assert.match(html(),/5 varv kvar/);
+assert.match(html(),/Varv 8\/14/);assert.match(html(),/7 varv kvar/);assert.doesNotMatch(html(),/RIDERA/);
+click({timing:''});assert.match(html(),/data-timing aria-expanded="false"/);assert.match(html(),/7 varv kvar/);
+push({'sensor.motogp_race_lap_count':ent('9',{num_laps:14})});assert.match(html(),/6 varv kvar/);
 // Never fabricate total laps; use current lap alone.
 push({'sensor.motogp_race_lap_count':ent('10',{num_laps:0})});assert.match(html(),/Varv 10/);assert.doesNotMatch(html(),/varv kvar|\/0/);
 // Mismatched rider category fails closed, so old FP2 riders do not leak into Sprint.
