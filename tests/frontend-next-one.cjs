@@ -155,8 +155,10 @@ const live=(category,name,riders)=>({
   // In dev.37 the pre-session roster replaces the old next-pass placeholder at T-30.
   // The frozen dev.3 baseline still correctly renders the legacy next-pass heading.
   assert.match(timing.view.innerHTML,/Nästa: MotoGP · Sprint|MotoGP · Sprint.*STARTLISTA/s);
-  assert.match(timing.view.innerHTML,/17:00/);
-  assert.match(timing.view.innerHTML,/MELLAN PASSEN/);
+  assert.match(timing.view.innerHTML,/17:00|13:00 till start/,
+    'legacy time or new T-30 countdown must match the fixture');
+  assert.match(timing.view.innerHTML,/MELLAN PASSEN|STARTLISTA/,
+    'no-live waiting remains explicit in both versions');
   assert.doesNotMatch(timing.view.innerHTML,/STATUS OKÄND|Moto2 · Q2|Moto2 Q2/,
     'previous Moto2 Q2 cannot be presented as the upcoming sprint status');
 
