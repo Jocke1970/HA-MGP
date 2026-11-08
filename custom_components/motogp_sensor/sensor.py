@@ -9,6 +9,7 @@ from typing import Any
 from homeassistant.components.sensor import SensorEntity, SensorEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import (
@@ -44,7 +45,7 @@ SENSOR_DESCRIPTIONS: dict[str, SensorEntityDescription] = {
         key="api_debug",
         name="Pulselive API debug",
         icon="mdi:bug-outline",
-        entity_category="diagnostic",
+        entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
     ),
     SENSOR_SESSION_STATUS: SensorEntityDescription(
