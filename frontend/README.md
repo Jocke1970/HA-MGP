@@ -9,3 +9,8 @@ Utvecklingskoden i `frontend/ha-mgp-*.js` byggs till en resurs med `scripts/buil
 Senaste publicerade beta: `2026.11.0b12` (UI `0.3.0-dev.23`). `dev` installeras **aldrig** direkt i HA. Se [status](../docs/project-status.md), [versionsguide](../docs/frontend-versioning.md) och [installation](../docs/hacs-beta-installation.md).
 
 `ha-mgp-legacy-card.js` och äldre prototyper är historiskt/valfritt material och ska inte laddas parallellt med de aktiva korten.
+
+
+## Class selector artwork
+
+The Moto3, Moto2 and MotoGP tabs in the championship standings and weekend filter use the genuine 2024 SVG class marks from Wikimedia Commons (Moto3 logo (2024).svg, Moto2 logo (2024).svg, MotoGP logo (2024).svg), rather than synthetic italic text rendered inside an SVG. Wikimedia Commons lists these as PD-textlogo, with trademark restrictions potentially remaining. The image elements load from `upload.wikimedia.org` and degrade to readable, accessible class names if an external asset cannot load; no SVG artwork is copied into the HACS distribution. The existing class-selection and standings behavior is unchanged.
