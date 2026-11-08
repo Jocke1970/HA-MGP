@@ -31,7 +31,8 @@ class PulseliveDiagnostics:
         timestamp = at.isoformat()
         changes: list[dict[str, Any]] = []
         def record(kind: str) -> None:
-            identity = self._identity or ("", "", "")
+            approved = isinstance(live, dict) and live.get("tv_delay_ready") is True
+            identity = self._identity if approved and self._identity else ("", "", "")
             changes.append({
                 "observed_at": timestamp,
                 "event": kind,
@@ -42,7 +43,7 @@ class PulseliveDiagnostics:
                 "session_status_id": self._status,
                 "rider_count": self._count,
                 "max_observed_lap": self._max_laps,
-                "tv_delay_ready": True,
+                "tv_delay_ready": approved,
             })
             self._last_event = kind
         if self._online is not online:
