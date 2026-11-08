@@ -176,6 +176,9 @@ const context={customElements:{
   card._render();
   assert.match(card.root.innerHTML,/Ingen verifierad banritning tillgänglig/);
   assert.doesNotMatch(card.root.innerHTML,/mgp-track-svg/,'no fabricated outline');
+  other.attributes.circuit='Balaton Park Circuit';
+  card._render();
+  assert.match(card.root.innerHTML,/\/local\/ha-mgp\/circuits\/balatonpark\.svg/,'Hungarian MotoGP track uses Balaton Park');
   other.attributes.circuit='Le Mans Bugatti Circuit';
   card._render();
   assert.match(card.root.innerHTML,/\/local\/ha-mgp\/circuits\/lemans\.svg/,'Le Mans local-only asset mapped');
