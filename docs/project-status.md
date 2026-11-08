@@ -1,11 +1,16 @@
-# HA-MGP projektstatus — 2026-11-08
+# HA-MGP — status 8 november 2026
 
-**b19-kandidat:** `2026.11.0b19`, UI `0.3.0-dev.40` (oförändrad från publicerad b18). Main oförändrad.
+**Publicerad beta före b20:** `2026.11.0b19`, UI `0.3.0-dev.40`. **Samlad b20-kandidat:** `2026.11.0b20`, UI `0.3.0-dev.43`.
 
-- Ny beständig JSONL-händelsejournal `/config/motogp_data/api_diagnostics/YYYY-MM-DD.jsonl`; endast ändringar i TV-delay-godkänd redan pollad Pulselive-data. Ingen rå rider-payload, ingen extra polling.
-- Händelser: feed_online/offline, session_changed, status_changed, first_roster, roster_count_changed, first_lap och lap_count_increased.
-- Fristående från Recorder och den som standard inaktiverade debug-sensorn. Journalen lever kvar efter HA-omstart; dock ingen retroaktiv loggning och ingen retention implementerad.
-- UI från b18 bevarat: helgschema-modal, Moto3/Moto2/MotoGP, röd förarsnabbaste, kvarvarande observerat sessionssnabbaste efter målflagga.
-- Ej med i b19: `/event/.../entry` (HTTP 400); fortsatt separat research kring `/riders`, `/teams`, timing-lite-grid och PyMotoGP:s historiska Analysis-PDF.
+b19:s beständiga diagnostik finns kvar: `/config/motogp_data/api_diagnostics/YYYY-MM-DD.jsonl`. Händelser registreras från TV-delay-godkänd befintlig live-polling utan extra anrop, inte per poll. Sensorn är inaktiverad som standard; filjournalen är oberoende.
 
-**Verifiera i HA efter beta:** journalfil, riktiga sessions-ID:n, första roster och varv, inget brus var tredje sekund och spoilerskydd. Rollback b18.
+## B20 UI
+- Legacy Helgschema-panel som återkom under toppkortet vid livepass borttagen. Modalen i toppkortet är den enda schemakontrollen.
+- Endast snabbaste observerade sessionsvarvet färgas rött. Övriga personbästa neutrala; PB-indikatorn består.
+- Toppchippet har förbättrad fallback för aktiv session om backendstatuser kan verifieras innan exakt livetimingmatch; aldrig falskt LIVE.
+- Moto3/Moto2/MotoGP:s fungerande typografiska filter kvar, riktiga grafiska klassloggor inte implementerade.
+
+## Releasekontrakt
+Bygg kandidat från beta b19, inte genom att blint merga divergerad dev. Kör CI och HACS-paketering innan publicering. Efter HACS-b20: uppdatera HA endast mellan pass, kontrollera UI-version, journal och Recorder. Rollback b19. Main orörd.
+
+**Separat arbete:** identifiera riktiga klassloggor, förskjuten racegrid samt timing-lite startlista. Dessa ingår inte i b20.

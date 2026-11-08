@@ -96,17 +96,18 @@ jobs:
           assert "mgp-class-mark" in source
           assert "mgp-weekend-dialog" in source
           assert "nt-session-observed-best" in source
-          assert "nt-rider-best" in source
+          assert "nt-session-best" in source
           assert "mgp-all-mark" in source
           assert "mgp-timing-record-chip" in source
           assert "Championship standings" in source
           assert '"es":{' in source
           assert "calendar-20261108-02" in source
           assert "mgp-season" in source
-          assert 'HA-MGP UI · 0.3.0-dev.40' in source
+          assert 'HA-MGP UI · 0.3.0-dev.43' in source
           assert source == Path('custom_components/motogp_sensor/www/ha-motogp-next.js').read_text(encoding='utf-8')
           assert "mgp-ui-footer" in source
           assert "data-mgp-schedule-jump" in source
+          assert "data-motogp-schedule-toggle" not in source
           assert "timingWindow(card)" in source
           assert "this._scheduleOpen!==true" in source
           assert "mgp-next-chip" in source
@@ -136,6 +137,7 @@ jobs:
           node tests/frontend-i18n.cjs
           node tests/frontend-calendar.cjs
           node tests/frontend-next-lap-pair.cjs /tmp/ha-mgp-b13-ui.js /tmp/ha-mgp-b13-mobile.js
+          node tests/frontend-active-chip.cjs
           node tests/frontend-next-qual-grid.cjs /tmp/ha-mgp-b13-qual.js
           node tests/frontend-next-header-track.cjs /tmp/ha-mgp-b13-header.js
           node tests/frontend-session-history.cjs /tmp/ha-mgp-b13-history.js
@@ -149,7 +151,7 @@ jobs:
           manifest = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
           assert manifest['domain'] == 'motogp_sensor'
           assert manifest['name'] == 'HA-MGP'
-          assert manifest['version'] == '2026.11.0b19'
+          assert manifest['version'] == '2026.11.0b20'
           assert all((root / 'translations' / (lang + '.json')).is_file() for lang in ('en','sv','es','it','fr'))
           assert manifest.get('codeowners') == ['@Jocke1970']
           assert {'http', 'frontend'}.issubset(manifest['dependencies'])
@@ -169,20 +171,20 @@ jobs:
           assert hacs.get('name')
           assert not hacs.get('content_in_root')
           assert not hacs.get('zip_release')
-          print('Verified HA-MGP beta: 2026.11.0b19 with season calendar, five locales and timing records')
+          print('Verified HA-MGP beta: 2026.11.0b20 with season calendar, five locales and timing records')
           PY
       - name: Publish tagged GitHub prerelease
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          TAG=2026.11.0b19
+          TAG=2026.11.0b20
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "$TAG already exists; leaving the immutable prerelease untouched."
             gh release view "$TAG" --json tagName,isPrerelease,url,targetCommitish
             exit 0
           fi
           gh release create "$TAG" --target "$(git rev-parse HEAD)" --prerelease \
-            --title 'HA-MGP 2026.11.0b19 — persistent Pulselive diagnostic event journal' \
+            --title 'HA-MGP 2026.11.0b20 — persistent Pulselive diagnostic event journal' \
             --notes-file docs/hacs-beta-release-notes.md
           gh release view "$TAG" --json tagName,isPrerelease,url,targetCommitish
