@@ -61,10 +61,13 @@ jobs:
           python -m unittest discover -s tests -p 'test_lap_history_*.py' -v
           python -m unittest discover -s tests -p 'test_standings_enrichment.py' -v
           python -m unittest discover -s tests -p 'test_qualifying_grid.py' -v
+          python -m unittest discover -s tests -p 'test_session_history_ws.py' -v
+          python tests/test_local_imports.py
           python -m unittest discover -s tests -p 'test_weather_conditions.py' -v
       - name: Verify bundled frontend and safe static registration
         run: |
           python tests/test_frontend_package.py
+          python tests/test_local_imports.py
           node --check custom_components/motogp_sensor/www/ha-mgp.js
           node --check custom_components/motogp_sensor/www/ha-motogp-next.js
           node --check custom_components/motogp_sensor/www/ha-motogp-card.js
@@ -155,14 +158,14 @@ jobs:
           manifest = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
           assert manifest['domain'] == 'motogp_sensor'
           assert manifest['name'] == 'HA-MGP'
-          assert manifest['version'] == '2026.11.0b22'
+          assert manifest['version'] == '2026.11.0b23'
           assert all((root / 'translations' / (lang + '.json')).is_file() for lang in ('en','sv','es','it','fr'))
           assert manifest.get('codeowners') == ['@Jocke1970']
           assert {'http', 'frontend'}.issubset(manifest['dependencies'])
           required = {
               '__init__.py', 'api.py', 'const.py', 'coordinator.py',
               'helpers.py', 'schedule_time.py', 'sensor.py',
-              'session_lap_archive.py', 'web_assets.py',
+              'session_lap_archive.py', 'session_history_response.py', 'session_history_ws.py', 'web_assets.py',
               'lap_history_ws.py', 'lap_history_response.py',
               'qualifying_grid.py',
               'api_diagnostics.py',
@@ -175,7 +178,7 @@ jobs:
           assert hacs.get('name')
           assert not hacs.get('content_in_root')
           assert not hacs.get('zip_release')
-          print('Verified HA-MGP beta: 2026.11.0b22 with season calendar, five locales and timing records')
+          print('Verified HA-MGP beta: 2026.11.0b23 with season calendar, five locales and timing records')
           PY
       - name: Publish tagged GitHub prerelease
         if: github.event_name != 'pull_request'
@@ -183,13 +186,13 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          TAG=2026.11.0b22
+          TAG=2026.11.0b23
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "$TAG already exists; leaving the immutable prerelease untouched."
             gh release view "$TAG" --json tagName,isPrerelease,url,targetCommitish
             exit 0
           fi
           gh release create "$TAG" --target "$(git rev-parse HEAD)" --prerelease \
-            --title 'HA-MGP 2026.11.0b22 — persistent Pulselive diagnostic event journal' \
+            --title 'HA-MGP 2026.11.0b23 — missing session-history module hotfix' \
             --notes-file docs/hacs-beta-release-notes.md
           gh release view "$TAG" --json tagName,isPrerelease,url,targetCommitish
