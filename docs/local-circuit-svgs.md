@@ -33,7 +33,7 @@ there is no existing schematic source for that circuit.
 | Sachsenring | `sachsenring.svg` |
 | Assen | `assen.svg` |
 | Brno | `brno.svg` |
-| Balaton Park / Hungarian GP | `hungaroring.svg` |
+| Balaton Park / Hungarian GP | `balatonpark.svg` |
 | Mugello | `mugello.svg` |
 | Barcelona-Catalunya | `barcelona.svg` |
 | Le Mans | `lemans.svg` |
