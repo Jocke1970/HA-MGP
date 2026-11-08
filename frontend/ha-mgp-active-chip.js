@@ -21,7 +21,7 @@ const category=v=>{const m=/moto\s*(gp|2|3|e)/i.exec(String(v||''));return m?({g
 const session=v=>({RAC:'Race',SPR:'Sprint',WUP:'Warm Up',PR:'Practice'})[String(v||'').toUpperCase()]||String(v||'');
 function pendingCurrent(card){
  const states=card._hass?.states||{},ids=card._ids||{};
- const st=states[ids.status||'sensor.motogp_session_status'],se=states[ids.session||'sensor.motogp_session_name'];
+ const st=states[ids.status||'sensor.motogp_session_status'],se=states[ids.session||'sensor.motogp_current_session'];
  const status=String(st?.attributes?.session_status_id||'').toUpperCase();
  if(!['S','I'].includes(status) && String(st?.state||'').toLowerCase()!=='in progress')return null;
  const attrs=st?.attributes||{},sa=se?.attributes||{},race=states[ids.race||'sensor.motogp_next_race'];
