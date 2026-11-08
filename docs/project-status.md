@@ -26,3 +26,10 @@ På dev finns fortsatt API-inventering, bl.a. `/riders`/`/teams` och en experime
 - Åtgärd: äldre panel och dess extra toggle borttagna. Klassfiltren finns kvar i modalens sessionslista. Det är endast toppkortets Helgschema-knapp som äger modalens öppna/stängda läge.
 - Regression: live-fallet ska sakna `data-motogp-schedule-toggle`; paketeringskontrollen kräver `data-mgp-schedule-jump` och `mgp-weekend-dialog` samt förbjuder det gamla attributet.
 - UI `0.3.0-dev.42` byggt på dev; behöver full CI och visuell HA-verifiering via kommande beta. Publicerad b19 är orörd.
+
+## UI-fix: röd snabbaste varvtid (dev.43, ej beta)
+
+- Tidigare fick **alla** förares `Snabbaste`-rader röd färg. Orsak: varje giltig `best_lap_time` gav röd CSS-klass.
+- Nu blir endast snabbaste observerade varvtiden i det frysta, matchande sessionssnapshotet röd. Övriga förares bästa varv är neutrala; separat PB-chip/färg vid förbättring behålls.
+- Regression med flera förare bekräftar exakt en röd sessionstid, neutral tid för övriga samt fortsatt spoilerskydd och klassisolering.
+- GitHub Actions: frontend, helhetstest och HACS-bundlebygge gröna för källversionen. Publicerad b19 är oförändrad. Nästa betakandidat får även med fixen mot det återkommande Helgschema-kortet från dev.42.
