@@ -102,11 +102,12 @@ function trackFor(name){
 const LOCAL_CIRCUITS=new Set([
   'lusail','buriram','austin','mandalika','redbullring','motegi',
   'phillip','sepang','valencia','portimao','sachsenring','assen',
-  'brno','hungaroring','mugello','barcelona','jerez','goiania','lemans'
+  'brno','balatonpark','mugello','barcelona','jerez','goiania','lemans'
 ]);
 const LOCAL_CIRCUIT_PATH='/local/ha-mgp/circuits/';
 function localCircuitPath(map,circuit){
-  const id=map?.id||(/\b(le mans|bugatti)\b/i.test(String(circuit||''))?'lemans':null);
+  const id=/\b(balaton park|balatonpark)\b/i.test(String(circuit||''))?'balatonpark':
+    (map?.id||(/\b(le mans|bugatti)\b/i.test(String(circuit||''))?'lemans':null));
   return id&&LOCAL_CIRCUITS.has(id)?LOCAL_CIRCUIT_PATH+id+'.svg':null;
 }
 function weatherNumber(value,unit){
