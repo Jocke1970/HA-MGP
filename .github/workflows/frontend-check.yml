@@ -58,6 +58,11 @@ jobs:
           node --check custom_components/motogp_sensor/www/ha-motogp-card.js
           # Exact parity to the reviewed dev.18 dist is asserted by the Python package test.
           # The historical frontend-next-one.cjs regression intentionally targets dev.3.
+      - name: Passive Pulselive diagnostic transition regressions
+        run: |
+          python3 -m unittest discover -s tests -p 'test_api_diagnostics.py' -v
+          python3 -m compileall -q custom_components/motogp_sensor
+
       - name: Reproduce and regress live-feed badge refresh
         env:
           TZ: Europe/Stockholm
