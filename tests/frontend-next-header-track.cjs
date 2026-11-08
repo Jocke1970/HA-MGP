@@ -123,6 +123,7 @@ const context={customElements:{
   card._render();
   assert.match(card.root.innerHTML,/Ingen ny sessionsrapport/);
   delete report.attributes.fetch_status;
+  card._render();
   assert.doesNotMatch(card.root.innerHTML,/OLD SEPARATE WEATHER PANEL/);
   assert.ok(eventHeader[1].indexOf('np-top-actions')<eventHeader[1].indexOf('mgp-weather-panel'),
     'VM toggle remains beside event title, before the weather and circuit');
