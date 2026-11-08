@@ -10,8 +10,8 @@ from typing import Any
 
 # Only elapsed-time gaps are counted: ignore blanks, leaders and textual gaps
 # such as "PIT", "+1 Lap" or placeholders.
-_GAP_RE = re.compile(r"^[+]?(?:\\d+:)?\\d+(?:[.,]\\d{1,3})?$")
-_LAP_RE = re.compile(r"^(?:\\d+[':])?\\d{1,2}\\.\\d{3}$")
+_GAP_RE = re.compile(r"^[+]?(?:\d+:)?\d+(?:[.,]\d{1,3})?$")
+_LAP_RE = re.compile(r"^(?:\d+[':])?\d{1,2}\.\d{3}$")
 _GAP_SUMMARY_INTERVAL = timedelta(seconds=15)
 
 
@@ -156,7 +156,7 @@ class PulseliveDiagnostics:
             record("first_lap_completed")
 
         gaps: dict[str, tuple[str | None, str | None]] = {}
-        for index, rider in enumerate(riders):
+        for rider in riders:
             if not isinstance(rider, dict):
                 continue
             # Use provider ID, not position; positions change during racing.
