@@ -264,6 +264,21 @@
       let html=oldTiming.call(this);
       ensureStyle(this);
       if(this._spoiler())return html;
+      // The API lap counter denotes the current lap, not completed laps.
+      // The legacy base computes total-current ("after this lap"); show
+      // remaining including the lap in progress. Never relabel a finished
+      // session or fabricate a current lap before verified live timing.
+      const lapState=this._hass?.states?.[this._ids?.laps];
+      const current=Number(lapState?.state);
+      const total=Number(lapState?.attributes?.num_laps);
+      if(this._live&&/^(race|sprint)$/i.test(String(this._live.name||''))&&
+          Number.isInteger(current)&&Number.isInteger(total)&&
+          current>0&&total>0&&current<=total){
+        const previous='Varv '+current+'/'+total+' · '+(total-current)+' kvar';
+        const next='Varv '+current+'/'+total+' · '+
+          (current===total?'Sista varvet':(total-current+1)+' kvar');
+        html=html.replace(previous,next);
+      }
       const category=this._live?.category||this._snapshot?.category;
       // Keep records directly under the timing header, including collapsed timing views.
       if(html.includes('<button type="button" class="nt-head"')&&html.includes('</button>')){
