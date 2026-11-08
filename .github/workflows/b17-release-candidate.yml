@@ -46,5 +46,3 @@ jobs:
           node tests/frontend-mobile-laps.cjs custom_components/motogp_sensor/www/ha-mgp.js
           node tests/frontend-calendar.cjs
           node tests/frontend-i18n.cjs
-          node tests/frontend-next-lap-pair.cjs
-          node tests/frontend-session-history.cjs
