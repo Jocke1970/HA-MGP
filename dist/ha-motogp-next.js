@@ -2060,7 +2060,15 @@ function install(){
     const html=originalSchedule.call(this,race,now);
     // Modal is outside normal page layout, so the separate timing card
     // remains directly below the event overview (no layout/YAML migration).
-    const content=html.replace(/<div class="head"><strong>🗓️ Helgens schema<\/strong><span class="muted">[\s\S]*?<\/span><\/div>/,'');
+    const rawContent=html.replace(/<div class="head"><strong>🗓️ Helgens schema<\/strong><span class="muted">[\s\S]*?<\/span><\/div>/,'');
+    const eventAttrs=this._hass?.states?.[this._ids?.race]?.attributes||{};
+    const eventCountry=String(eventAttrs.country||'').toLowerCase();
+    const scheduleUrl=eventCountry.includes('portugal')?
+      'https://www.motogp.com/en/calendar/2026/event/portugal/c7f7626b-807f-4a6f-813e-7ad2c68302a3':
+      'https://www.motogp.com/en/calendar';
+    const content=rawContent.replace('Inga pass i aktuell evenemangsdata för valt filter.',
+      'Detaljerat helgschema är ännu inte tillgängligt i datakällan. '+
+      '<a href="'+scheduleUrl+'" target="_blank" rel="noopener noreferrer">Visa MotoGP:s officiella schema</a>.');
     return '<dialog class="mgp-weekend-dialog" aria-label="Helgens schema">'+
       '<div class="mgp-weekend-dialog-head"><strong>🗓️ Helgens schema</strong>'+
       '<button type="button" autofocus data-mgp-schedule-dismiss>Stäng</button></div>'+
