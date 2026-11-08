@@ -4,8 +4,37 @@ No additional HTTP requests. Never expose raw or unapproved live payloads.
 """
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta
+import re
 from typing import Any
+
+# Only elapsed-time gaps are counted: ignore blanks, leaders and textual gaps
+# such as "PIT", "+1 Lap" or placeholders.
+_GAP_RE = re.compile(r"^[+]?(?:\d+:)?\d+(?:[.,]\d{1,3})?$")
+_LAP_RE = re.compile(r"^(?:\d+[':])?\d{1,2}\.\d{3}$")
+_GAP_SUMMARY_INTERVAL = timedelta(seconds=15)
+
+
+def _gap(value: Any) -> str | None:
+    if not isinstance(value, (str, int, float)) or isinstance(value, bool):
+        return None
+    candidate = str(value).strip().replace(",", ".")
+    if not _GAP_RE.fullmatch(candidate):
+        return None
+    try:
+        # The leader's 0.000 is not an observed inter-rider gap.
+        seconds = (sum(float(part) * multiplier for part, multiplier
+                       in zip(reversed(candidate.lstrip("+").split(":")), (1, 60))))
+    except (ValueError, OverflowError):
+        return None
+    return candidate if 0 < seconds < 3600 else None
+
+
+def _completed_lap(value: Any) -> bool:
+    if not isinstance(value, str):
+        return False
+    candidate = value.strip()
+    return bool(_LAP_RE.fullmatch(candidate)) and any(c in "123456789" for c in candidate)
 
 
 class PulseliveDiagnostics:
@@ -17,7 +46,13 @@ class PulseliveDiagnostics:
         self._count = 0
         self._max_laps = 0
         self._first_roster_at: str | None = None
-        self._first_lap_at: str | None = None
+        self._first_lap_at: str | None = None  # legacy: first positive num_lap
+        self._first_session_started_at: str | None = None
+        self._first_gap_at: str | None = None
+        self._first_position_at: str | None = None
+        self._first_lap_completed_at: str | None = None
+        self._previous_gaps: dict[str, tuple[str | None, str | None]] = {}
+        self._last_gap_summary_at: datetime | None = None
         self._session_seen_at: str | None = None
         self._status_changed_at: str | None = None
         self._feed_changed_at: str | None = None
@@ -69,6 +104,12 @@ class PulseliveDiagnostics:
             self._max_laps = 0
             self._first_roster_at = None
             self._first_lap_at = None
+            self._first_session_started_at = None
+            self._first_gap_at = None
+            self._first_position_at = None
+            self._first_lap_completed_at = None
+            self._previous_gaps = {}
+            self._last_gap_summary_at = None
             self._session_seen_at = timestamp
             record("session_changed")
 
@@ -77,6 +118,9 @@ class PulseliveDiagnostics:
             self._status = status
             self._status_changed_at = timestamp
             record("status_changed")
+            if status in ("S", "I") and self._first_session_started_at is None:
+                self._first_session_started_at = timestamp
+                record("session_started")
 
         riders = live.get("riders")
         if not isinstance(riders, list):
@@ -100,10 +144,61 @@ class PulseliveDiagnostics:
         max_laps = max(laps, default=0)
         if max_laps and not self._first_lap_at:
             self._first_lap_at = timestamp
-            record("first_lap")
+            record("first_lap")  # legacy
+            record("first_lap_started")
         if max_laps > self._max_laps:
             self._max_laps = max_laps
             record("lap_count_increased")
+
+        # No sectors are inferred from gaps. First availability and changes
+        # are evidence of timing data, not proof of a particular timing loop.
+        valid_positions = [
+            r for r in riders if isinstance(r, dict)
+            and isinstance(r.get("position"), int)
+            and not isinstance(r.get("position"), bool) and r["position"] > 0
+        ]
+        if valid_positions and self._first_position_at is None:
+            self._first_position_at = timestamp
+            record("first_position")
+
+        if any(_completed_lap(r.get("last_lap_time")) for r in riders
+               if isinstance(r, dict)) and self._first_lap_completed_at is None:
+            self._first_lap_completed_at = timestamp
+            record("first_lap_completed")
+
+        gaps: dict[str, tuple[str | None, str | None]] = {}
+        for rider in riders:
+            if not isinstance(rider, dict):
+                continue
+            # Use provider ID, not position; positions change during racing.
+            rider_id = rider.get("rider_id")
+            if rider_id is None or isinstance(rider_id, bool):
+                continue
+            key = str(rider_id)
+            if not key or key in gaps:
+                continue
+            gaps[key] = (_gap(rider.get("gap_first")), _gap(rider.get("gap_prev")))
+        if any(gap is not None for pair in gaps.values() for gap in pair):
+            if self._first_gap_at is None:
+                self._first_gap_at = timestamp
+                record("first_gap_reported")
+        # First roster is only a baseline; avoid a flood of "changes" when
+        # our integration starts during an already running session.
+        if self._previous_gaps:
+            changed = sum(
+                1 for rider_id, value in gaps.items()
+                if rider_id in self._previous_gaps
+                and any(old is not None for old in self._previous_gaps[rider_id])
+                and value != self._previous_gaps[rider_id]
+            )
+            if changed and (
+                self._last_gap_summary_at is None
+                or at - self._last_gap_summary_at >= _GAP_SUMMARY_INTERVAL
+            ):
+                record("gap_updated")
+                changes[-1]["changed_rider_count"] = changed
+                self._last_gap_summary_at = at
+        self._previous_gaps = gaps
         return changes
 
     def state(self) -> str:
@@ -126,6 +221,11 @@ class PulseliveDiagnostics:
             "session_status_changed_at": self._status_changed_at,
             "first_roster_at": self._first_roster_at,
             "first_lap_at": self._first_lap_at,
+            "first_lap_started_at": self._first_lap_at,
+            "session_started_at": self._first_session_started_at,
+            "first_position_at": self._first_position_at,
+            "first_gap_at": self._first_gap_at,
+            "first_lap_completed_at": self._first_lap_completed_at,
             "feed_changed_at": self._feed_changed_at,
             "tv_delay_note": "timestamps refer to TV-delay-approved exposed data",
         }
