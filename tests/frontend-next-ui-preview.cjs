@@ -102,6 +102,17 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   assert.match(overview.view.innerHTML,/Ducati Lenovo/);
   assert.match(overview.view.innerHTML,/Nation: SPA[^>]*>🇪🇸/,'VM standings country flag');
   assert.match(overview.view.innerHTML,/mgp-class-mark/,'graphical class buttons');
+  const classTabs=['Moto3','Moto2','MotoGP'];
+  const classTabsHtml=overview.view.innerHTML;
+  for(const label of classTabs) {
+    assert.match(classTabsHtml,new RegExp('data-motogp-standing="'+label+'"[^>]*role="tab"[^>]*aria-label="'+label+'"'),
+      label+' has a functioning class tab');
+  }
+  assert.ok(classTabsHtml.indexOf('data-motogp-standing="Moto3"')<
+    classTabsHtml.indexOf('data-motogp-standing="Moto2"')&&
+    classTabsHtml.indexOf('data-motogp-standing="Moto2"')<
+    classTabsHtml.indexOf('data-motogp-standing="MotoGP"'),
+    'class tabs retain Moto3, Moto2, MotoGP order');
   assert.match(overview.view.innerHTML,/background:#CC0000/);
   assert.match(overview.view.innerHTML,/np-standing-rank top-1/);
   assert.match(overview.view.innerHTML,/np-standing-track/);
