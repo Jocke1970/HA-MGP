@@ -1,4 +1,4 @@
-name: HA-MGP b22 release candidate gate
+name: HA-MGP b23 release candidate gate
 
 on:
   push:
@@ -35,11 +35,11 @@ jobs:
           import json
           from pathlib import Path
           m=json.loads(Path('custom_components/motogp_sensor/manifest.json').read_text())
-          assert m['version']=='2026.11.0b22'
+          assert m['version']=='2026.11.0b23'
           code=Path('custom_components/motogp_sensor/coordinator.py').read_text()
           assert 'async_get_entry_list(' not in code, 'Unsupported entry endpoint must not be called in b22'
           assert 'PulseliveDiagnostics' in code, 'Passive diagnostics missing'
-          print('PASS: b22 manifest, static routing, no unverified entry API calls')
+          print('PASS: b23 manifest, static routing, no unverified entry API calls')
           PY
       - name: Verify packaged JS and regression behavior
         run: |
