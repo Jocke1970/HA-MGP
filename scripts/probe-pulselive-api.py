@@ -64,7 +64,16 @@ if not isinstance(entry, dict):
         bcat=next((c for c in (probe("event broadcast metadata", f"/events/{broadcast_uuid}") or {}).get("categories",[]) if isinstance(c,dict) and "motogp" in str(c.get("name","")).lower()),None)
         if bcat and bcat.get("id"):
             probe("entry with Broadcast event/category UUIDs", f"/event/{broadcast_uuid}/entry", {"categoryUuid":bcat["id"]})
+if not isinstance(entry, dict):
+    probe("alternate Results event entry", f"/results/event/{event['id']}/entry", {"categoryUuid":gp["id"]})
+    probe("alternate category entry", f"/results/event/{event['id']}/category/{gp['id']}/entry")
 grid=probe("event grid", f"/results/event/{event['id']}/category/{gp['id']}/grid")
+bcategories=probe("broadcast category IDs", "/categories", {"seasonYear":2026})
+b_gp=next((x for x in bcategories if isinstance(x,dict) and "motogp" in str(x.get("name","")).lower()),None) if isinstance(bcategories,list) else None
+if b_gp:
+    teams=probe("broadcast teams for fallback", "/teams", {"categoryUuid":b_gp["id"],"seasonYear":2026})
+    if isinstance(teams,list):
+        print(f"TEAMS DIAG: teams={len(teams)}, rider_count={sum(len(x.get('riders',[])) for x in teams if isinstance(x,dict) and isinstance(x.get('riders'),list))}, first_keys={list(teams[0])[:18] if teams and isinstance(teams[0],dict) else []}",flush=True)
 if isinstance(entry,dict):
     entrants=entry.get("entry")
     print(f"ENTRY DIAG: entry_type={type(entrants).__name__},count={len(entrants) if isinstance(entrants,list) else '-'}, first_keys={list(entrants[0]) if isinstance(entrants,list) and entrants and isinstance(entrants[0],dict) else []}",flush=True)
