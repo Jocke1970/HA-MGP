@@ -112,7 +112,9 @@ def check_bundle_integrity() -> None:
     assert "finish-settling-20261108-01" in next_js
     assert '"es":{' in next_js, "Spanish must be bundled alongside the English fallback"
     assert "records_by_category" in next_js
-    assert "data-motogp-schedule-toggle" in next_js
+    assert "data-mgp-schedule-jump" in next_js
+    assert "mgp-weekend-dialog" in next_js
+    assert "data-motogp-schedule-toggle" not in next_js, "Legacy inline schedule must never reappear"
     assert "motogp_sensor/rider_laps" in next_js
     assert "@container (max-width:620px)" in next_js
     assert "data-motogp-rider-id" in next_js
