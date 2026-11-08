@@ -62,6 +62,7 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   assert.match(h,/▲ \+5/);assert.match(h,/RUNNING/);
   assert.match(h,/Nation: ITA[^>]*>🇮🇹/,'live timing uses supplied nationality');
   assert.match(h,/mgp-timing-records/,'records belong inside timing header');
+  assert.match(h,/nt-session-observed-best[\s\S]*Sessionens snabbaste observerade/,'session best stays in timing header');
   assert.equal((h.match(/class="mgp-timing-record-chip"/g)||[]).length,3);
   assert.match(h,/01:50\.028/);assert.match(h,/01:52\.561/);
   assert.doesNotMatch(h,/MOTO2 RIDER|MOTO3 RIDER|00:00\.001/);
@@ -69,6 +70,9 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   timing._snapshot.riders=[];
   assert.match(timing._timing(),/mgp-timing-records/,'chips remain when rider rows are collapsed or absent');
   timing._snapshot.riders=[r];
+  timing._live=null;
+  assert.match(timing._timing(),/nt-session-observed-best[\s\S]*Sessionens snabbaste observerade/,'finished session keeps best lap');
+  timing._live={category:'MotoGP',name:'Race'};
   timing._live.category='Moto2';timing._snapshot.category='Moto2';
   h=timing._timing();assert.match(h,/01:43\.111/);
   assert.doesNotMatch(h,/01:50\.028|01:55\.222/,'Moto2 never inherits MotoGP records');
