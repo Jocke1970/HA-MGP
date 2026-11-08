@@ -34,9 +34,23 @@ assert.match(card._timing(),/Senaste: MotoGP · Qualifying/);
 schedule(29);
 let html=card._timing();
 assert.match(html,/STARTLISTA/);
-assert.match(html,/Publicerad startgrid/);
+assert.match(html,/Anmälda förare/);
+assert.doesNotMatch(html,/Publicerad startgrid/);
 assert.match(html,/Tester Two/);
-assert.ok(html.indexOf('Tester Two')<html.indexOf('Tester Nine'));
+// The two returned rows cannot establish a complete official starting grid.
+// Even a numerically consecutive fragment must remain an entry list.
+const full=Array.from({length:19},(_,i)=>({position:i+1,number:String(i+1),rider:'Rider '+(i+1)}));
+const roster=full.map(r=>({number:r.number,rider:r.rider}));
+schedule(29,{entry_lists:{Moto3:roster},start_grids:{Moto3:full}});
+html=card._timing();
+assert.match(html,/Publicerad startgrid/);
+assert.ok(html.indexOf('Rider 1')<html.indexOf('Rider 19'));
+const broken=full.map(r=>({...r}));broken[18].position=21;
+schedule(29,{entry_lists:{Moto3:roster},start_grids:{Moto3:broken}});
+assert.doesNotMatch(card._timing(),/Publicerad startgrid/);
+schedule(29,{entry_lists:{Moto3:roster},start_grids:{Moto3:full.slice(0,18)}});
+assert.doesNotMatch(card._timing(),/Publicerad startgrid/);
+schedule(29,{entry_lists:{Moto3:roster},start_grids:{Moto3:full}});
 assert.doesNotMatch(html,/OLD/);
 assert.doesNotMatch(html,/1:52|1:53|LIVE BASE/);
 card._click({target:{closest:()=>({dataset:{timing:''}})}});
