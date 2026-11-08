@@ -129,6 +129,10 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   assert.match(overview.view.innerHTML,/Ducati Lenovo/);
   assert.match(overview.view.innerHTML,/Nation: SPA[^>]*>🇪🇸/,'VM standings country flag');
   assert.match(overview.view.innerHTML,/mgp-class-mark/,'graphical class buttons');
+  assert.match(overview.view.innerHTML,/MotoGP_logo_%282024%29\.svg/,'real MotoGP SVG must be loaded');
+  assert.match(overview.view.innerHTML,/Moto2_logo_%282024%29\.svg/,'real Moto2 SVG must be loaded');
+  assert.match(overview.view.innerHTML,/Moto3_logo_%282024%29\.svg/,'real Moto3 SVG must be loaded');
+  assert.doesNotMatch(overview.view.innerHTML,/<svg class="mgp-class-mark"/,'no fake italic text SVGs');
   const classTabs=['Moto3','Moto2','MotoGP'];
   const classTabsHtml=overview.view.innerHTML;
   for(const label of classTabs) {
