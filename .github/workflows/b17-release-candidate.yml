@@ -1,0 +1,48 @@
+name: HA-MGP b17 release candidate gate
+
+on:
+  push:
+    branches:
+      - 'release/**'
+  pull_request:
+    branches: [beta]
+
+permissions:
+  contents: read
+
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      TZ: Europe/Stockholm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check release version and byte-identical HACS aliases
+        run: |
+          python3 tests/test_frontend_package.py
+          python3 -m compileall -q custom_components/motogp_sensor
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          m=json.loads(Path('custom_components/motogp_sensor/manifest.json').read_text())
+          assert m['version']=='2026.11.0b17'
+          code=Path('custom_components/motogp_sensor/coordinator.py').read_text()
+          assert 'async_get_entry_list(' not in code, 'Unsupported entry endpoint must not be called in b17'
+          print('PASS: b17 manifest, static routing, no unverified entry API calls')
+          PY
+      - name: Verify packaged JS and regression behavior
+        run: |
+          node --check custom_components/motogp_sensor/www/ha-mgp.js
+          node --check frontend/ha-mgp-pre-session.js
+          node tests/frontend-pre-session.cjs
+          node tests/frontend-live-freshness.cjs custom_components/motogp_sensor/www/ha-mgp.js
+          node tests/frontend-mobile-laps.cjs custom_components/motogp_sensor/www/ha-mgp.js
+          node tests/frontend-calendar.cjs
+          node tests/frontend-i18n.cjs
