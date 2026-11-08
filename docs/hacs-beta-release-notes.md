@@ -1,23 +1,17 @@
-# HA-MGP 2026.11.0b15 — fem språk och banrekord
+# HA-MGP 2026.11.0b16 — visuell säsongskalender
 
-**HACS beta:** `2026.11.0b15` · **UI:** `0.3.0-dev.30`.
+**HACS beta `2026.11.0b16` · Frontend `0.3.0-dev.32`**
 
-## Nytt
+## Nytt jämfört med b15
 
-- Fem Home Assistant-översättningar: **en**, **sv**, **es**, **it**, **fr** (konfiguration och entitetsnamn).
-- Fem inbyggda UI-språkkataloger med **engelska som standard/fallback** och automatiskt språkval från Home Assistant. Samtliga ryms i samma `ha-mgp.js`, utan extra fetch eller Lovelace-resurs.
-- Klassvisa banrekord (Lap record, Pole lap och Race lap) som kompakta chips **direkt under livetimingens header**. Hämtas ur befintliga `records_by_category`; inga nya API-anrop. Rekord visas bara om datan är giltig, och aldrig från en annan klass eller under spoilerskydd.
-- Varken GP-toppkortets banlayout eller förarlistans layout behöver byggas om.
-- Bibehållen kompatibilitetsresurs `ha-motogp-next.js`; interna korttaggar och HA-domän är oförändrade.
+- Visuell säsongskalender inbyggd i översiktskortet **när ingen racehelg pågår**. Kalendern använder den befintliga `season_calendar` i `sensor.motogp_next_race`.
+- Nästa Grand Prix lyfts fram, med datum, flagga, bana och nedräkning. Kommande race visas i responsiva kort; äldre race nås i en hopfällbar sektion.
+- Växlar automatiskt tillbaka till ordinarie översikt under racehelger. Vid saknad kalenderdata visas ordinarie kort i stället för att gissa.
+- Bevarar fem UI-språk med engelsk fallback, nationsflaggor, VM-ställning och rekordchips i livetimingkortet.
+- Ett enda JS-bundle, med ett byte-identiskt alias för äldre installations-URL. Inga nya API-anrop, konfigurationsändringar eller entiteter.
 
-## Testa i HA
+## Verifiera i Home Assistant
 
-1. Uppdatera från **HACS-beta**, inte `dev`; starta om HA när ingen session pågår.
-2. Använd exakt en JavaScript module-resurs: `/motogp_sensor/ha-mgp.js`.
-3. Ladda om med `Ctrl+Shift+R`.
-4. Kontrollera `0.3.0-dev.30`, UI-rubriker och rekordchips i respektive klass.
-5. Byt språk i Home Assistant och kontrollera särskilt engelska, svenska, spanska, italienska och franska; även långa rubriker på mobil.
+Installera från HACS beta, ladda om med `Ctrl+Shift+R`, verifiera UI `0.3.0-dev.32`. Kalenderns faktiska utseende på desktop/mobil behöver fortfarande **visuell kontroll i Home Assistant**. Skärmbilder och synpunkter används i nästa dev-omgång. Under racehelgen ska kalendern inte ersätta ordinarie toppkort.
 
-**Begränsning:** första språkversionen täcker inställningar/entitetsnamn och viktiga korttexter. Vissa dynamiska strängar och experimentella historikdialoger kan fortfarande vara på svenska; rapportera dessa för kompletteringar. Språkbytet ska inte påverka API-data, förar-/teamnamn eller entitets-ID:n.
-
-**Rollback:** `2026.11.0b14`. Behåll `/config/motogp_data/`, konfigurationspost och dashboard.
+**Rollback:** beta `2026.11.0b15`. `main` är oförändrad.
