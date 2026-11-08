@@ -57,7 +57,7 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   assert.match(h,/SENASTE VARV/);assert.match(h,/FRAMFÖR/);assert.match(h,/LEDARE/);
   assert.match(h,/⏱ fastest/);assert.doesNotMatch(h,/⚡/);
   assert.match(h,/nt-last-main[\s\S]*nt-pb-chip[\s\S]*Snabbaste: 1&#39;29\.980/);
-  assert.match(h,/class="nt-rider-best"[^>]*>Snabbaste: 1&#39;29\.980/,'rider fastest lap highlighted in red');
+  assert.match(h,/class="nt-session-best"[^>]*>Snabbaste: 1&#39;29\.980/,'only session-fastest lap highlighted in red');
 
   assert.match(h,/▲ \+5/);assert.match(h,/RUNNING/);
   assert.match(h,/Nation: ITA[^>]*>🇮🇹/,'live timing uses supplied nationality');
@@ -157,7 +157,7 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   assert.match(overview.view.innerHTML,/background:var\(--divider-color,#b4b4b4\)/);
   // A narrow card hides the visual comparison while keeping data visible.
   const source=fs.readFileSync(process.argv[2]||'/mnt/data/ha-mgp-ui.js','utf8');
-  assert.match(source,/\.nt-lap-pair>small\.nt-rider-best\{color:var\(--motogp-fastest-lap-color,var\(--error-color,#b71c1c\)\)/,'rider fastest style is red');
+  assert.match(source,/\.nt-lap-pair>small\.nt-session-best\{color:var\(--motogp-fastest-lap-color,var\(--error-color,#b71c1c\)\)/,'only overall session-fastest style is red');
   assert.match(source,/@container \(max-width:760px\)/);
   assert.match(source,/@container \(max-width:430px\)/);
   assert.match(source,/np-standing-visual\{display:none\}/);
