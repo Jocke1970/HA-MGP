@@ -102,7 +102,7 @@ def check_bundle_integrity() -> None:
     assert "mgp-timing-record-chip" in next_js
     assert "ha-motogp-next-overview-card" in next_js
     assert "Championship standings" in next_js
-    assert "Clasificación del campeonato" in next_js
+    assert '"es":{' in next_js, "Spanish must be bundled alongside the English fallback"
     assert "records_by_category" in next_js
     assert "data-motogp-schedule-toggle" in next_js
     assert "motogp_sensor/rider_laps" in next_js
