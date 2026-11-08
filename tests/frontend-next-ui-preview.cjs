@@ -167,12 +167,9 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   assert.match(source,/table-layout:fixed/);
   overview._standingOpen=false;
   overview._live={category:'MotoGP',name:'Q2'};
-  assert.match(overview._schedule(race,new Clock()),/Visa schema/);
-  assert.doesNotMatch(overview._schedule(race,new Clock()),/FULL WEEKEND SCHEDULE/);
-  overview._standingOpen=true;
-  overview._click({target:{closest:sel=>sel==='[data-motogp-schedule-toggle]'?{}:null}});
-  assert.equal(overview._standingOpen,false,'opening schedule closes standings');
-  assert.match(overview._schedule(race,new Clock()),/Dölj schema[\s\S]*FULL WEEKEND SCHEDULE/);
+  assert.match(overview._schedule(race,new Clock()),/FULL WEEKEND SCHEDULE/);
+  assert.doesNotMatch(overview._schedule(race,new Clock()),/data-motogp-schedule-toggle|Visa schema|Dölj schema/,
+    'legacy schedule panel and its controls are never rendered during live sessions');
   overview._scheduleOpen=false;
   overview._live=null;
   assert.match(overview._schedule(race,new Clock()),/FULL WEEKEND SCHEDULE/);
