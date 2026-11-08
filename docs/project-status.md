@@ -33,3 +33,10 @@ På dev finns fortsatt API-inventering, bl.a. `/riders`/`/teams` och en experime
 - Nu blir endast snabbaste observerade varvtiden i det frysta, matchande sessionssnapshotet röd. Övriga förares bästa varv är neutrala; separat PB-chip/färg vid förbättring behålls.
 - Regression med flera förare bekräftar exakt en röd sessionstid, neutral tid för övriga samt fortsatt spoilerskydd och klassisolering.
 - GitHub Actions: frontend, helhetstest och HACS-bundlebygge gröna för källversionen. Publicerad b19 är oförändrad. Nästa betakandidat får även med fixen mot det återkommande Helgschema-kortet från dev.42.
+
+## Nästa dev-kandidat: varvvisning, målgång och Pulselive-gaplogg (2026-11-08)
+
+- **Varv:** `num_lap` är pågående varv, inte antal kompletta varv. UI dev.46 visar kvarvarande *inklusive* det pågående varvet och `Sista varvet` när `num_lap == num_laps`. Ett lika varvnummer är **inte** ett säkert målflaggskriterium.
+- **Slutresultat:** Pulselive `F` och `C` är verifierade avslutskoder; en redan matchad session fortsätter polling var 15:e sekund under högst fyra minuter efter kodväxlingen, i stället för att gå direkt till fem minuters idle. UI håller och uppdaterar samma frysta sessionssnapshot högst fyra minuter. Korsande klass/event/session och TV-delay-otillåten data avvisas; detta garanterar inte att hela klassificeringen är officiellt slutlig.
+- **Diagnostik:** tidigare `first_lap` behålls för bakåtkompatibilitet men betyder första positiva `num_lap`. Nytt: `session_started`, `first_lap_started`, `first_position`, `first_gap_reported`, `gap_updated` (max en loggsammanfattning per 15 s och endast vid förändring efter baseline), och `first_lap_completed` (giltig fullständig varvtid). Nollavstånd för ledaren räknas inte som ett tidsavstånd. Data skrivs i befintlig append-only JSONL utan fler API-anrop.
+- **Obekräftat:** inga sektortider har verifierats ur Pulselive, och differenserna bevisar inte sektorpunkter. Nuvarande b20 i HA är oförändrad; dev.46 måste beta-testas innan nästa main.
