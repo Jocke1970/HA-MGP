@@ -27,6 +27,8 @@ jobs:
       - name: Check release version and byte-identical HACS aliases
         run: |
           python3 tests/test_frontend_package.py
+          python3 tests/test_local_imports.py
+          python3 -m unittest discover -s tests -p 'test_session_history_ws.py' -v
           python3 -m compileall -q custom_components/motogp_sensor
           python3 -m unittest discover -s tests -p 'test_api_diagnostics.py' -v
           python3 -m unittest discover -s tests -p 'test_api_event_archive.py' -v
