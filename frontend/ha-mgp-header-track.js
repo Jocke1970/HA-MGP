@@ -230,6 +230,22 @@ function venue(card){
     '<div class="mgp-circuit-panel"><div class="mgp-venue-caption">🏁 Banlayout</div>'+mapHtml+factsHtml+'</div></div>'+circuitDialog;
 }
 const SCHEDULE_DIALOG_STYLE=`
+  .mgp-track-trigger{display:block;width:100%;border:0;padding:0;background:transparent;color:inherit;cursor:zoom-in;font:inherit}
+  .mgp-track-action{display:block;text-align:center;font-size:10px;margin-top:4px;color:var(--primary-color,#039be5)}
+  .mgp-track-trigger:focus-visible{outline:2px solid var(--primary-color,#039be5);outline-offset:4px;border-radius:8px}
+  .mgp-circuit-dialog{width:min(760px,calc(100vw - 28px));max-height:calc(100dvh - 26px);
+    padding:0;border:1px solid var(--divider-color,#ddd);border-radius:16px;
+    background:var(--ha-card-background,var(--card-background-color,#fff));
+    color:var(--primary-text-color);box-shadow:0 20px 60px rgba(0,0,0,.32)}
+  .mgp-circuit-dialog::backdrop{background:rgba(0,0,0,.55)}
+  .mgp-circuit-dialog-body{overflow:auto;max-height:calc(100dvh - 110px);padding:12px 18px}
+  .mgp-circuit-large .mgp-track-layer{height:clamp(210px,40vh,400px)}
+  .mgp-circuit-large .mgp-track-svg{height:100%}
+  .mgp-circuit-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:15px 0}
+  .mgp-circuit-detail-grid>span{padding:9px;border:1px solid var(--divider-color,#ddd);border-radius:8px;font-size:12px}
+  .mgp-circuit-detail-grid b,.mgp-circuit-detail-grid small{display:block;margin-top:3px}
+  .mgp-circuit-unavailable{padding:12px;color:var(--secondary-text-color);font-size:12px}
+
   .mgp-weekend-dialog{width:min(900px,calc(100vw - 28px));max-height:calc(100dvh - 32px);
     padding:0;border:1px solid var(--divider-color,#ddd);border-radius:16px;
     background:var(--ha-card-background,var(--card-background-color,#fff));
@@ -304,8 +320,7 @@ function install(){
       output.replace('<div class="foot">','<div class="foot">'+footer):output+footer;
     // Attach after every render: native image load/error controls the fallback.
     // No external requests, DOM event attributes or broken-image placeholders.
-    const localTrack=view.querySelector?.('.mgp-track-local');
-    if(localTrack){
+    for(const localTrack of view.querySelectorAll?.('.mgp-track-local')||[]){
       const markReady=()=>{localTrack.dataset.ready='true';};
       const markUnavailable=()=>{localTrack.dataset.ready='false';};
       localTrack.addEventListener('load',markReady,{once:true});
@@ -314,6 +329,13 @@ function install(){
         if(localTrack.naturalWidth>0)markReady();
         else markUnavailable();
       }
+    }
+    const circuitDialog=view.querySelector?.('.mgp-circuit-dialog');
+    if(circuitDialog&&this._circuitOpen===true&&typeof circuitDialog.showModal==='function'){
+      circuitDialog.addEventListener('cancel',event=>{
+        event.preventDefault();this._circuitOpen=false;this._render();
+      },{once:true});
+      if(!circuitDialog.open)circuitDialog.showModal();
     }
     const dialog=view.querySelector?.('.mgp-weekend-dialog');
     if(dialog&&this._scheduleOpen===true&&dialog.isConnected&&typeof dialog.showModal==='function'){
@@ -350,6 +372,12 @@ function install(){
   }
   const oldClick=Overview.prototype._click;
   Overview.prototype._click=function(e){
+    if(e?.target?.closest?.('[data-mgp-circuit-dismiss]')){
+      this._circuitOpen=false;this._render();return;
+    }
+    if(e?.target?.closest?.('[data-mgp-circuit-open]')){
+      this._circuitOpen=true;this._scheduleOpen=false;this._render();return;
+    }
     if(e?.target?.closest?.('[data-mgp-schedule-dismiss]')){
       this._scheduleOpen=false;this._render();return;
     }
