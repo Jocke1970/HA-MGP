@@ -29,3 +29,7 @@ Källmodulerna är nu omdöpta till `frontend/ha-mgp-*.js`, den byggda huvudfile
 ## Rekordchips i livetiming-header (dev)
 
 Frontend `0.3.0-dev.29` visar klassberoende rekordchips direkt under livetimingkortets header (MotoGP, Moto2 eller Moto3). Data hämtas från den befintliga sensorns `records_by_category` för aktiv eller senast visad sessionsklass. Endast igenkända rekordtyper och giltiga tider visas; detaljer finns i chipsets beskrivning. Inga nya API-anrop eller backendändringar krävs. Rekord visas inte i GP-toppkortet, kan ses även när förarlistan i livetiming är hopfälld och döljs i spoilerläge. Ändringen är på `dev` och ännu inte verifierad visuellt i HACS-beta.
+
+## Språkstöd (dev)
+
+Frontend `0.3.0-dev.30` innehåller de första fem inbyggda språkfilerna för `en`, `sv`, `es`, `it` och `fr`, med engelska som fallback; HA-integrationens konfigurations-/entitetsöversättningar levereras som separata JSON-filer. UI-texten översätts i den enda JS-resursen, utan nya anrop eller ändrade entiteter. **Visuell granskning av dynamiska texter återstår.** Se [språkguiden](localization.md).
