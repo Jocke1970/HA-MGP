@@ -18,6 +18,7 @@ from .api_event_archive import PulseliveEventArchive, DiagnosticArchiveError
 from .session_lap_archive import ArchiveError, SessionLapArchive
 from .qualifying_grid import q1_eliminated_rows
 from .weather_conditions import select_session_weather, observe_weather_report
+from .broadcast_schedule import broadcast_schedule_rows
 from .schedule_time import (
     canonical_time_zone,
     scheduled_session_start_near,
@@ -787,6 +788,7 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         schedule_event = self.static.get("next_event")
         self.static["schedule_time_zone"] = None
 
+        broadcast_event = None
         if isinstance(schedule_event, dict):
             broadcast_uuid = schedule_event.get("toad_api_uuid")
             if broadcast_uuid:
@@ -852,10 +854,8 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 if not schedule_category_uuid or not schedule_category_name:
                     continue
 
-                # Public Results API has no verified entrant-list endpoint.
-                # Do not call an unsupported API or infer entrants from timing.
-                # Verified start grid, if available, is handled independently.
-
+                # An entrant list is not available from a verified Results endpoint.
+                # Leave it absent rather than calling an unsupported path.
                 try:
                     category_sessions = await self.api.async_get_sessions(
                         schedule_event["id"], schedule_category_uuid
@@ -905,6 +905,16 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                             "weather": condition.get("weather") or "",
                         }
                     )
+
+            # Broadcast API is a schedule-only fallback for future sessions;
+            # never use Broadcast UUIDs as authenticated Results IDs.
+            broadcast_rows = broadcast_schedule_rows(
+                broadcast_event, all_sessions, self.static.get("schedule_time_zone")
+            )
+            all_sessions.extend(broadcast_rows)
+            for item in broadcast_rows:
+                if item["category"] not in seen_categories:
+                    seen_categories.append(item["category"])
 
             all_sessions.sort(
                 key=lambda s: parse_api_date(

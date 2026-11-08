@@ -1,10 +1,12 @@
-# HA-MGP 2026.11.0b23 — startup hotfix
+# HA-MGP 2026.11.0b24 — baninformation, GP-väder och helgschema
 
-**Beta:** `2026.11.0b23` · **UI:** `0.3.0-dev.51` (unchanged)
+**Beta:** `2026.11.0b24` · **UI:** `0.3.0-dev.52`
 
-**Critical fix:** b22's `__init__.py` imported `session_history_ws.py`, which imported the absent `session_history_response.py`. As a result, Home Assistant could not load `motogp_sensor`. This release includes the missing module and tests the package-local import graph and session history read-only WebSocket path.
+- Klicka på banlayouten för att öppna en större SVG (lokal bild om installerad, annars schematisk) och verifierade banfakta/rekord där sådana finns. Portimão innehåller längd, raka, kurvor och MotoGP-varvrekord från publicerade källor.
+- Banväder visas bara när rapportens Results-event-ID stämmer med visat GP och rapportdatum ligger inom evenemanget. Gamla temperaturer från föregående GP döljs.
+- Helgschemat kompletteras med framtida sessionsstart från Broadcast API:s offset-aware `broadcasts` när Results API ännu saknar dessa pass. Broadcast-ID används aldrig som officiella Results-session-ID:n.
+- Om schema saknas även där får användaren en korrekt status och länk till MotoGP:s officiella kalender.
 
-All b22 features remain: race/sprint pre-session grid, session-bound observed weather diagnostics, optional local circuit SVGs with fallback, and b21 journal/finish-settling behavior.
+Allt från b23 kvarstår, inklusive rättad startup, sessionhistorik, spoilerskydd, TV-delay och diagnostik. Original-SVG-filer ingår inte i GitHub/HACS: installera dem lokalt under `/config/www/ha-mgp/circuits/`.
 
-Upgrade to b23 via HACS beta and restart Home Assistant. If necessary, roll back to b21 (b22 cannot load on installations affected by the missing module).
-
+**Installera via HACS beta mellan pass**, starta om Home Assistant och uppdatera webbläsarens JS-cache vid behov. Rollback: `2026.11.0b23`.

@@ -22,7 +22,7 @@ def git_blob_sha(data: bytes) -> str:
 
 def check_bundle_integrity() -> None:
     manifest = json.loads((PKG / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "2026.11.0b23"
+    assert manifest["version"] == "2026.11.0b24"
     assert {"http", "frontend"}.issubset(manifest["dependencies"])
 
     # Beta is intentionally a minimal HACS tree (without frontend/ or dist/).
@@ -58,9 +58,9 @@ def check_bundle_integrity() -> None:
     next_js = (ASSETS / "ha-mgp.js").read_text(encoding="utf-8")
     assert "ha-motogp-next-overview-card" in next_js
     assert "ha-motogp-next-timing-card" in next_js
-    assert "0.3.0-dev.51" in next_js
+    assert "0.3.0-dev.52" in next_js
     assert "mgp-timing-header" in next_js, "records must render inside unified timing header"
-    assert "header-track-weather-20261108-05" in next_js
+    assert "header-track-weather-20261108-06" in next_js
     assert "mgp-country-flag" in next_js
     assert "mgp-brand-logo" in next_js
     assert "data:image/webp;base64," in next_js
@@ -75,7 +75,7 @@ def check_bundle_integrity() -> None:
     assert "nt-lap-pair" in next_js
     assert "Snabbaste: " in next_js
     assert "riderStart=/<div" in next_js
-    assert "header-track-weather-20261108-05" in next_js
+    assert "header-track-weather-20261108-06" in next_js
     assert "data-mgp-hero-grid" in next_js
     assert "mgp-venue-strip" in next_js
     assert "MELLAN PASSEN" in next_js
@@ -83,7 +83,7 @@ def check_bundle_integrity() -> None:
     assert "qual-grid-20261107-02" in next_js
     assert "nt-qual-slot-3" in next_js
     assert "qualifying_q1_eliminated" in next_js
-    assert "header-track-weather-20261108-05" in next_js
+    assert "header-track-weather-20261108-06" in next_js
     assert "mgp-venue-strip" in next_js
     assert "mgp-track-svg" in next_js
     assert "Senast rapporterat" in next_js

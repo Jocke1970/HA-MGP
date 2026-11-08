@@ -4,14 +4,14 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const file=process.argv[2]||'frontend/ha-mgp-header-track.js';
 const src=fs.readFileSync(file,'utf8');
-assert.match(src,/header-track-weather-20261108-05/);
+assert.match(src,/header-track-weather-20261108-06/);
 const docs=[];
 class Overview {
   static buildInfo={version:'0.2.0-split.2'};
   constructor(){
     this._ids={race:'sensor.motogp_next_race',weather:'sensor.motogp_track_weather'};
     this._hass={states:{
-      'sensor.motogp_next_race':{attributes:{circuit:'Lusail International Circuit',country:'Qatar',
+      'sensor.motogp_next_race':{attributes:{circuit:'Lusail International Circuit',country:'Qatar',event_id:'qatar-gp',date_start:'2026-11-07',
          records_by_category:{
            MotoGP:[
              {type:'LAP_RECORD',time:'01:50.028',rider:'BEZZECCHI',year:2026,speed:176},
@@ -24,7 +24,7 @@ class Overview {
          records_session_by_category:{MotoGP:{type:'SPR'}},
          sessions_all:[{category:'MotoGP',name:'WUP',date_utc:'2099-11-08T11:40:00Z',status:'SCHEDULED'}]}},
       'sensor.motogp_track_weather':{attributes:{
-        category:'Moto2',session:'Q1',air:'31º',ground:'42°',humidity:'51%',track:'Dry',weather:'Clear',
+        results_event_uuid:'qatar-gp',category:'Moto2',session:'Q1',air:'31º',ground:'42°',humidity:'51%',track:'Dry',weather:'Clear',
         updated_at:'2026-11-07T14:01:00Z'
       }}
     }};
@@ -34,7 +34,7 @@ class Overview {
     this.shadowRoot=this.root;
   }
   _weather(){return '<section class="panel">OLD SEPARATE WEATHER PANEL</section>';}
-  _schedule(){return '<section><div class="head"><strong>🗓️ Helgens schema</strong><span class="muted">Status</span></div><div class="cats">Filters</div><div class="day">Days</div></section>';}
+  _schedule(){return '<section><div class="head"><strong>🗓️ Helgens schema</strong><span class="muted">Status</span></div><div class="cats">Filters</div><div class="day">Days</div><div class="empty">Inga pass i aktuell evenemangsdata för valt filter.</div></section>';}
   _click(){}
 
   _render(){
@@ -67,6 +67,10 @@ const context={customElements:{
   assert.match(card.root.innerHTML,/mgp-track-svg/,'Lusail verified layout rendered');
   assert.match(card.root.innerHTML,/\/local\/ha-mgp\/circuits\/lusail\.svg/,'local SVG is preferred when installed');
   assert.match(card.root.innerHTML,/mgp-track-fallback/,'fallback remains while SVG is unavailable');
+  assert.match(card.root.innerHTML,/data-mgp-circuit-open/,'circuit map clickable');
+  assert.match(card.root.innerHTML,/mgp-circuit-dialog/,'detail modal exists');
+  assert.match(card.root.innerHTML,/data-mgp-circuit-dismiss/,'detail dialog has close control');
+  assert.match(src,/mgp-circuit-detail-grid/,'responsive circuit facts present');
   assert.match(src,/addEventListener\('load'/,'verified local image can replace fallback');
   assert.match(src,/addEventListener\('error'/,'missing local image safely keeps fallback');
   assert.match(card.root.innerHTML,/5,38 km/,'verified lap length shown in header');
@@ -112,6 +116,13 @@ const context={customElements:{
   assert.match(card.root.innerHTML,/Clear/);
   assert.match(card.root.innerHTML,/Moto2 · Q1/);
   assert.match(card.root.innerHTML,/Senast rapporterat · inte livegaranti/);
+  const raceAttrs=card._hass.states['sensor.motogp_next_race'].attributes;
+  raceAttrs.event_id='different-event';
+  card._render();
+  assert.match(card.root.innerHTML,/tidigare sessionsvärden döljs/,'weather must match displayed GP');
+  assert.doesNotMatch(card.root.innerHTML,/31 °C/,'previous GP temperature cannot show');
+  raceAttrs.event_id='qatar-gp';
+  card._render();
   const report=card._hass.states['sensor.motogp_track_weather'];
   report.attributes={...report.attributes,fetch_status:'ok',poll_count:4,change_count:2,
     checked_at:'2026-11-08T14:05:00Z',last_success_at:'2026-11-08T14:05:00Z',
@@ -139,6 +150,8 @@ const context={customElements:{
   assert.match(card._schedule(),/<dialog class="mgp-weekend-dialog"/,'open schedule uses native modal');
   assert.match(card._schedule(),/data-mgp-schedule-dismiss/,'dialog has a close button');
   assert.match(card._schedule(),/Helgens schema/,'dialog has accessible schedule title');
+  assert.match(card._schedule(),/Detaljerat helgschema är ännu inte tillgängligt/);
+  assert.match(card._schedule(),/Visa MotoGP:s officiella schema/);
   card._scheduleOpen=false;
   const first=card.root.innerHTML;
   card._render();assert.equal(card.root.innerHTML,first,'no duplicate panels');
@@ -183,6 +196,12 @@ const context={customElements:{
   card._render();
   assert.match(card.root.innerHTML,/\/local\/ha-mgp\/circuits\/lemans\.svg/,'Le Mans local-only asset mapped');
   assert.match(card.root.innerHTML,/Lokal SVG saknas/,'Le Mans without SVG uses an explicit neutral placeholder');
+  other.attributes.circuit='Autódromo Internacional do Algarve';
+  card._render();
+  assert.match(card.root.innerHTML,/data-mgp-circuit-open/,'Portimao track is clickable');
+  assert.match(card.root.innerHTML,/4,59 km/,'Portimao track length verified');
+  assert.match(card.root.innerHTML,/970 m/,'Portimao longest straight verified');
+  assert.match(card.root.innerHTML,/1&#39;37\.226/,'Portimao record shown safely in detail');
   other.attributes.circuit='Misano World Circuit';
   card._render();
   assert.match(card.root.innerHTML,/mgp-track-svg/,'other track mapped too');
@@ -191,7 +210,8 @@ const context={customElements:{
   assert.doesNotMatch(card.root.innerHTML,/<img src=x/,'untrusted names escaped');
   other.attributes.circuit='Lusail International Circuit';
   const weather=card._hass.states['sensor.motogp_track_weather'];
-  weather.attributes={air:'bad-script',ground:'0°C',humidity:'500%',track:'<script>alert(1)</script>',
+  weather.attributes={results_event_uuid:'qatar-gp',updated_at:'2026-11-08T13:00:00Z',
+    air:'bad-script',ground:'0°C',humidity:'500%',track:'<script>alert(1)</script>',
     weather:'<img onerror=alert(1)>'};
   card._render();
   assert.doesNotMatch(card.root.innerHTML,/<script>|<img onerror=/);
@@ -200,7 +220,7 @@ const context={customElements:{
   weather.attributes={};
   card.showButton=false;
   card._render();
-  assert.match(card.root.innerHTML,/Ingen banväderrapport tillgänglig ännu/);
+  assert.match(card.root.innerHTML,/tidigare sessionsvärden döljs/);
   assert.match(card.root.innerHTML,/mgp-venue-strip/,'render works without standings button');
   assert.match(card.root.innerHTML,/<section class="panel header"><div class="mgp-hero-grid"/);
   assert.ok(card.root.innerHTML.indexOf('mgp-weather-panel')<card.root.innerHTML.indexOf('mgp-circuit-panel'),
