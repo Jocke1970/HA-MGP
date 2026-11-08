@@ -19,8 +19,9 @@ API_STATUS_BLOB = '32490df85fde2a651ef9b69ee7f515b57e6c267c'
 SESSION_DOTS_BLOB = '717aa859c7a096a439d36d408f5dfbdd3b30f9d9'
 TIMING_ICONS_BLOB = 'd44d19a911051d4ab67513d4191942f03eeb09b0'
 ACTIVE_CHIP_BLOB = 'e9170bf96b1237de4967bd4dde5c837bf04d4050'
-BUILD = 'next-one-20261108-10'
-VERSION = '0.3.0-dev.35'
+FINISH_SETTLING_BLOB = 'f3714aa96af83a1f42bd21f6d7e20c840cd5d445'
+BUILD = 'next-one-20261108-11'
+VERSION = '0.3.0-dev.36'
 
 
 def blob(data):
@@ -122,6 +123,12 @@ def main(frontend, target):
     active_chip_bytes = active_chip_path.read_bytes()
     if blob(active_chip_bytes) != ACTIVE_CHIP_BLOB:
         raise SystemExit('STOP: unexpected active session chip revision')
+    finish_settling_path = frontend / 'ha-mgp-finish-settling.js'
+    if not finish_settling_path.is_file() or finish_settling_path.is_symlink():
+        raise SystemExit('STOP: missing/unsafe finishing addon')
+    finish_settling_bytes = finish_settling_path.read_bytes()
+    if blob(finish_settling_bytes) != FINISH_SETTLING_BLOB:
+        raise SystemExit('STOP: unexpected finishing source revision')
     with tempfile.TemporaryDirectory() as temp:
         base = pathlib.Path(temp) / 'base.js'
         module.build(frontend, base)
@@ -144,7 +151,7 @@ def main(frontend, target):
     if header_source.count('__MGP_APPROVED_BRAND_DATA_URI__') != 1:
         raise SystemExit('STOP: missing or duplicate MGP logo placeholder')
     header_source = header_source.replace('__MGP_APPROVED_BRAND_DATA_URI__', logo_uri)
-    result = (text + '\n;\n' + ui.decode('utf-8') + '\n;\n' + mobile_bytes.decode('utf-8') + '\n;\n' + qual_bytes.decode('utf-8') + '\n;\n' + header_source + '\n;\n' + history_bytes.decode('utf-8') + '\n;\n' + i18n_source + '\n;\n' + calendar_bytes.decode('utf-8') + '\n;\n' + api_status_bytes.decode('utf-8') + '\n;\n' + session_dots_bytes.decode('utf-8') + '\n;\n' + timing_icons_bytes.decode('utf-8') + '\n;\n' + active_chip_bytes.decode('utf-8')).encode('utf-8')
+    result = (text + '\n;\n' + ui.decode('utf-8') + '\n;\n' + mobile_bytes.decode('utf-8') + '\n;\n' + qual_bytes.decode('utf-8') + '\n;\n' + header_source + '\n;\n' + history_bytes.decode('utf-8') + '\n;\n' + i18n_source + '\n;\n' + calendar_bytes.decode('utf-8') + '\n;\n' + api_status_bytes.decode('utf-8') + '\n;\n' + session_dots_bytes.decode('utf-8') + '\n;\n' + timing_icons_bytes.decode('utf-8') + '\n;\n' + active_chip_bytes.decode('utf-8') + '\n;\n' + finish_settling_bytes.decode('utf-8')).encode('utf-8')
     pathlib.Path(target).write_bytes(result)
     print(f'UI preview built: {target} ({len(result)} bytes, git blob {blob(result)})')
 

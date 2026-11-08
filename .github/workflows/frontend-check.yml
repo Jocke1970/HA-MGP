@@ -35,6 +35,7 @@ jobs:
           node --check frontend/ha-mgp-session-dots.js
           node --check frontend/ha-mgp-timing-icons.js
           node --check frontend/ha-mgp-active-chip.js
+          node --check frontend/ha-mgp-finish-settling.js
           node --check frontend/ha-mgp-session-history.js
       - name: Build ONE distributable Next resource (pinned source and syntax)
         run: |
@@ -49,6 +50,7 @@ jobs:
           node tests/frontend-session-dots.cjs
           node tests/frontend-timing-icons.cjs
           node tests/frontend-active-chip.cjs
+          node tests/frontend-finish-settling.cjs
           node --check custom_components/motogp_sensor/www/ha-mgp.js
           node --check custom_components/motogp_sensor/www/ha-motogp-next.js
           node --check custom_components/motogp_sensor/www/ha-motogp-card.js
