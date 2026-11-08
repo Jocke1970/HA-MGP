@@ -17,6 +17,7 @@ from .api_diagnostics import PulseliveDiagnostics
 from .api_event_archive import PulseliveEventArchive, DiagnosticArchiveError
 from .session_lap_archive import ArchiveError, SessionLapArchive
 from .qualifying_grid import q1_eliminated_rows
+from .weather_conditions import select_session_weather
 from .schedule_time import (
     canonical_time_zone,
     scheduled_session_start_near,
@@ -431,100 +432,55 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         return {"live": live, "live_online": live_online}
 
     async def _async_refresh_live_conditions(
-        self,
-        live: dict[str, Any],
-        now: datetime,
+        self, live: dict[str, Any], now: datetime,
     ) -> None:
-        # Refresh track/air/ground/humidity for the active class/session.
+        """Refresh matching Results API session report; not proven live weather."""
         event = self.static.get("next_event")
         if not isinstance(event, dict) or not event.get("id"):
             return
-
         category_name = str(live.get("category") or "").strip()
-        live_shortname = str(live.get("session_shortname") or "").strip().upper()
-
-        category_uuid = None
-        for item in self.static.get("weekend_sessions_all", []):
-            if not isinstance(item, dict):
-                continue
-            if str(item.get("category") or "").strip() == category_name:
-                category_uuid = item.get("category_id")
-                if category_uuid:
-                    break
-
+        shortname = str(live.get("session_shortname") or "").strip().upper()
+        if not category_name or not shortname:
+            return
+        category_uuid = next((
+            str(c["id"]) for c in self.static.get("categories", [])
+            if isinstance(c, dict) and c.get("id")
+            and self._grid_records_category_name(c.get("name")) == category_name
+        ), None)
         if not category_uuid:
             return
-
+        event_uuid = str(event["id"])
         try:
-            sessions = await self.api.async_get_sessions(
-                event["id"],
-                category_uuid,
-            )
+            sessions = await self.api.async_get_sessions(event_uuid, category_uuid)
         except MotogpApiError as err:
-            _LOGGER.debug("Live conditions refresh failed: %s", err)
+            _LOGGER.debug("Live condition lookup failed: %s", err)
             return
-
-        def _shortname(sess: dict[str, Any]) -> str:
-            session_type = str(sess.get("type") or "").upper()
-            number = sess.get("number")
-
-            if session_type in ("FP", "Q", "RAC"):
-                if number not in (None, "", 0, "0"):
-                    return f"{session_type}{number}"
-            return session_type
-
-        exact = None
-        fallback = None
-        fallback_date = None
-
-        for sess in sessions:
-            if not isinstance(sess, dict):
-                continue
-
-            condition = sess.get("condition")
-            if not isinstance(condition, dict) or not condition:
-                continue
-
-            shortname = _shortname(sess)
-            session_type = str(sess.get("type") or "").upper()
-
-            if shortname == live_shortname or session_type == live_shortname:
-                exact = sess
-                break
-
-            session_date = parse_api_date(
-                session_wall_time_to_utc(
-                    sess.get("date"), self.static.get("schedule_time_zone")
-                )
-                or sess.get("date")
-            )
-            if (
-                session_date is not None
-                and session_date <= now
-                and (fallback_date is None or session_date > fallback_date)
+        report = select_session_weather(
+            sessions, event_uuid=event_uuid, category_uuid=category_uuid,
+            session_shortname=shortname,
+        )
+        previous = self.static.get("track_weather")
+        if report is None:
+            # Never present a previous practice's weather as active race data.
+            if isinstance(previous, dict) and (
+                previous.get("results_event_uuid") != event_uuid
+                or previous.get("results_category_uuid") != category_uuid
+                or previous.get("source_session") != shortname
             ):
-                fallback = sess
-                fallback_date = session_date
-
-        selected = exact or fallback
-        if selected is None:
+                self.static["track_weather"] = None
             return
-
-        condition = selected.get("condition")
-        if not isinstance(condition, dict):
-            return
-
-        self.static["track_weather"] = {
-            "track": condition.get("track") or "",
-            "air": condition.get("air") or "",
-            "ground": condition.get("ground") or "",
-            "humidity": condition.get("humidity") or "",
-            "weather": condition.get("weather") or "",
-            "category": category_name,
-            "session": live_shortname,
-            "source_session": _shortname(selected),
-            "updated_at": now.isoformat(),
-        }
+        report["category"] = category_name
+        report["session"] = shortname
+        report["checked_at"] = now.isoformat()
+        fields = ("track", "air", "ground", "humidity", "weather",
+                  "results_event_uuid", "results_category_uuid", "source_session_id")
+        if isinstance(previous, dict) and all(
+            previous.get(k) == report.get(k) for k in fields
+        ):
+            report["updated_at"] = previous.get("updated_at", now.isoformat())
+        else:
+            report["updated_at"] = now.isoformat()
+        self.static["track_weather"] = report
 
     @staticmethod
     def _grid_records_category_name(value: Any) -> str:
@@ -1170,39 +1126,42 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
             self.static["weekend_sessions"] = normalized_sessions
 
-        # Weather: from the current weekend if we are inside it, otherwise
-        # from the most recent finished event (which has real conditions).
-        weather_event = None
-        target = self.static.get("next_event")
-        if target is not None:
-            start = parse_api_date(target.get("date_start"))
-            end = parse_api_date(target.get("date_end"))
-            if start is not None and end is not None and start <= now <= end + EVENT_WINDOW_GRACE:
-                weather_event = target
-        if weather_event is None:
-            weather_event = last_event
-
-        if weather_event is not None:
+        # Historical session weather. Never overwrite a report belonging to
+        # the active live session with another session's weather.
+        weather_event = self.static.get("next_event") or last_event
+        active_weather = self.static.get("track_weather")
+        if isinstance(weather_event, dict) and weather_event.get("id") and category_uuid:
             try:
-                sessions = await self.api.async_get_sessions(
-                    weather_event["id"], category_uuid
+                weather_sessions = await self.api.async_get_sessions(
+                    str(weather_event["id"]), str(category_uuid)
                 )
             except MotogpApiError as err:
-                _LOGGER.debug("Sessions failed: %s", err)
-                sessions = []
-
-            weather = None
-            for sess in sessions:
-                cond = sess.get("condition")
-                if isinstance(cond, dict) and cond:
-                    weather = {
-                        "track": cond.get("track") or "",
-                        "air": cond.get("air") or "",
-                        "ground": cond.get("ground") or "",
-                        "humidity": cond.get("humidity") or "",
-                        "weather": cond.get("weather") or "",
-                    }
-            self.static["track_weather"] = weather
+                _LOGGER.debug("Historical session weather unavailable: %s", err)
+            else:
+                report = select_session_weather(
+                    weather_sessions, event_uuid=str(weather_event["id"]),
+                    category_uuid=str(category_uuid),
+                )
+                # Keep an exact-session report even if historical static
+                # refresh runs during or immediately after that session.
+                if report and not (
+                    isinstance(active_weather, dict)
+                    and active_weather.get("results_event_uuid") == str(weather_event["id"])
+                    and active_weather.get("session") == active_weather.get("source_session")
+                    and active_weather.get("source_session")
+                ):
+                    previous = self.static.get("track_weather")
+                    report["category"] = "MotoGP"
+                    report["session"] = report["source_session"]
+                    report["checked_at"] = now.isoformat()
+                    fields = ("track", "air", "ground", "humidity", "weather",
+                              "source_session_id", "results_event_uuid")
+                    report["updated_at"] = (
+                        previous.get("updated_at") if isinstance(previous, dict)
+                        and all(previous.get(k) == report.get(k) for k in fields)
+                        else now.isoformat()
+                    )
+                    self.static["track_weather"] = report
 
         # Last race results: from the most recent finished event
         if last_event is None:
