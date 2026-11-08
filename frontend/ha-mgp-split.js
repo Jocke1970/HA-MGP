@@ -164,7 +164,7 @@
           const remaining=positive(states[this._ids.remaining]?.state);
           const isRace=/^(sprint|race)$/i.test(live.name);
           let major='';
-          if (isRace && total) major=lap?`Varv ${lap}/${total} · ${Math.max(0,total-lap+1)} kvar`:`${total} varv`;
+          if (isRace && total) major=lap?`Varv ${lap}/${total} · ${lap===total?"Sista varvet":`${Math.max(0,total-lap+1)} kvar`}`:`${total} varv`;
           else if (remaining) major=`${Math.floor(remaining/60)}:${pad(Math.floor(remaining%60))} kvar`;
           else if (lap) major=`Varv ${lap}`;
           const delay=positive(status?.attributes?.tv_delay_effective_seconds);
