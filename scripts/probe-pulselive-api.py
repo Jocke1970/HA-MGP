@@ -45,7 +45,15 @@ categories=probe("results categories", "/results/categories", {"seasonUuid":sid}
 events=probe("results events", "/results/events", {"seasonUuid":sid})
 probe("broadcast categories", "/categories", {"seasonYear":2026})
 broadcast=probe("broadcast events", "/events", {"seasonYear":2026})
-probe("live timing lite", "/timing-gateway/livetiming-lite")
+live_payload=probe("live timing lite", "/timing-gateway/livetiming-lite")
+if isinstance(live_payload,dict):
+    head=live_payload.get("head")
+    rr=live_payload.get("rider")
+    print(f"LIVE HEAD: keys={list(head) if isinstance(head,dict) else type(head).__name__}, status={head.get('session_status_id') if isinstance(head,dict) else '-'}, session={head.get('session_shortname') if isinstance(head,dict) else '-'}, category={head.get('category') if isinstance(head,dict) else '-'}",flush=True)
+    sample=next((x for x in rr if isinstance(x,dict)),None) if isinstance(rr,list) else None
+    print(f"LIVE RIDER: type={type(rr).__name__}, count={len(rr) if isinstance(rr,list) else '-'}, keys={list(sample) if sample else []}",flush=True)
+    if sample:
+        print(f"LIVE RIDER IDENTITY: number={sample.get('number')}, rider_id={sample.get('rider_id')}, position={sample.get('position')}, num_lap={sample.get('num_lap')}",flush=True)
 if isinstance(broadcast,list):
     print(f"broadcast event count: {len(broadcast)}", flush=True)
 if not isinstance(events,list) or not isinstance(categories,list):
