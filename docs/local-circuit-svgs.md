@@ -11,7 +11,7 @@ Copy SVG files into `/config/www/ha-mgp/circuits/`, using the stable names below
 In a browser the corresponding URL is
 `https://YOUR-HA/local/ha-mgp/circuits/sachsenring.svg`.
 
-The overview card automatically prefers a matching local SVG if it loads.
+The overview card automatically prefers a matching local SVG if it loads. The track thumbnail is clickable: opening it shows an enlarged layout and verified circuit facts (including MotoGP records when available).
 If the file is missing or cannot be loaded, the existing schematic track
 outline stays visible. Le Mans uses a neutral missing-file message because
 there is no existing schematic source for that circuit.
