@@ -1,33 +1,21 @@
-# HA-MGP
+# HA-MGP — HACS beta
 
-**HA-MGP** är en Home Assistant-integration med både Python-backend och ett samlat gränssnitt för MotoGP, Moto2 och Moto3. Projektet bygger vidare på [Liionboy/motogp_sensor](https://github.com/Liionboy/motogp_sensor) men har en egen API-klient och kräver ingen separat installation av uppströmsintegrationen. Projektet är inte knutet till MotoGP eller dess rättighetsinnehavare.
+MotoGP, Moto2 och Moto3 i Home Assistant. Inofficiell, fristående integration.
 
-## Funktioner
+**HACS beta `2026.11.0b18` · Frontend `0.3.0-dev.40`**
 
-Grand Prix-översikt med MGP-logga, land, bana, banlayout och banväder; helgschema och nästa pass med nedräkning; livetiming och varvdata; förar-VM per klass; spoilerskydd och sessionsrelaterad historik där backendstödet finns. Information från MotoGP/Pulselive är beroende av extern datatillgänglighet och inte garanterad som realtid.
+## Nytt sedan b17
 
-## Installera
+- **Helgschema** öppnas i en dialog ovanpå vyn. Översiktskort och livetiming förblir placerade bredvid varandra i Lovelace-layouten utan extra schema mellan dem.
+- **Moto3, Moto2 och MotoGP** behåller sina klickbara, grafiska kategorifilter. Nu med tydliga regressionstester. Markörerna är egna text-SVG, inte officiella logotyper.
+- Förarens giltiga bästa varv är **rött** i timingtabellen. Sessionens snabbaste **observerade** varv ligger kvar på avslutat sessionssnapshot efter målflagga.
+- Ny **Pulselive API debug**-diagnostiksensor: avstängd som standard. Registrerar först observerad session, statusändringar, förarlista och första varv utan extra anrop och utan att kringgå TV-fördröjning eller spoilerskydd.
+- Behåller b17:s T−30-startgrid och säkra väntläge när öppen deltagar-endpoint inte fungerar.
 
-**Senaste publicerade HACS-beta: `2026.11.0b17`** (UI `0.3.0-dev.37`). Uppdatera endast från **beta**, aldrig direkt från `dev`. Se [installations- och rollbackguide](docs/hacs-beta-installation.md).
+## Installation
 
-**I b17:** Lovelace-resursen är `/motogp_sensor/ha-mgp.js` (JavaScript module); `/motogp_sensor/ha-motogp-next.js` är ett byte-identiskt alias. Registrera aldrig båda samtidigt. Korttyperna är `custom:ha-motogp-next-overview-card` och `custom:ha-motogp-next-timing-card`.
+Använd endast **HACS beta**, aldrig direktinstallation från dev. Endast en Lovelace JS module: `/motogp_sensor/ha-mgp.js` (äldre `/motogp_sensor/ha-motogp-next.js` är identiskt alias). Behåll integrationsdomän och entiteter samt `/config/motogp_data/`. Se [installation och rollback](docs/hacs-beta-installation.md), [release notes](docs/hacs-beta-release-notes.md) och [status](docs/project-status.md).
 
-**Viktigt vid namnbytet:** Repo och visningsnamn blir HA-MGP, men integrationsdomänen `motogp_sensor`, befintliga interna korttyper, entiteter och `/config/motogp_data/` behålls för bakåtkompatibilitet. Frontendens källmoduler heter numera `frontend/ha-mgp-*.js`. Äldre JS-resursnamn finns kvar som kompatibilitetsalias. Se [migrering av resursnamn](docs/js-resource-migration.md).
+**SOP:** dev → beta → main. Main orörd. Rollback: `2026.11.0b17`.
 
-## Pågående utveckling
-
-På `dev` förbereds UI `0.3.0-dev.38`: helgschemat öppnas i dialog i stället för att skjuta ned live-timingen. De grafiska klassknapparna **Moto3, Moto2 och MotoGP** är regressionstestade med bibehållen klassisolering; markörerna är egna textbaserade SVG, inte officiella logotyper. En valfri, som standard inaktiverad **Pulselive API debug**-sensor protokollför tidpunkter för sessionsbyte, statusbyte, första förarlista och första varv med befintlig polling och bevarat spoilerskydd. Inte publicerat på beta ännu.
-
-## Utveckling
-
-**dev → beta → main.** Utveckling och CI på dev; HACS- och verkliga sessionsprov på beta; stabil main först efter godkända tester. Ingen direktinstallation från dev.
-
-- [Aktuell projektstatus](docs/project-status.md)
-- [Installera och återställ](docs/hacs-beta-installation.md)
-- [HACS och frontend](docs/frontend-hacs-bundling.md)
-- [Frontendversioner](docs/frontend-versioning.md)
-- [Release notes](docs/hacs-beta-release-notes.md)
-- [Dokumentationsindex och äldre anteckningar](docs/README.md)
-- [Källor för banlayout](docs/track-layout-attribution.md)
-
-Äldre tester, YAML-exempel och prototyper är referensmaterial, inte alternativa installationspaket. Skydda befintlig HA-konfiguration och sessionsarkiv. Rättigheter till varumärken och tredjepartsmaterial tillhör respektive ägare.
+**Utvecklingsgren:** dev kan innehålla ytterligare experiment som inte ingår i publicerad b18. Installera därför aldrig dev direkt i HA.
