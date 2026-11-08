@@ -52,6 +52,7 @@ jobs:
           node tests/frontend-timing-icons.cjs
           node tests/frontend-active-chip.cjs
           node tests/frontend-finish-settling.cjs
+          node tests/frontend-pre-session.cjs
           node --check custom_components/motogp_sensor/www/ha-mgp.js
           node --check custom_components/motogp_sensor/www/ha-motogp-next.js
           node --check custom_components/motogp_sensor/www/ha-motogp-card.js
