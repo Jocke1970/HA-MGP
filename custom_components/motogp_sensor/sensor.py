@@ -565,6 +565,7 @@ def _static_attributes(key: str, coordinator: MotogpCoordinator) -> dict[str, An
     if key == SENSOR_NEXT_RACE:
         event = static.get("next_event")
         if event:
+            attrs["event_id"] = event.get("id")
             attrs["short_name"] = event.get("short_name")
             attrs["date_start"] = event.get("date_start")
             attrs["date_end"] = event.get("date_end")
