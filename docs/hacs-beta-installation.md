@@ -1,13 +1,12 @@
-# Installera HA-MGP via HACS-beta
+# Installera HA-MGP HACS-beta 2026.11.0b17
 
-**Senaste verifierat publicerade beta: `2026.11.0b12`**, med frontend `0.3.0-dev.23`. Ett utvecklingsbygge är inte en HACS-release.
+**Frontend:** `0.3.0-dev.37`. Uppdatera enbart genom HACS beta, inte från dev.
 
-1. Ta backup; behåll `/config/motogp_data/`, dashboard och befintlig HA-konfigurationspost.
-2. Välj prerelease **2026.11.0b12** i HACS för [HA-MGP](https://github.com/Jocke1970/HA-MGP). Installera **inte** från `dev`.
-3. Starta om Home Assistant efter uppdateringen, men aldrig under pågående session.
-4. Behåll exakt en Lovelace-resurs, typ **JavaScript module**: `/motogp_sensor/ha-motogp-next.js` (utan extra `?v=`).
-5. Gör hård omladdning (`Ctrl+Shift+R`) och kontrollera UI-versionen under `ⓘ UI-information`, schemats öppna/stäng-knapp och 30-minutersgränsen för livetiming.
+1. Säkerhetskopiera HA-konfigurationen och behåll `/config/motogp_data/`.
+2. Välj beta `2026.11.0b17` som nu är publicerad. Starta om HA när inget racepass pågår.
+3. Behåll exakt **en** JavaScript module-resurs, `/motogp_sensor/ha-mgp.js`; lägg inte till det identiska aliaset.
+4. Hård omladdning med `Ctrl+Shift+R`. Kontrollera UI `0.3.0-dev.37`.
+5. Verifiera: senast resultat mellan sessioner, startgrid vid T−30, läge utan entry-lista, spoilerskydd, tvåminuters efteravflaggning och mobil.
+6. Resultatet mellan pass kan saknas efter omstart utan tidigare fångat live-snapshot; det är en känd begränsning, inte skäl att visa gissade tider.
 
-**Rollback:** använd tidigare känd fungerande beta och bevara data och konfigurationspost. Ta inte bort integrationen eller skapa en till med samma domän.
-
-GitHub-repot och produktnamnet heter **HA-MGP**. Den nya resursadressen `/motogp_sensor/ha-mgp.js` introduceras i en **kommande beta**, inte i b12. Följ [migrationsguiden](js-resource-migration.md) när den betan har släppts. Domänen och korttaggarna ändras inte. Vi gör ingen automatisk omdöpning av befintliga entiteter.
+**Rollback:** välj HACS-beta `2026.11.0b16`. Radera inte integrationen, entiteterna eller arkivet.
