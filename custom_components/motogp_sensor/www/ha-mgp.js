@@ -1,4 +1,4 @@
-/* MotoGP Next SINGLE Lovelace resource | build next-one-20261108-07 | read only. */
+/* MotoGP Next SINGLE Lovelace resource | build next-one-20261108-12 | read only. */
 /* MotoGP Next: isolated frontend for motogp-test. No HA writes or service calls. */
 (() => {
   'use strict';
@@ -303,9 +303,9 @@
       this._track(now,race);
       const event=valid(race?.state)?race.state:'Inget evenemang tillgängligt';
       const meta=[a.circuit,a.country,a.date_start&&a.date_end?dateRange(a.date_start,a.date_end):''].filter(valid);
-      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.32</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
+      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.37</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
         this._schedule(race,now)+`<div class="root">${this._weather()}${this._timing()}</div>`+
-        `<div class="foot">HA-MGP UI · 0.3.0-dev.32 · UI-preview</div></div>`;
+        `<div class="foot">HA-MGP UI · 0.3.0-dev.37 · UI-preview</div></div>`;
     }
     getCardSize(){return 8;}
     getGridOptions(){return {columns:12,rows:'auto',min_columns:6};}
@@ -2216,4 +2216,459 @@ customElements.whenDefined(OVERVIEW).then(install);
     Card.prototype._mgpSeasonCalendar=BUILD;
   }
   customElements.whenDefined(TAG).then(install);
+})();
+
+;
+/* HA-MGP: read-only API connectivity indicator in the event hero. */
+(() => {
+  'use strict';
+  const TAG='ha-motogp-next-overview-card';
+  const BUILD='api-status-20261108-01';
+  const ENTITY='binary_sensor.motogp_live_timing_online';
+  const STYLE=`
+    .mgp-api-indicator{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border:1px solid var(--divider-color,#ddd);border-radius:999px;font-size:11px;font-weight:800;color:var(--secondary-text-color);white-space:nowrap;line-height:1.2}
+    .mgp-api-dot{display:inline-block;width:8px;height:8px;border-radius:50%;flex:none;background:#9ca3af}
+    .mgp-api-indicator[data-state="on"] .mgp-api-dot{background:#16a34a;box-shadow:0 0 0 2px rgba(22,163,74,.12)}
+    .mgp-api-indicator[data-state="off"] .mgp-api-dot{background:#9ca3af}
+    .mgp-api-indicator[data-state="unknown"] .mgp-api-dot{background:#d97706}
+    .mgp-api-indicator[data-state="on"]{border-color:rgba(22,163,74,.24)}
+    .mgp-api-indicator[data-state="unknown"]{border-color:rgba(217,119,6,.3)}
+  `;
+  const TEXT={
+    sv:['Livetiming API','Online','Offline','Okänd'],
+    en:['Live timing API','Online','Offline','Unknown'],
+    es:['API de tiempos en vivo','En línea','Desconectada','Desconocida'],
+    it:['API tempi live','Online','Offline','Sconosciuto'],
+    fr:['API chronométrage','En ligne','Hors ligne','Inconnu']
+  };
+  function indicator(card){
+    const raw=card._hass?.states?.[ENTITY]?.state;
+    const status=raw==='on'?'on':raw==='off'?'off':'unknown';
+    const language=String(card._hass?.language||card._hass?.locale?.language||'en').split(/[-_]/)[0].toLowerCase();
+    const labels=TEXT[language]||TEXT.en;
+    const message=status==='on'?labels[1]:status==='off'?labels[2]:labels[3];
+    return '<span class="mgp-api-indicator" data-state="'+status+'" role="status" aria-label="'+
+      labels[0]+': '+message+'" title="'+labels[0]+': '+message+'">'+
+      '<span class="mgp-api-dot" aria-hidden="true"></span><span>'+labels[0]+'</span></span>';
+  }
+  function install(){
+    const Card=customElements.get(TAG);
+    if(!Card||Card.prototype._mgpApiIndicator)return;
+    const original=Card.prototype._render;
+    Card.prototype._render=function(...args){
+      const result=original.apply(this,args);
+      if(!this._hass||!this.shadowRoot)return result;
+      const view=this.shadowRoot.getElementById?.('app');
+      if(!view)return result;
+      const html=view.innerHTML;
+      const hero=html.indexOf('<div class="mgp-hero-copy">');
+      if(hero<0)return result; // Calendar/off-week view has no event hero.
+      if(!this.shadowRoot.querySelector?.('[data-mgp-api-status-style]')){
+        const style=document.createElement('style');
+        style.setAttribute('data-mgp-api-status-style','');
+        style.textContent=STYLE;
+        this.shadowRoot.appendChild(style);
+      }
+      const marker='<div class="mgp-branded-eyebrow">';
+      // Brand appears in the left hero: append the API indicator as compact badge.
+      const brand=html.indexOf('mgp-branded-eyebrow',hero);
+      const h2=html.indexOf('<h2>',hero);
+      if(brand<0||h2<0||brand>h2)return result;
+      const pos=html.lastIndexOf('</div>',h2);
+      if(pos<brand)return result;
+      view.innerHTML=html.slice(0,pos+6)+indicator(this)+html.slice(pos+6);
+      return result;
+    };
+    Card.prototype._mgpApiIndicator=BUILD;
+  }
+  customElements.whenDefined(TAG).then(install);
+})();
+;
+/* HA-MGP: session-status dots, scoped to matching sessions. */
+(() => {
+'use strict';
+const TAG_OVERVIEW='ha-motogp-next-overview-card';
+const TAG_TIMING='ha-motogp-next-timing-card';
+const BUILD='session-dots-20261108-01';
+const SENSOR='sensor.motogp_session_status';
+const STYLES=`
+.mgp-session-dot{display:inline-block;flex:none;width:8px;height:8px;border-radius:50%;vertical-align:middle;margin-right:5px;background:#94a3b8}
+.mgp-session-dot[data-status="started"]{background:#16a34a;box-shadow:0 0 0 2px rgba(22,163,74,.15)}
+.mgp-session-dot[data-status="not-started"]{background:#eab308}
+.mgp-session-dot[data-status="finished"]{background:#6b7280}
+.mgp-session-dot[data-status="unknown"]{background:#d97706}
+`;
+const norm=value=>String(value||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+const cls=value=>{
+ const m=/moto\s*(gp|2|3|e)/i.exec(String(value||''));
+ return m?({gp:'MotoGP','2':'Moto2','3':'Moto3',e:'MotoE'})[m[1].toLowerCase()]:String(value||'');
+};
+const sess=value=>{
+ const s=String(value||'').toUpperCase();
+ return ({RAC:'Race',SPR:'Sprint',PR:'Practice',WUP:'Warm Up'})[s]||String(value||'');
+};
+function parsed(card){
+ const state=card._hass?.states?.[SENSOR];
+ const a=state?.attributes||{};
+ const raw=String(state?.state||'').toLowerCase();
+ const id=String(a.session_status_id||'').toUpperCase();
+ const status=(raw==='in progress'||id==='I'||id==='S')?'started':
+  (raw==='not started'||id==='N')?'not-started':
+  (raw==='finished'||id==='F')?'finished':'unknown';
+ const name=a.session_name||a.session_shortname;
+ return {status,category:cls(a.category),name:sess(name),valid:!!(a.category&&name)};
+}
+function dot(status){
+ const text={started:'In Progress','not-started':'Not Started',finished:'Finished',unknown:'Unknown'}[status];
+ return '<span class="mgp-session-dot" data-status="'+status+'" role="img" title="'+text+'" aria-label="Session: '+text+'"></span>';
+}
+function match(source,category,name){
+ return source.valid&&norm(source.category)===norm(category)&&norm(source.name)===norm(name);
+}
+function decorateTiming(html,source){
+ // The timing header names a live or next session. The dot is not a generic
+ // "API online" indicator and MUST NOT be put on a different session.
+ return html.replace(/(<span class="nt-label">🏁 )(?:Nästa: |Schemalagd: )?([^<]*?)(<\/span>)/,(whole,prefix,title,end)=>{
+  const clean=title.replace(/^Nästa:\s*|^Schemalagd:\s*/,'');
+  const m=/^\s*(MotoGP|Moto2|Moto3|MotoE)\s*·\s*(.*?)\s*$/.exec(clean);
+  if(!m||!match(source,m[1],m[2]))return whole;
+  return prefix+dot(source.status)+title+end;
+ });
+}
+function decorateSchedule(html,source){
+ // Each race card already has its own API schedule status. Only supplement
+ // exactly the current matching session with the dynamic status sensor.
+ return html.replace(/(<div class="name">)(MotoGP|Moto2|Moto3|MotoE)\s*·\s*([^<]+)(<\/div>)/g,(whole,open,category,name,close)=>{
+  if(!match(source,category,name))return whole;
+  return open+dot(source.status)+category+' · '+name+close;
+ });
+}
+function install(tag){
+ const Card=customElements.get(tag);
+ if(!Card||Card.prototype._mgpSessionDots)return;
+ if(tag===TAG_TIMING){
+  const old=Card.prototype._timing;
+  Card.prototype._timing=function(...args){
+   const html=old.apply(this,args);
+   return typeof html==='string'?decorateTiming(html,parsed(this)):html;
+  };
+ } else {
+  const old=Card.prototype._schedule;
+  Card.prototype._schedule=function(...args){
+   const html=old.apply(this,args);
+   return typeof html==='string'?decorateSchedule(html,parsed(this)):html;
+  };
+ }
+ const render=Card.prototype._render;
+ Card.prototype._render=function(...args){
+  if(this.shadowRoot&&!this.shadowRoot.querySelector?.('[data-mgp-session-dot-style]')){
+   const style=document.createElement('style');
+   style.setAttribute('data-mgp-session-dot-style','');
+   style.textContent=STYLES;
+   this.shadowRoot.appendChild(style);
+  }
+  return render.apply(this,args);
+ };
+ Card.prototype._mgpSessionDots=BUILD;
+}
+Promise.all([customElements.whenDefined(TAG_OVERVIEW),customElements.whenDefined(TAG_TIMING)]).then(()=>{
+ install(TAG_OVERVIEW);
+ install(TAG_TIMING);
+});
+})();
+;
+/* HA-MGP: clock/start icon, timer/countdown icon and T-minus-five urgency. */
+(() => {
+'use strict';
+const TAG='ha-motogp-next-timing-card';
+const BUILD='timing-icons-20261108-01';
+const STYLE=`
+.mgp-timer-line{display:inline-flex;align-items:center;gap:4px}
+.mgp-start-time{display:inline-flex;align-items:center;gap:5px}
+.mgp-timer-line.mgp-urgent,.mgp-timer-line.mgp-urgent .next-countdown{color:#e10600!important;font-weight:900}
+`;
+function updateUrgency(root){
+ if(!root||typeof root.querySelectorAll!=='function')return;
+ for(const line of root.querySelectorAll('.mgp-timer-line')){
+  const clock=line.querySelector?.('[data-next-start]');
+  const stamp=Number(clock?.getAttribute?.('data-next-start'));
+  if(!Number.isFinite(stamp)||stamp<=0)continue;
+  const remaining=stamp-Date.now();
+  line.classList?.toggle('mgp-urgent',remaining>0&&remaining<300000);
+ }
+}
+function decorate(html){
+ if(typeof html!=='string'||!html.includes('next-countdown'))return html;
+ return html.replace(/(<span class="nt-clock">)<span>(\d{1,2}:\d{2})<\/span><small>(<span class="next-countdown"[^>]*>[\s\S]*?<\/span>)<\/small>/,
+  (_all,start,time,count)=>start+'<span class="mgp-start-time">🕒 '+time+'</span>'+
+   '<small class="mgp-timer-line">⏱ '+count+'</small>');
+}
+function install(){
+ const Card=customElements.get(TAG);
+ if(!Card||Card.prototype._mgpTimingIcons)return;
+ const oldTiming=Card.prototype._timing;
+ Card.prototype._timing=function(...args){return decorate(oldTiming.apply(this,args));};
+ const oldRender=Card.prototype._render;
+ Card.prototype._render=function(...args){
+  if(this.shadowRoot&&!this.shadowRoot.querySelector?.('[data-mgp-timing-icon-style]')){
+   const style=document.createElement('style');
+   style.setAttribute('data-mgp-timing-icon-style','');
+   style.textContent=STYLE;
+   this.shadowRoot.appendChild(style);
+  }
+  const result=oldRender.apply(this,args);
+  updateUrgency(this.shadowRoot);
+  return result;
+ };
+ const oldConnected=Card.prototype.connectedCallback;
+ const oldDisconnected=Card.prototype.disconnectedCallback;
+ Card.prototype.connectedCallback=function(...args){
+  const result=oldConnected?.apply(this,args);
+  if(!this._mgpUrgencyTimer)this._mgpUrgencyTimer=setInterval(()=>updateUrgency(this.shadowRoot),1000);
+  updateUrgency(this.shadowRoot);
+  return result;
+ };
+ Card.prototype.disconnectedCallback=function(...args){
+  if(this._mgpUrgencyTimer){clearInterval(this._mgpUrgencyTimer);this._mgpUrgencyTimer=null;}
+  return oldDisconnected?.apply(this,args);
+ };
+ Card.prototype._mgpTimingIcons=BUILD;
+}
+customElements.whenDefined(TAG).then(install);
+})();
+;
+/* HA-MGP: the event toolbar prioritizes a verified active session. */
+(() => {
+'use strict';
+const TAG='ha-motogp-next-overview-card';
+const BUILD='active-chip-20261108-01';
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const WORDS={sv:'PÅGÅR',en:'LIVE NOW',es:'EN CURSO',it:'IN CORSO',fr:'EN COURS'};
+function replaceChip(html,replacement){
+ const start=html.indexOf('<span class="mgp-next-chip"');
+ if(start<0)return html;
+ const tags=/<\/?span\b[^>]*>/g;tags.lastIndex=start;
+ let depth=0,match;
+ while((match=tags.exec(html))){
+  if(match[0].startsWith('</'))depth--;else depth++;
+  if(depth===0)return html.slice(0,start)+replacement+html.slice(tags.lastIndex);
+ }
+ return html;
+}
+function install(){
+ const Card=customElements.get(TAG);
+ if(!Card||Card.prototype._mgpActiveChip)return;
+ const oldRender=Card.prototype._render;
+ Card.prototype._render=function(...args){
+  const result=oldRender.apply(this,args);
+  if(this._spoiler?.()||!this._live||!this.shadowRoot)return result;
+  const view=this.shadowRoot.getElementById?.('app');
+  if(!view||!view.innerHTML.includes('mgp-next-chip'))return result;
+  const {category,name}=this._live;
+  if(!category||!name)return result;
+  const locale=String(this._hass?.language||'en').split(/[-_]/)[0].toLowerCase();
+  const label=WORDS[locale]||WORDS.en;
+  const chip='<span class="mgp-next-chip mgp-active-chip" title="'+esc(label)+'">'+
+    '<span aria-hidden="true" style="color:#16a34a">●</span> '+esc(label)+' · '+
+    esc(category)+' · '+esc(name)+'</span>';
+  view.innerHTML=replaceChip(view.innerHTML,chip);
+  return result;
+ };
+ Card.prototype._mgpActiveChip=BUILD;
+}
+customElements.whenDefined(TAG).then(install);
+})();
+;
+/* HA-MGP: bounded post-finish result settling, never imply a finished session is live. */
+(() => {
+'use strict';
+const TAG='ha-motogp-next-timing-card';
+const BUILD='finish-settling-20261108-01';
+const HOLD_MS=120000;
+const session=v=>({WUP:'WARMUP',RAC:'RACE',SPR:'SPRINT',PR:'PRACTICE'})[String(v||'').toUpperCase()]||v;
+const same=(a,b)=>String(a||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]/g,'')===String(b||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const category=v=>{const m=/moto\s*(gp|2|3|e)/i.exec(String(v||''));return m?({gp:'MotoGP','2':'Moto2','3':'Moto3',e:'MotoE'})[m[1].toLowerCase()]:String(v||'');};
+function validFinishingFeed(card,hold){
+ const states=card._hass?.states||{};
+ const se=states[card._ids.session],st=states[card._ids.status],riders=states[card._ids.riders];
+ const sa=se?.attributes||{},ta=st?.attributes||{},pa=riders?.attributes||{};
+ const status=String(st?.state||'').toLowerCase(),code=String(ta.session_status_id||'').toUpperCase();
+ if(!((status==='finished'||code==='F')&&same(category(sa.category),hold.category)&&
+      same(category(ta.category),hold.category)&&same(category(pa.category),hold.category)&&
+      same(se?.state,hold.name)&&same(session(ta.session_shortname),hold.name)&&same(session(pa.session_shortname),hold.name)))return false;
+ const event=String(sa.event||''),statusEvent=String(ta.event||''),riderEvent=String(pa.event||'');
+ if(!event||!same(event,statusEvent)||!same(event,riderEvent))return false;
+ if(pa.tv_delay_ready===false)return false;
+ return Array.isArray(pa.riders)&&pa.riders.length>0;
+}
+function resultRows(card){
+ const items=card._hass?.states?.[card._ids.riders]?.attributes?.riders;
+ return items.filter(r=>r&&typeof r==='object').map(r=>({...r})).sort((a,b)=>{
+  const p=v=>Number(v)>0?Number(v):999;return p(a.position)-p(b.position);
+ });
+}
+function install(){
+ const Card=customElements.get(TAG);
+ if(!Card||Card.prototype._mgpFinishSettling)return;
+ const oldTrack=Card.prototype._track;
+ Card.prototype._track=function(now,race){
+  const previous=this._live,oldSnapshot=this._snapshot;
+  oldTrack.call(this,now,race);
+  if(this._spoiler?.()||this._live||!this._snapshot||!this._hass){
+   this._mgpFinishHold=null;return;
+  }
+  const st=this._hass.states?.[this._ids.status];
+  const isFinished=String(st?.state||'').toLowerCase()==='finished'||
+    String(st?.attributes?.session_status_id||'').toUpperCase()==='F';
+  if(!isFinished){this._mgpFinishHold=null;return;}
+  if(previous&&oldSnapshot&&same(previous.key,oldSnapshot.key)&&same(this._snapshot.key,previous.key)){
+   this._mgpFinishHold={key:previous.key,category:previous.category,name:previous.name,started:Date.now()};
+  }
+  const hold=this._mgpFinishHold;
+  if(!hold||hold.key!==this._snapshot.key||Date.now()-hold.started>=HOLD_MS){
+   this._mgpFinishHold=null;return;
+  }
+  if(validFinishingFeed(this,hold)){
+   const rows=resultRows(this);
+   // Only the same TV-delayed session can replace the last in-progress snapshot.
+   // This admits late final-lap/PB updates but never merges classes or sessions.
+   this._snapshot={...this._snapshot,riders:rows};
+  }
+ };
+ const oldTiming=Card.prototype._timing;
+ Card.prototype._timing=function(...args){
+  let html=oldTiming.apply(this,args);
+  const hold=this._mgpFinishHold;
+  if(!hold||this._spoiler?.()||this._live||Date.now()-hold.started>=HOLD_MS||typeof html!=='string')return html;
+  const name=esc(hold.category)+' · '+esc(hold.name);
+  // Only modify the temporary frozen-results header. Other render fields,
+  // history modal, scroll behavior and next session schedule stay unchanged.
+  html=html.replace(/(<span class="nt-label">)🏁 [^<]*(<\/span>)/,
+    '$1🏁 Avflaggat: '+name+'$2');
+  html=html.replace(/(<span class="nt-status(?: finished)?">)[^<]*(<\/span>)/,
+    '$1AVSLUTAT · INVÄNTAR SLUTVARV$2');
+  html=html.replace(/<span class="nt-clock">[\s\S]*?<\/span>(?=<span class="nt-toggle">)/,
+    '<span class="nt-clock"><small>Resultat uppdateras</small></span>');
+  return html;
+ };
+ Card.prototype._mgpFinishSettling=BUILD;
+}
+customElements.whenDefined(TAG).then(install);
+})();
+;
+/* HA-MGP dev.37: read-only transition from previous result to verified entrants/grid. */
+(()=>{
+'use strict';
+const TAG='ha-motogp-next-timing-card',BUILD='pre-session-roster-20261108-01';
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const valid=v=>v!==null&&v!==undefined&&String(v).trim()!=='';
+const label=v=>({RAC:'Race',SPR:'Sprint',WUP:'Warm Up',PR:'Practice'})[String(v||'').toUpperCase()]||String(v||'');
+const matching=(a,b)=>String(a||'').trim().toLowerCase()===String(b||'').trim().toLowerCase();
+function upcoming(card){
+ const race=card._hass?.states?.[card._ids.race],a=race?.attributes||{};
+ const all=Array.isArray(a.sessions_all)?a.sessions_all:[];
+ const now=Date.now();
+ const available=all.map(s=>({s,at:Date.parse(s?.date_utc||s?.date||'')}))
+  .filter(x=>Number.isFinite(x.at)&&!['FINISHED','CANCELLED','CANCELED'].includes(String(x.s?.status||'').toUpperCase()));
+ const future=available.filter(x=>x.at>now).sort((x,y)=>x.at-y.at);
+ // A scheduled start does not establish live timing: retain the entry roster
+ // briefly until a matching and TV-delay-approved live snapshot arrives.
+ const pending=available.filter(x=>x.at<=now&&now-x.at<=15*60000)
+  .sort((x,y)=>y.at-x.at);
+ return {next:pending[0]||future[0]||null,attrs:a};
+}
+function rowsFor(session,attrs){
+ const category=String(session.category||'');
+ const entrants=attrs.entry_lists?.[category];
+ const grid=attrs.start_grids?.[category];
+ const roster=Array.isArray(entrants)?entrants.filter(x=>x&&valid(x.number)&&valid(x.rider)):[];
+ const race=/^(race|sprint)$/i.test(label(session.name||session.type));
+ if(race&&Array.isArray(grid)&&grid.length){
+  const seen=new Set(),positions=new Set(),out=[];
+  for(const g of grid){
+   const position=Number(g?.position),number=String(g?.number??'').trim();
+   if(!Number.isInteger(position)||position<1||!number||seen.has(number)||positions.has(position))return [];
+   seen.add(number);positions.add(position);
+   const entrant=roster.find(r=>String(r.number)===number);
+   const rider=String(g.rider||entrant?.rider||'').trim();
+   if(!rider)return [];
+   out.push({position,number,rider,team:g.team||entrant?.team||'',nation:entrant?.nation||''});
+  }
+  return out.sort((x,y)=>x.position-y.position);
+ }
+ return roster.map(r=>({position:null,number:r.number,rider:r.rider,team:r.team||'',nation:r.nation||''}));
+}
+function before(card,next,attrs){
+ const s=next?.s;
+ if(!s||card._live||card._spoiler?.()||next.at-Date.now()>30*60000)return null;
+ return {session:s,rows:rowsFor(s,attrs),grid:/^(race|sprint)$/i.test(label(s.name||s.type))&&
+  Array.isArray(attrs.start_grids?.[s.category])&&attrs.start_grids[s.category].length>0};
+}
+function countdown(at){
+ const s=Math.max(0,Math.ceil((at-Date.now())/1000));
+ return at<=Date.now()?'Starttid passerad · inväntar data':
+  Math.floor(s/60)+':'+String(s%60).padStart(2,'0')+' till start';
+}
+function install(){
+ const Card=customElements.get(TAG);
+ if(!Card||Card.prototype._mgpPreSessionRoster)return;
+ const oldTiming=Card.prototype._timing,oldClick=Card.prototype._click;
+ Card.prototype._timing=function(...args){
+  const original=oldTiming.apply(this,args);
+  if(this._spoiler?.()||this._live)return original;
+  const {next,attrs}=upcoming(this);
+  const roster=before(this,next,attrs);
+  if(roster){
+   const expanded=this._timingManual===null?true:this._timingManual;
+   const s=roster.session,type=label(s.name||s.type);
+   const title=esc(s.category||'')+' · '+esc(type);
+   let html='<section class="nt-card"><button type="button" class="nt-head" data-timing aria-expanded="'+expanded+'">'+
+    '<span><span class="nt-label">🏁 '+title+'</span><span class="nt-status finished">STARTLISTA · INVÄNTAR LIVE</span></span>'+
+    '<span class="nt-clock"><small>'+esc(countdown(next.at))+'</small></span>'+
+    '<span class="nt-toggle">'+(expanded?'⌃ Dölj':'⌄ Visa')+' förare</span></button>';
+   if(!expanded)return html+'</section>';
+   if(!roster.rows.length)return html+'<div class="nt-empty">Officiell deltagarlista/startgrid saknas ännu. Inga tider eller placeringar antas.</div></section>';
+   html+='<div class="nt-results">'+(roster.grid?'Publicerad startgrid':'Anmälda förare · sorterade efter startnummer')+
+    ' · tider visas först när matchande live-data finns</div>';
+   html+='<div class="nt-scroll"><div class="nt-table"><div class="nt-row nt-heading"><span>'+(roster.grid?'GRID':'NR')+'</span>'+
+    '<span>FÖRARE / TEAM</span><span>VARV</span><span>SENASTE</span><span>Δ FRAMFÖR</span><span>Δ LEDARE</span><span>STATUS</span></div>';
+   for(const r of roster.rows){
+    const position=roster.grid?r.position:r.number;
+    html+='<div class="nt-row"><span>'+esc(position)+'</span>'+
+     '<span class="nt-person"><span class="nt-color"></span><span class="nt-person-text"><b>'+esc(r.rider)+' · #'+esc(r.number)+'</b>'+
+     '<small>'+esc(r.team)+'</small></span></span>'+
+     '<span>—</span><span>—</span><span>—</span><span>—</span><span>INVÄNTAR</span></div>';
+   }
+   return html+'</div></div></section>';
+  }
+  const hold=this._mgpFinishHold;
+  if(hold&&Date.now()-hold.started<120000)return original;
+  const snap=this._snapshot;
+  if(!snap?.riders?.length||snap.day!==this._today)return original;
+  // The previous verified session stays the primary subject between passes.
+  let html=original.replace(/(<span class="nt-label">)🏁 [^<]*(<\/span>)/,
+   '$1🏁 Senaste: '+esc(snap.category)+' · '+esc(snap.name)+'$2');
+  html=html.replace(/(<span class="nt-status(?: finished)?">)[^<]*(<\/span>)/,
+   '$1SENASTE RESULTAT · EJ LIVE$2');
+  if(next)html=html.replace(/<span class="nt-clock">[\s\S]*?<\/span>(?=<span class="nt-toggle">)/,
+   '<span class="nt-clock"><small>Nästa: '+esc(next.s.category)+' '+esc(label(next.s.name||next.s.type))+
+   ' · '+esc(countdown(next.at))+'</small></span>');
+  return html;
+ };
+ Card.prototype._click=function(e){
+  const button=e.target?.closest?.('button[data-timing]');
+  if(button&&this.shadowRoot?.contains(button)&&!this._spoiler?.()){
+   const {next,attrs}=upcoming(this);
+   if(before(this,next,attrs)){
+    this._timingManual=this._timingManual===null?false:!this._timingManual;
+    this._render();
+    return;
+   }
+  }
+  return oldClick.call(this,e);
+ };
+ Card.prototype._mgpPreSessionRoster=BUILD;
+}
+customElements.whenDefined(TAG).then(install);
 })();

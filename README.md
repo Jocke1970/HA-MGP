@@ -1,18 +1,20 @@
 # HA-MGP — HACS beta
 
-Home Assistant-integration och frontend för **MotoGP, Moto2 och Moto3**. Projektet bygger vidare på [Liionboy/motogp_sensor](https://github.com/Liionboy/motogp_sensor) och är inte officiellt anslutet till MotoGP.
+MotoGP, Moto2 och Moto3 för Home Assistant. Inofficiell integration, utan koppling till MotoGP:s rättighetsinnehavare.
 
-**HACS-beta `2026.11.0b16` · UI `0.3.0-dev.32`**.
+**HACS-beta `2026.11.0b17` · Frontend `0.3.0-dev.37`.**
 
-## Nytt sedan b15
+## Nytt sedan b16
 
-- **Visuell säsongskalender mellan racehelgerna.** Nästa GP i fokus, kommande race som responsiva kort och avverkade race i en hopfällbar historik. Data kommer från `sensor.motogp_next_race.attributes.season_calendar`.
-- Under racehelgen visas det vanliga översiktskortet automatiskt, med banlayout, schema och VM-ställning. Inga extra API-anrop eller separata YAML-kort.
-- Fem språk: engelska (fallback), svenska, spanska, italienska och franska.
-- Klassvisa rekordchips i livetimingens header från b15.
+- Sessionens resultat förblir synligt mellan pass när kortet redan har ett verifierat avslutat live-snapshot.
+- 30 minuter före nästa pass visas officiell startgrid för race/sprint när den publicerats.
+- För träning/kval, eller om grid saknas, visas tydligt väntläge: officiell deltagarlista kunde inte verifieras via det öppna API:et.
+- Ny tvåminuters slutvarvshantering efter avflaggning; fortsätt verifiera PB mot arkiv i verkliga sessioner.
+- Statusindikatorer, timerikoner och aktiva sessionschip.
+- Bevarar b16-säsongskalender, fem språk, rekordchips, API-spoilerskydd och befintlig backend.
 
-**Lovelace-resurs:** `/motogp_sensor/ha-mgp.js` (JavaScript module). `/motogp_sensor/ha-motogp-next.js` är ett byte-identiskt alias; registrera **endast en** av dem.
+**Begränsning:** öppna Pulselive `/event/.../entry` returnerade HTTP 400 i verifierade tester. Detta anrop aktiveras därför **inte** i b17. Säsongens team-/förarregister är inte en verifierad sessionsdeltagarlista.
 
-**SOP:** `dev → beta → main`. `main` förblir orörd.
+**Resurs:** `/motogp_sensor/ha-mgp.js`; äldre `ha-motogp-next.js` är byte-identiskt kompatibilitetsalias. Registrera bara en.
 
-[Installation](docs/hacs-beta-installation.md) · [Versionsinformation](docs/hacs-beta-release-notes.md) · [Översättningar](docs/localization.md).
+**SOP:** dev → beta → main. Main är oförändrad. [Installation](docs/hacs-beta-installation.md) · [Release notes](docs/hacs-beta-release-notes.md).
