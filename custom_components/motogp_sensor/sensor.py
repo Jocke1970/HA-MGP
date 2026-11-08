@@ -195,6 +195,8 @@ class MotogpSensor(MotogpEntity, SensorEntity):
     @property
     def extra_state_attributes(self) -> dict[str, Any] | None:
         """Return extra attributes."""
+        if self._key == "api_debug":
+            return {"spoiler_mode": True} if self.coordinator.no_spoiler else self.coordinator.api_diagnostics.attributes()
         if self._type == LIVE:
             if self.coordinator.no_spoiler:
                 return {"spoiler_mode": True}
