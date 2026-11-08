@@ -25,6 +25,7 @@ const context={customElements:{get:t=>t.includes('overview')?Overview:Timing,whe
  vm.runInNewContext(src,context);await Promise.resolve();await Promise.resolve();
  const o=new Overview(),t=new Timing();
  let s=o._schedule(),h=t._timing();
+ console.log('SESSION-DOTS-DEBUG',s,h,o._mgpSessionDots,t._mgpSessionDots);
  assert.equal((s.match(/mgp-session-dot/g)||[]).length,1,'no dot on unrelated Moto2 or MotoGP race');
  assert.match(s,/data-status="not-started"/);assert.match(h,/data-status="not-started"/);
  t._hass.states['sensor.motogp_session_status'].state='In Progress';t._hass.states['sensor.motogp_session_status'].attributes.session_status_id='I';
