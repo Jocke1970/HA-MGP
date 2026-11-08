@@ -202,7 +202,8 @@ const context={customElements:{
   assert.doesNotMatch(card.root.innerHTML,/<img src=x/,'untrusted names escaped');
   other.attributes.circuit='Lusail International Circuit';
   const weather=card._hass.states['sensor.motogp_track_weather'];
-  weather.attributes={air:'bad-script',ground:'0°C',humidity:'500%',track:'<script>alert(1)</script>',
+  weather.attributes={results_event_uuid:'qatar-gp',updated_at:'2026-11-08T13:00:00Z',
+    air:'bad-script',ground:'0°C',humidity:'500%',track:'<script>alert(1)</script>',
     weather:'<img onerror=alert(1)>'};
   card._render();
   assert.doesNotMatch(card.root.innerHTML,/<script>|<img onerror=/);
@@ -211,7 +212,7 @@ const context={customElements:{
   weather.attributes={};
   card.showButton=false;
   card._render();
-  assert.match(card.root.innerHTML,/Ingen banväderrapport tillgänglig ännu/);
+  assert.match(card.root.innerHTML,/tidigare sessionsvärden döljs/);
   assert.match(card.root.innerHTML,/mgp-venue-strip/,'render works without standings button');
   assert.match(card.root.innerHTML,/<section class="panel header"><div class="mgp-hero-grid"/);
   assert.ok(card.root.innerHTML.indexOf('mgp-weather-panel')<card.root.innerHTML.indexOf('mgp-circuit-panel'),
