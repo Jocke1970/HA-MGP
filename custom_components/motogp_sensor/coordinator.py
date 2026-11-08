@@ -343,7 +343,7 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         if raw_key != self._last_raw_session_key:
             self._finish_refresh_key = None
             self._finish_refresh_until = None
-        if (raw_key and raw_status == "F" and
+        if (raw_key and raw_status in ("F", "C") and
             self._last_raw_session_key == raw_key and
             self._last_raw_session_status in LIVE_SESSION_STATUS_IDS):
             self._finish_refresh_key = raw_key
@@ -412,7 +412,7 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             )
         )
         settling = (
-            raw_key is not None and raw_status == "F"
+            raw_key is not None and raw_status in ("F", "C")
             and raw_key == self._finish_refresh_key
             and self._finish_refresh_until is not None
             and now < self._finish_refresh_until
