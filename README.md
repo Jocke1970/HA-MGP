@@ -1,19 +1,9 @@
 # HA-MGP — HACS beta
 
-MotoGP, Moto2 och Moto3 i Home Assistant. Inofficiell, fristående integration.
+**HACS-beta: `2026.11.0b19` · Frontend: `0.3.0-dev.40` (oförändrad från b18).**
 
-**HACS beta `2026.11.0b18` · Frontend `0.3.0-dev.40`**
+Nyhet: beständig, append-only Pulselive-händelselogg under `/config/motogp_data/api_diagnostics/YYYY-MM-DD.jsonl`. Loggar endast förändringar (feed, session, status, första förarlista och första varv) från redan pollad TV-fördröjd data. Inga extra API-anrop eller råa förarlistor. Loggningen fungerar även när diagnostiksensorn är inaktiverad.
 
-## Nytt sedan b17
+Tidigare b18-funktioner (helgschema i dialog, klassknappar, röd snabbaste tid, kvarvarande sessionssnabbaste efter målflagga) behålls. Installera via HACS-beta, inte dev. JS module: `/motogp_sensor/ha-mgp.js` (endast en resurs). Återgång: `2026.11.0b18`. Main orörd.
 
-- **Helgschema** öppnas i en dialog ovanpå vyn. Översiktskort och livetiming förblir placerade bredvid varandra i Lovelace-layouten utan extra schema mellan dem.
-- **Moto3, Moto2 och MotoGP** behåller sina klickbara, grafiska kategorifilter. Nu med tydliga regressionstester. Markörerna är egna text-SVG, inte officiella logotyper.
-- Förarens giltiga bästa varv är **rött** i timingtabellen. Sessionens snabbaste **observerade** varv ligger kvar på avslutat sessionssnapshot efter målflagga.
-- Ny **Pulselive API debug**-diagnostiksensor: avstängd som standard. Registrerar först observerad session, statusändringar, förarlista och första varv utan extra anrop och utan att kringgå TV-fördröjning eller spoilerskydd.
-- Behåller b17:s T−30-startgrid och säkra väntläge när öppen deltagar-endpoint inte fungerar.
-
-## Installation
-
-Använd endast **HACS beta**, aldrig direktinstallation från dev. Endast en Lovelace JS module: `/motogp_sensor/ha-mgp.js` (äldre `/motogp_sensor/ha-motogp-next.js` är identiskt alias). Behåll integrationsdomän och entiteter samt `/config/motogp_data/`. Se [installation och rollback](docs/hacs-beta-installation.md), [release notes](docs/hacs-beta-release-notes.md) och [status](docs/project-status.md).
-
-**SOP:** dev → beta → main. Main orörd. Rollback: `2026.11.0b17`.
+[Installation](docs/hacs-beta-installation.md) · [Release notes](docs/hacs-beta-release-notes.md) · [Status](docs/project-status.md).
