@@ -10,10 +10,14 @@ function upcoming(card){
  const race=card._hass?.states?.[card._ids.race],a=race?.attributes||{};
  const all=Array.isArray(a.sessions_all)?a.sessions_all:[];
  const now=Date.now();
- const future=all.map(s=>({s,at:Date.parse(s?.date_utc||s?.date||'')}))
-  .filter(x=>Number.isFinite(x.at)&&x.at>now&&!['FINISHED','CANCELLED','CANCELED'].includes(String(x.s?.status||'').toUpperCase()))
-  .sort((x,y)=>x.at-y.at);
- return {next:future[0]||null,attrs:a};
+ const available=all.map(s=>({s,at:Date.parse(s?.date_utc||s?.date||'')}))
+  .filter(x=>Number.isFinite(x.at)&&!['FINISHED','CANCELLED','CANCELED'].includes(String(x.s?.status||'').toUpperCase()));
+ const future=available.filter(x=>x.at>now).sort((x,y)=>x.at-y.at);
+ // A scheduled start does not establish live timing: retain the entry roster
+ // briefly until a matching and TV-delay-approved live snapshot arrives.
+ const pending=available.filter(x=>x.at<=now&&now-x.at<=15*60000)
+  .sort((x,y)=>y.at-x.at);
+ return {next:pending[0]||future[0]||null,attrs:a};
 }
 function rowsFor(session,attrs){
  const category=String(session.category||'');
@@ -44,7 +48,8 @@ function before(card,next,attrs){
 }
 function countdown(at){
  const s=Math.max(0,Math.ceil((at-Date.now())/1000));
- return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')+' till start';
+ return at<=Date.now()?'Starttid passerad · inväntar data':
+  Math.floor(s/60)+':'+String(s%60).padStart(2,'0')+' till start';
 }
 function install(){
  const Card=customElements.get(TAG);
