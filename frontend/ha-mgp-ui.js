@@ -4,7 +4,7 @@
   const OVERVIEW='ha-motogp-next-overview-card';
   const TIMING='ha-motogp-next-timing-card';
   const REQUIRED='0.2.0-split.2';
-  const BUILD='ui-preview-20261108-04';
+  const BUILD='ui-preview-20261108-05';
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const valid=v=>v!==null&&v!==undefined&&!['','unknown','unavailable','none','null','hidden'].includes(String(v).trim().toLowerCase());
   const cat=v=>{const m=/moto\s*(gp|2|3|e)/i.exec(String(v||''));return m?({gp:'MotoGP','2':'Moto2','3':'Moto3',e:'MotoE'})[m[1].toLowerCase()]:String(v||'');};
@@ -122,9 +122,12 @@
     .nt-position-zero{color:var(--secondary-text-color);font-weight:750}
     .nt-position-empty{color:var(--secondary-text-color)}
     .nt-session-record strong{color:var(--motogp-fastest-lap-color,var(--error-color,#b71c1c))}
-    .nt-session-observed-best{padding:6px 10px;font-size:11px;font-weight:650;color:var(--primary-text-color);border-bottom:1px solid var(--divider-color,#ddd)}
+    /* Records and observed fastest lap are part of the timing HEADER, not table rows. */
+    .mgp-timing-header{border-bottom:1px solid var(--divider-color,#ddd)}
+    .mgp-timing-header>.nt-head{width:100%}
+    .nt-session-observed-best{padding:2px 16px 7px;font-size:11px;font-weight:650;color:var(--primary-text-color)}
     .nt-session-observed-best strong{font-size:12px;color:var(--motogp-fastest-lap-color,var(--error-color,#b71c1c))}
-    .mgp-timing-records{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:6px 10px 9px;border-bottom:1px solid var(--divider-color,#ddd)}
+    .mgp-timing-records{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:5px 16px 10px}
     .mgp-timing-record-chip{display:flex;align-items:center;justify-content:space-between;gap:4px 8px;min-width:0;border:1px solid var(--divider-color,#ddd);border-radius:9px;padding:6px 8px;background:var(--secondary-background-color,rgba(127,127,127,.045))}
     .mgp-timing-record-chip small{font-size:9px;font-weight:700;color:var(--secondary-text-color);white-space:nowrap}
     .mgp-timing-record-chip strong{font-size:12px;font-weight:850;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -280,12 +283,16 @@
         html=html.replace(previous,next);
       }
       const category=this._live?.category||this._snapshot?.category;
-      // Keep records directly under the timing header, including collapsed timing views.
+      // Extend the existing timing header: title/lap/feed toggle stays a button,
+      // while official circuit records and observed session best stay in the same
+      // visual header region, outside the button. Keep the rider table separate.
       if(html.includes('<button type="button" class="nt-head"')&&html.includes('</button>')){
-        const chips=recordChips(this,category);
-        if(chips)html=html.replace('</button>','</button>'+chips);
-        const sessionBest=sessionFastest(this);
-        if(sessionBest)html=html.replace('</button>','</button>'+sessionBest);
+        const headerDetails=sessionFastest(this)+recordChips(this,category);
+        if(headerDetails){
+          html=html.replace('<button type="button" class="nt-head"',
+            '<div class="mgp-timing-header"><button type="button" class="nt-head"');
+          html=html.replace('</button>','</button>'+headerDetails+'</div>');
+        }
       }
       if(!this._snapshot?.riders?.length||this._snapshot.day!==this._today)return html;
       if(this._live)html=html.replace('<span class="nt-label">🏁 ',
