@@ -108,6 +108,21 @@ const context={customElements:{
   assert.match(card.root.innerHTML,/Clear/);
   assert.match(card.root.innerHTML,/Moto2 · Q1/);
   assert.match(card.root.innerHTML,/Senast rapporterat · inte livegaranti/);
+  const report=card._hass.states['sensor.motogp_track_weather'];
+  report.attributes={...report.attributes,fetch_status:'ok',poll_count:4,change_count:2,
+    checked_at:'2026-11-08T14:05:00Z',last_success_at:'2026-11-08T14:05:00Z',
+    data_age_seconds:600};
+  card._render();
+  assert.match(card.root.innerHTML,/Kontroller 4/);
+  assert.match(card.root.innerHTML,/Ändringar 2/);
+  assert.match(card.root.innerHTML,/Ändrat för 10 min sedan/);
+  report.attributes.fetch_status='error';
+  card._render();
+  assert.match(card.root.innerHTML,/API-fel · senast kända rapport/);
+  report.attributes.fetch_status='no_data';
+  card._render();
+  assert.match(card.root.innerHTML,/Ingen ny sessionsrapport/);
+  delete report.attributes.fetch_status;
   assert.doesNotMatch(card.root.innerHTML,/OLD SEPARATE WEATHER PANEL/);
   assert.ok(eventHeader[1].indexOf('np-top-actions')<eventHeader[1].indexOf('mgp-weather-panel'),
     'VM toggle remains beside event title, before the weather and circuit');
