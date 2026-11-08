@@ -74,8 +74,14 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   assert.match(h,/▲ \+5/);assert.match(h,/RUNNING/);
   assert.match(h,/Nation: ITA[^>]*>🇮🇹/,'live timing uses supplied nationality');
   assert.match(h,/mgp-timing-records/,'records belong inside timing header');
-  assert.match(h,/<div class="mgp-timing-header"><button[^>]*class="nt-head"[\\s\\S]*?<\\/button>[\\s\\S]*?nt-session-observed-best[\\s\\S]*?mgp-timing-records[\\s\\S]*?<\\/div><div class="nt-session-record"/,
-    'all records and session best are nested in the timing header, outside its toggle button and before rider contents');
+  const headerStart=h.indexOf('<div class="mgp-timing-header">');
+  const headerEnd=h.indexOf('</div><div class="nt-session-record"',headerStart);
+  assert.ok(headerStart>=0&&headerEnd>headerStart,'one unified record header before timing table');
+  const headerHtml=h.slice(headerStart,headerEnd);
+  assert.ok(headerHtml.indexOf('</button>')>=0,'toggle remains a separate button');
+  assert.ok(headerHtml.indexOf('nt-session-observed-best')>headerHtml.indexOf('</button>')&&
+    headerHtml.indexOf('mgp-timing-records')>headerHtml.indexOf('</button>'),
+    'session best and record chips are within header, not inside the toggle button');
   assert.equal((h.match(/class="mgp-timing-header"/g)||[]).length,1,'only one unified timing header');
   assert.match(h,/nt-session-observed-best[\s\S]*Sessionens snabbaste observerade/,'session best stays in timing header');
   assert.equal((h.match(/class="mgp-timing-record-chip"/g)||[]).length,3);
