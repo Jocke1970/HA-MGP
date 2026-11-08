@@ -34,7 +34,7 @@ class Overview {
     this.shadowRoot=this.root;
   }
   _weather(){return '<section class="panel">OLD SEPARATE WEATHER PANEL</section>';}
-  _schedule(){return '<section><div class="head"><strong>🗓️ Helgens schema</strong><span class="muted">Status</span></div><div class="cats">Filters</div><div class="day">Days</div></section>';}
+  _schedule(){return '<section><div class="head"><strong>🗓️ Helgens schema</strong><span class="muted">Status</span></div><div class="cats">Filters</div><div class="day">Days</div><div class="empty">Inga pass i aktuell evenemangsdata för valt filter.</div></section>';}
   _click(){}
 
   _render(){
@@ -150,6 +150,8 @@ const context={customElements:{
   assert.match(card._schedule(),/<dialog class="mgp-weekend-dialog"/,'open schedule uses native modal');
   assert.match(card._schedule(),/data-mgp-schedule-dismiss/,'dialog has a close button');
   assert.match(card._schedule(),/Helgens schema/,'dialog has accessible schedule title');
+  assert.match(card._schedule(),/Detaljerat helgschema är ännu inte tillgängligt/);
+  assert.match(card._schedule(),/Visa MotoGP:s officiella schema/);
   card._scheduleOpen=false;
   const first=card.root.innerHTML;
   card._render();assert.equal(card.root.innerHTML,first,'no duplicate panels');
@@ -194,6 +196,12 @@ const context={customElements:{
   card._render();
   assert.match(card.root.innerHTML,/\/local\/ha-mgp\/circuits\/lemans\.svg/,'Le Mans local-only asset mapped');
   assert.match(card.root.innerHTML,/Lokal SVG saknas/,'Le Mans without SVG uses an explicit neutral placeholder');
+  other.attributes.circuit='Autódromo Internacional do Algarve';
+  card._render();
+  assert.match(card.root.innerHTML,/data-mgp-circuit-open/,'Portimao track is clickable');
+  assert.match(card.root.innerHTML,/4,59 km/,'Portimao track length verified');
+  assert.match(card.root.innerHTML,/970 m/,'Portimao longest straight verified');
+  assert.match(card.root.innerHTML,/1&#39;37\.226/,'Portimao record shown safely in detail');
   other.attributes.circuit='Misano World Circuit';
   card._render();
   assert.match(card.root.innerHTML,/mgp-track-svg/,'other track mapped too');
