@@ -116,6 +116,7 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "constructor_standings": [],
             "last_race_results": [],
             "start_grids": {},
+            "entry_lists": {},
             "qualifying_q1_eliminated": {},
             "records_by_category": {},
             "records_session_by_category": {},
@@ -840,6 +841,7 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
             return session_type or "Session"
 
+        self.static["entry_lists"] = {}
         if schedule_event is not None:
             all_sessions: list[dict[str, Any]] = []
             seen_categories: list[str] = []
@@ -855,6 +857,40 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
                 if not schedule_category_uuid or not schedule_category_name:
                     continue
+
+                # Snapshot of the officially entered riders. Kept separate from
+                # both the live timing feed and the published race grid.
+                try:
+                    entrants = await self.api.async_get_entry_list(
+                        schedule_event["id"], schedule_category_uuid
+                    )
+                except MotogpApiError as err:
+                    _LOGGER.debug("Entrants unavailable for %s: %s", schedule_category_name, err)
+                    entrants = []
+                roster = []
+                seen_numbers = set()
+                for row in entrants:
+                    rider = row.get("rider") or {}
+                    if not isinstance(rider, dict):
+                        continue
+                    number = row.get("number", rider.get("number"))
+                    number_key = str(number).strip() if number is not None else ""
+                    name = str(rider.get("full_name") or "").strip()
+                    if not number_key or not name or number_key in seen_numbers:
+                        continue
+                    seen_numbers.add(number_key)
+                    team = row.get("team") or {}
+                    if not isinstance(team, dict):
+                        team = {}
+                    roster.append({
+                        "number": number_key, "rider": name,
+                        "team": str(row.get("team_name") or team.get("name") or ""),
+                        "nation": str((rider.get("country") or {}).get("iso") or "")
+                        if isinstance(rider.get("country"), dict) else "",
+                    })
+                roster.sort(key=lambda x: (int(x["number"]) if x["number"].isdigit() else 9999, x["number"]))
+                if roster:
+                    self.static["entry_lists"][schedule_category_name] = roster
 
                 try:
                     category_sessions = await self.api.async_get_sessions(
