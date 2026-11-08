@@ -61,6 +61,7 @@ jobs:
       - name: Passive Pulselive diagnostic transition regressions
         run: |
           python3 -m unittest discover -s tests -p 'test_api_diagnostics.py' -v
+          python3 -m unittest discover -s tests -p 'test_api_event_archive.py' -v
           python3 -m compileall -q custom_components/motogp_sensor
 
       - name: Reproduce and regress live-feed badge refresh
