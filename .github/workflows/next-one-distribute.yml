@@ -16,6 +16,7 @@ on:
       - 'frontend/ha-mgp-timing-icons.js'
       - 'frontend/ha-mgp-active-chip.js'
       - 'frontend/ha-mgp-finish-settling.js'
+      - 'frontend/ha-mgp-pre-session.js'
       - 'frontend/locales/**'
       - 'custom_components/motogp_sensor/translations/**'
       - 'frontend/ha-mgp-mobile-laps.js'
@@ -76,6 +77,7 @@ jobs:
           node tests/frontend-timing-icons.cjs
           node tests/frontend-active-chip.cjs
           node tests/frontend-finish-settling.cjs
+          node --check frontend/ha-mgp-pre-session.js
           python3 scripts/build-next-ui-preview.py frontend dist/ha-mgp.js
           node --check dist/ha-mgp.js
           cp dist/ha-mgp.js custom_components/motogp_sensor/www/ha-mgp.js
