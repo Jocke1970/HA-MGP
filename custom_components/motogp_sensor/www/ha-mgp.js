@@ -1,4 +1,4 @@
-/* MotoGP Next SINGLE Lovelace resource | build next-one-20261108-12 | read only. */
+/* MotoGP Next SINGLE Lovelace resource | build next-one-20261108-15 | read only. */
 /* MotoGP Next: isolated frontend for motogp-test. No HA writes or service calls. */
 (() => {
   'use strict';
@@ -303,9 +303,9 @@
       this._track(now,race);
       const event=valid(race?.state)?race.state:'Inget evenemang tillgängligt';
       const meta=[a.circuit,a.country,a.date_start&&a.date_end?dateRange(a.date_start,a.date_end):''].filter(valid);
-      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.37</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
+      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.40</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
         this._schedule(race,now)+`<div class="root">${this._weather()}${this._timing()}</div>`+
-        `<div class="foot">HA-MGP UI · 0.3.0-dev.37 · UI-preview</div></div>`;
+        `<div class="foot">HA-MGP UI · 0.3.0-dev.40 · UI-preview</div></div>`;
     }
     getCardSize(){return 8;}
     getGridOptions(){return {columns:12,rows:'auto',min_columns:6};}
@@ -975,6 +975,24 @@
     return '<div class="mgp-timing-records" role="group" aria-label="'+esc(category)+' circuit records">'+
       ['lap','pole','race'].map(k=>found.get(k)||'').join('')+'</div>';
   };
+  // An ended session must keep its fastest observed lap with its own frozen
+  // same-session roster, never with the incoming race's live attributes.
+  const sessionFastest=card=>{
+    const snap=card._snapshot;
+    if(!snap||snap.day!==card._today||!Array.isArray(snap.riders)||!snap.riders.length)return '';
+    const candidates=snap.riders.map(r=>{
+      const raw=lap(r.best_lap_time);
+      const match=/^(?:(\d+)[:'])?(\d{1,2})\.(\d{3})$/.exec(raw);
+      if(!match)return null;
+      const seconds=Number(match[1]||0)*60+Number(match[2])+Number(match[3])/1000;
+      if(!Number.isFinite(seconds)||seconds<=0)return null;
+      return {seconds,time:raw,rider:String(r.surname||r.shortname||r.firstname||'').trim()};
+    }).filter(Boolean).sort((a,b)=>a.seconds-b.seconds);
+    if(!candidates.length)return '';
+    const best=candidates[0];
+    return '<div class="nt-session-observed-best" role="status">⏱ Sessionens snabbaste observerade: '+
+      '<strong>'+esc(best.time)+'</strong>'+(best.rider?' · '+esc(best.rider):'')+'</div>';
+  };
   const session=v=>({RAC:'Race',SPR:'Sprint'})[String(v||'').toUpperCase()]||String(v||'');
   const number=v=>/^#?\d+$/.test(String(v??'').trim())?String(Number(String(v).replace('#',''))):'';
   // Use only colors explicitly supplied by the provider; neutral fallback.
@@ -991,6 +1009,7 @@
     .nt-heading>span:nth-child(2){text-align:left!important}
     .nt-lap-pair{display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:0}
     .nt-lap-pair>small{font-size:10px;color:var(--secondary-text-color);font-weight:650;white-space:nowrap}
+    .nt-lap-pair>small.nt-rider-best{color:var(--motogp-fastest-lap-color,var(--error-color,#b71c1c));font-weight:850}
     .nt-lap-pair .nt-last-main{font-weight:850;white-space:nowrap}
     .nt-status-pair{display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:0}
     .nt-status-pair small{font-size:10px;color:var(--secondary-text-color)}
@@ -998,6 +1017,8 @@
     .nt-position-zero{color:var(--secondary-text-color);font-weight:750}
     .nt-position-empty{color:var(--secondary-text-color)}
     .nt-session-record strong{color:var(--motogp-fastest-lap-color,var(--error-color,#b71c1c))}
+    .nt-session-observed-best{padding:6px 10px;font-size:11px;font-weight:650;color:var(--primary-text-color);border-bottom:1px solid var(--divider-color,#ddd)}
+    .nt-session-observed-best strong{font-size:12px;color:var(--motogp-fastest-lap-color,var(--error-color,#b71c1c))}
     .mgp-timing-records{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:6px 10px 9px;border-bottom:1px solid var(--divider-color,#ddd)}
     .mgp-timing-record-chip{display:flex;align-items:center;justify-content:space-between;gap:4px 8px;min-width:0;border:1px solid var(--divider-color,#ddd);border-radius:9px;padding:6px 8px;background:var(--secondary-background-color,rgba(127,127,127,.045))}
     .mgp-timing-record-chip small{font-size:9px;font-weight:700;color:var(--secondary-text-color);white-space:nowrap}
@@ -1143,6 +1164,8 @@
       if(html.includes('<button type="button" class="nt-head"')&&html.includes('</button>')){
         const chips=recordChips(this,category);
         if(chips)html=html.replace('</button>','</button>'+chips);
+        const sessionBest=sessionFastest(this);
+        if(sessionBest)html=html.replace('</button>','</button>'+sessionBest);
       }
       if(!this._snapshot?.riders?.length||this._snapshot.day!==this._today)return html;
       if(this._live)html=html.replace('<span class="nt-label">🏁 ',
@@ -1169,7 +1192,7 @@
         if(range) {
           const original=row.slice(range.begin,range.end),best=lap(r.best_lap_time);
           const cell=`<span class="nt-lap-pair"><span class="nt-last-main">${original}</span>`+
-            `<small>Snabbaste: ${esc(best)}</small></span>`;
+            `<small${best!=='—'?' class="nt-rider-best"':''}>Snabbaste: ${esc(best)}</small></span>`;
           row=row.slice(0,range.begin)+cell+row.slice(range.end);
         }
         const status=r.on_pit?'PIT':valid(r.status_name)?String(r.status_name):valid(r.status_id)?String(r.status_id):'—';
@@ -1803,6 +1826,20 @@ function venue(card){
     (provenance?' · '+esc(provenance):'')+'</span></div>'+weatherHtml+'</div>'+
     '<div class="mgp-circuit-panel"><div class="mgp-venue-caption">🏁 Banlayout</div>'+mapHtml+'</div></div>';
 }
+const SCHEDULE_DIALOG_STYLE=`
+  .mgp-weekend-dialog{width:min(900px,calc(100vw - 28px));max-height:calc(100dvh - 32px);
+    padding:0;border:1px solid var(--divider-color,#ddd);border-radius:16px;
+    background:var(--ha-card-background,var(--card-background-color,#fff));
+    color:var(--primary-text-color);box-shadow:0 20px 60px rgba(0,0,0,.32)}
+  .mgp-weekend-dialog::backdrop{background:rgba(0,0,0,.55)}
+  .mgp-weekend-dialog-head{display:flex;align-items:center;justify-content:space-between;
+    gap:12px;padding:12px 15px;border-bottom:1px solid var(--divider-color,#ddd)}
+  .mgp-weekend-dialog-head strong{font-size:14px}
+  .mgp-weekend-dialog-head button{border:1px solid var(--divider-color,#ddd);border-radius:9px;
+    background:transparent;padding:7px 12px;color:inherit;cursor:pointer;font:inherit}
+  .mgp-weekend-dialog-body{overflow:auto;max-height:calc(100dvh - 105px);padding:10px}
+  .mgp-weekend-dialog-body>.panel{border:0;box-shadow:none}
+`;
 function install(){
   const Overview=customElements.get(TAG);
   if(Overview?.buildInfo?.version!==REQUIRED){
@@ -1814,12 +1851,13 @@ function install(){
   Overview.prototype._weather=function(){return '';};
   const original=Overview.prototype._render;
   Overview.prototype._render=function(){
+    const previousScroll=this.shadowRoot?.querySelector?.('.mgp-weekend-dialog-body')?.scrollTop||0;
     original.call(this);
     if(!this._hass||!this.shadowRoot)return;
     if(!this.shadowRoot.querySelector?.('[data-mgp-venue-style]')){
       const style=document.createElement('style');
       style.setAttribute('data-mgp-venue-style','');
-      style.textContent=STYLE;
+      style.textContent=STYLE+SCHEDULE_DIALOG_STYLE;
       this.shadowRoot.appendChild(style);
     }
     const view=this.shadowRoot.getElementById('app');
@@ -1861,13 +1899,29 @@ function install(){
     const output=markup.slice(0,innerStart)+body+markup.slice(end);
     view.innerHTML=output.includes('<div class="foot">')?
       output.replace('<div class="foot">','<div class="foot">'+footer):output+footer;
+    const dialog=view.querySelector?.('.mgp-weekend-dialog');
+    if(dialog&&this._scheduleOpen===true&&dialog.isConnected&&typeof dialog.showModal==='function'){
+      const scroller=dialog.querySelector('.mgp-weekend-dialog-body');
+      if(scroller)scroller.scrollTop=previousScroll;
+      dialog.addEventListener('cancel',event=>{
+        event.preventDefault();
+        this._scheduleOpen=false;
+        this._render();
+      },{once:true});
+      if(!dialog.open)dialog.showModal();
+    }
   };
   const originalSchedule=Overview.prototype._schedule;
   Overview.prototype._schedule=function(race,now){
     if(this._scheduleOpen!==true)return '';
     const html=originalSchedule.call(this,race,now);
-    // The hero button owns schedule visibility; keep filters and day rows only.
-    return html.replace(/<div class="head"><strong>🗓️ Helgens schema<\/strong><span class="muted">[\s\S]*?<\/span><\/div>/,'');
+    // Modal is outside normal page layout, so the separate timing card
+    // remains directly below the event overview (no layout/YAML migration).
+    const content=html.replace(/<div class="head"><strong>🗓️ Helgens schema<\/strong><span class="muted">[\s\S]*?<\/span><\/div>/,'');
+    return '<dialog class="mgp-weekend-dialog" aria-label="Helgens schema">'+
+      '<div class="mgp-weekend-dialog-head"><strong>🗓️ Helgens schema</strong>'+
+      '<button type="button" autofocus data-mgp-schedule-dismiss>Stäng</button></div>'+
+      '<div class="mgp-weekend-dialog-body">'+content+'</div></dialog>';
   };
   const timingCard=customElements.get('ha-motogp-next-timing-card');
   if(timingCard&&!timingCard.prototype._mgpTimingWindow){
@@ -1880,15 +1934,13 @@ function install(){
   }
   const oldClick=Overview.prototype._click;
   Overview.prototype._click=function(e){
+    if(e?.target?.closest?.('[data-mgp-schedule-dismiss]')){
+      this._scheduleOpen=false;this._render();return;
+    }
     if(e?.target?.closest?.('[data-mgp-schedule-jump]')){
       this._scheduleOpen=this._scheduleOpen!==true;
       if(this._scheduleOpen)this._standingOpen=false;
       this._render();
-      if(this._scheduleOpen){
-        this.shadowRoot?.querySelector?.('[data-mgp-weekend-anchor]')?.scrollIntoView?.({
-          behavior:'smooth',block:'start'
-        });
-      }
       return;
     }
     return oldClick.call(this,e);

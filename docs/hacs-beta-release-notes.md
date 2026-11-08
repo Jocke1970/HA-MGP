@@ -1,27 +1,20 @@
-# HA-MGP 2026.11.0b17 — resultat mellan pass och förhandsstartgrid
+# HA-MGP 2026.11.0b18 – helgschema, snabbaste varv och API-debug
 
-**HACS beta `2026.11.0b17` · UI `0.3.0-dev.37`**
+**HACS beta:** `2026.11.0b18` · **Frontend:** `0.3.0-dev.40`.
 
-## Nytt jämfört med b16
+## Nytt
+- Helgschema öppnas som modal så det inte skjuter ned live-timingen mellan översiktskortet och timingkortet.
+- Moto3, Moto2 och MotoGP grafiska/typografiska klassfilter, med förstärkta klick- och klassisoleringsregressioner.
+- Förarens giltiga snabbaste varv markeras rött.
+- Sessionens snabbaste **observerade** varv ligger kvar med det frysta resultatet efter målgång; ska inte ersättas av nästa pass.
+- Valfri **Pulselive API debug**-sensor, avstängd som standard. Loggar förändringstidpunkter för session, status, första förarlista, första varvet och högsta observerade varv från samma godkända TV-fördröjda feed; ingen extra polling.
+- Alla b17-funktioner (T−30 grid, avflaggningsfönster, spoilerskydd, säsongskalender och fem språk) behålls.
 
-- Senaste verifierade live-resultatet visas mellan passen tills nästa pass ligger inom 30 minuter, med manuell kollapsning.
-- T−30 övergår kortet till kommande sessions startvy. För Race/Sprint används officiellt publicerad startgrid (`start_grids` från den befintliga b16-backenden), med tomma tidsfält tills klass- och sessionsmatchad live-data kommer.
-- Om ingen verifierad startgrid/deltagarlista finns visas väntmeddelande utan fiktiva placeringar eller tider.
-- Vid passerad schemastart får väntvyn ligga kvar kort tills verifierad livetiming anländer.
-- Avflaggning ger högst två minuters efterstabilisering av korrekt samma-sessions snapshot.
-- UI-status per klass, aktiv session i toppchip, nedräkningsikoner och röd färg under fem minuter.
-- Bevarad visuell säsongskalender från b16 och fem UI-språk.
+## Begränsningar
+- `/event/{eventId}/entry` returnerade HTTP 400 i verifierade tester. Detta anrop är inte aktiverat i b18. Den säsongsbaserade `/riders`-katalogen är inte en bekräftad deltagarlista för en viss session.
+- Sessionens snabbaste tid är den snabbaste **observerade** bland verifierade förarposter i just detta frontend-snapshot, inte ett påstående om slutligt officiellt varv.
+- Diagnostikens första observation kan ske efter officiell start, särskilt efter HA-omstart. Inga tidsstämplar skapas på nytt per poll utan verklig ändring.
+- En kall frontendstart utan ett föregående sessionssnapshot ger ännu inte garanterad återläsning av senaste resultatet. PB-arkivavvikelser måste följas upp under beta.
 
-## Medvetna begränsningar och tester
-
-- Pulselive `/event/{eventId}/entry` gav HTTP 400 i kontrollerade anrop; b17 använder **inte** den nya dev-backendens deltagarlista. Officiell startgrid från `/results/event/.../grid` returnerade HTTP 200 i test för Malaysias GP 2026.
-- Ingen säker deltagarlista före träning/kval när ett verifierat API-svar saknas. Säsongsteam är inte liktydigt med faktisk startlista.
-- Föregående resultat förutsätter ett tidigare observerat live-snapshot under kortets livslängd. Efter omstart saknas automatisk återläsning av komplett slutklassificering.
-- Senaste arkiverade PB/varv kontra slutresultat måste kontrolleras under ett riktigt racepass.
-- Inga ändringar av integrationsdomän, Lovelace-taggar, befintliga HA-entiteter eller `/config/motogp_data/`.
-
-## Installation och återställning
-
-HACS prerelease `2026.11.0b17`. Lovelace JavaScript module: `/motogp_sensor/ha-mgp.js` (endast en resurs). Hård omladdning. Starta inte om HA under pågående pass.
-
-**Rollback:** `2026.11.0b16`. **main** förblir orörd.
+## Säkerhet, installation och rollback
+Uppdatera via HACS-beta. Behåll endast JS-modulen `/motogp_sensor/ha-mgp.js`; det gamla aliaset är byte-identiskt. Omstart endast mellan pass. **Rollback:** `2026.11.0b17`. **Main oförändrad.**
