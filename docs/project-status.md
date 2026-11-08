@@ -47,3 +47,11 @@ I frontend `0.3.0-dev.32` ersätter en responsiv säsongskalender översiktskort
 - En synlighetstest bör säkerställa att `Helgschema` inte öppnas automatiskt av live-data och att manuellt öppet schema fortfarande respekteras.
 - Väder från Open-Meteo vid banans koordinater är en separat möjlig backendfeature, med tydlig källmärkning och attribution. **Inte implementerat.**
 
+
+## Avflaggning och sena varvtider (dev.36, ej beta)
+
+- Problem observerat i b16: UI byter direkt till nästa race efter att föregående session markerats Finished, medan eventuella slutvarv ännu inte visas. Varvarkivet kunde visa Di Giannantonios 1'52.281 från varv 5 och sex varv, medan resultatlistans frysta snapshot visade 1'52.558 och fyra.
+- Dev.36 inför ett **högst två minuter långt** avslutsfönster vid bekräftad övergång från matchad LIVE till Finished. Rubriken visar 'Avflaggat' och resultatuppdatering, inte nästa pass, under denna period.
+- Under tidsfönstret får bara **samma klass, session, event och TV-delay-godkända** förarlista ersätta den frysta snapshoten. Förare kopieras så att kommande feed-objekt inte muterar det visade resultatet. Nästa-passets nedräkning återkommer automatiskt när fönstret gått ut.
+- Inga varvtider konstrueras eller hämtas från okända/andra sessioner. Om källan fortfarande saknar senaste arkiverade varv kan resultatlistan fortfarande avvika från popupen. Arkivet är separat källa för observerade varv; detta kräver särskild uppföljning innan slutresultat kan kallas verifierade.
+- Endast på dev; behöver testas i Home Assistant under ett riktigt pass/slutvarv och jämföras med arkiv.
