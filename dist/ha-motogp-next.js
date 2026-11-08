@@ -1,4 +1,4 @@
-/* MotoGP Next SINGLE Lovelace resource | build next-one-20261108-20 | read only. */
+/* MotoGP Next SINGLE Lovelace resource | build next-one-20261108-21 | read only. */
 /* MotoGP Next: isolated frontend for motogp-test. No HA writes or service calls. */
 (() => {
   'use strict';
@@ -303,9 +303,9 @@
       this._track(now,race);
       const event=valid(race?.state)?race.state:'Inget evenemang tillgängligt';
       const meta=[a.circuit,a.country,a.date_start&&a.date_end?dateRange(a.date_start,a.date_end):''].filter(valid);
-      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.45</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
+      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.46</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
         this._schedule(race,now)+`<div class="root">${this._weather()}${this._timing()}</div>`+
-        `<div class="foot">HA-MGP UI · 0.3.0-dev.45 · UI-preview</div></div>`;
+        `<div class="foot">HA-MGP UI · 0.3.0-dev.46 · UI-preview</div></div>`;
     }
     getCardSize(){return 8;}
     getGridOptions(){return {columns:12,rows:'auto',min_columns:6};}
@@ -2586,7 +2586,7 @@ function validFinishingFeed(card,hold){
  const se=states[card._ids.session],st=states[card._ids.status],riders=states[card._ids.riders];
  const sa=se?.attributes||{},ta=st?.attributes||{},pa=riders?.attributes||{};
  const status=String(st?.state||'').toLowerCase(),code=String(ta.session_status_id||'').toUpperCase();
- if(!((status==='finished'||code==='F')&&same(category(sa.category),hold.category)&&
+ if(!((status==='finished'||code==='F'||code==='C')&&same(category(sa.category),hold.category)&&
       same(category(ta.category),hold.category)&&same(category(pa.category),hold.category)&&
       same(se?.state,hold.name)&&same(session(ta.session_shortname),hold.name)&&same(session(pa.session_shortname),hold.name)))return false;
  const event=String(sa.event||''),statusEvent=String(ta.event||''),riderEvent=String(pa.event||'');
@@ -2612,7 +2612,7 @@ function install(){
   }
   const st=this._hass.states?.[this._ids.status];
   const isFinished=String(st?.state||'').toLowerCase()==='finished'||
-    String(st?.attributes?.session_status_id||'').toUpperCase()==='F';
+    ['F','C'].includes(String(st?.attributes?.session_status_id||'').toUpperCase());
   if(!isFinished){this._mgpFinishHold=null;return;}
   if(previous&&oldSnapshot&&same(previous.key,oldSnapshot.key)&&same(this._snapshot.key,previous.key)){
    this._mgpFinishHold={key:previous.key,category:previous.category,name:previous.name,started:Date.now()};
