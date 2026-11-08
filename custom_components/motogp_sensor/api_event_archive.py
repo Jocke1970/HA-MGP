@@ -16,6 +16,8 @@ SCHEMA_VERSION = 1
 EVENT_TYPES = frozenset({
     "feed_online", "feed_offline", "session_changed", "status_changed",
     "first_roster", "roster_count_changed", "first_lap", "lap_count_increased",
+    "first_position", "first_gap_reported", "gap_updated",
+    "first_lap_started", "first_lap_completed",
 })
 
 
@@ -58,7 +60,7 @@ class PulseliveEventArchive:
                     if len(value) > 128:
                         raise DiagnosticArchiveError("Oversized identity")
                     safe[key] = value
-            for key in ("rider_count", "max_observed_lap"):
+            for key in ("rider_count", "max_observed_lap", "changed_rider_count"):
                 value = change.get(key)
                 if value is not None:
                     if isinstance(value, bool) or not isinstance(value, int) or not 0 <= value <= 500:
