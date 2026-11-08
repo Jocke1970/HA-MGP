@@ -1,4 +1,4 @@
-/* MotoGP Next SINGLE Lovelace resource | build next-one-20261108-07 | read only. */
+/* MotoGP Next SINGLE Lovelace resource | build next-one-20261108-09 | read only. */
 /* MotoGP Next: isolated frontend for motogp-test. No HA writes or service calls. */
 (() => {
   'use strict';
@@ -303,9 +303,9 @@
       this._track(now,race);
       const event=valid(race?.state)?race.state:'Inget evenemang tillgängligt';
       const meta=[a.circuit,a.country,a.date_start&&a.date_end?dateRange(a.date_start,a.date_end):''].filter(valid);
-      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.32</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
+      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.34</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
         this._schedule(race,now)+`<div class="root">${this._weather()}${this._timing()}</div>`+
-        `<div class="foot">HA-MGP UI · 0.3.0-dev.32 · UI-preview</div></div>`;
+        `<div class="foot">HA-MGP UI · 0.3.0-dev.34 · UI-preview</div></div>`;
     }
     getCardSize(){return 8;}
     getGridOptions(){return {columns:12,rows:'auto',min_columns:6};}
@@ -2216,4 +2216,223 @@ customElements.whenDefined(OVERVIEW).then(install);
     Card.prototype._mgpSeasonCalendar=BUILD;
   }
   customElements.whenDefined(TAG).then(install);
+})();
+
+;
+/* HA-MGP: read-only API connectivity indicator in the event hero. */
+(() => {
+  'use strict';
+  const TAG='ha-motogp-next-overview-card';
+  const BUILD='api-status-20261108-01';
+  const ENTITY='binary_sensor.motogp_live_timing_online';
+  const STYLE=`
+    .mgp-api-indicator{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border:1px solid var(--divider-color,#ddd);border-radius:999px;font-size:11px;font-weight:800;color:var(--secondary-text-color);white-space:nowrap;line-height:1.2}
+    .mgp-api-dot{display:inline-block;width:8px;height:8px;border-radius:50%;flex:none;background:#9ca3af}
+    .mgp-api-indicator[data-state="on"] .mgp-api-dot{background:#16a34a;box-shadow:0 0 0 2px rgba(22,163,74,.12)}
+    .mgp-api-indicator[data-state="off"] .mgp-api-dot{background:#9ca3af}
+    .mgp-api-indicator[data-state="unknown"] .mgp-api-dot{background:#d97706}
+    .mgp-api-indicator[data-state="on"]{border-color:rgba(22,163,74,.24)}
+    .mgp-api-indicator[data-state="unknown"]{border-color:rgba(217,119,6,.3)}
+  `;
+  const TEXT={
+    sv:['Livetiming API','Online','Offline','Okänd'],
+    en:['Live timing API','Online','Offline','Unknown'],
+    es:['API de tiempos en vivo','En línea','Desconectada','Desconocida'],
+    it:['API tempi live','Online','Offline','Sconosciuto'],
+    fr:['API chronométrage','En ligne','Hors ligne','Inconnu']
+  };
+  function indicator(card){
+    const raw=card._hass?.states?.[ENTITY]?.state;
+    const status=raw==='on'?'on':raw==='off'?'off':'unknown';
+    const language=String(card._hass?.language||card._hass?.locale?.language||'en').split(/[-_]/)[0].toLowerCase();
+    const labels=TEXT[language]||TEXT.en;
+    const message=status==='on'?labels[1]:status==='off'?labels[2]:labels[3];
+    return '<span class="mgp-api-indicator" data-state="'+status+'" role="status" aria-label="'+
+      labels[0]+': '+message+'" title="'+labels[0]+': '+message+'">'+
+      '<span class="mgp-api-dot" aria-hidden="true"></span><span>'+labels[0]+'</span></span>';
+  }
+  function install(){
+    const Card=customElements.get(TAG);
+    if(!Card||Card.prototype._mgpApiIndicator)return;
+    const original=Card.prototype._render;
+    Card.prototype._render=function(...args){
+      const result=original.apply(this,args);
+      if(!this._hass||!this.shadowRoot)return result;
+      const view=this.shadowRoot.getElementById?.('app');
+      if(!view)return result;
+      const html=view.innerHTML;
+      const hero=html.indexOf('<div class="mgp-hero-copy">');
+      if(hero<0)return result; // Calendar/off-week view has no event hero.
+      if(!this.shadowRoot.querySelector?.('[data-mgp-api-status-style]')){
+        const style=document.createElement('style');
+        style.setAttribute('data-mgp-api-status-style','');
+        style.textContent=STYLE;
+        this.shadowRoot.appendChild(style);
+      }
+      const marker='<div class="mgp-branded-eyebrow">';
+      // Brand appears in the left hero: append the API indicator as compact badge.
+      const brand=html.indexOf('mgp-branded-eyebrow',hero);
+      const h2=html.indexOf('<h2>',hero);
+      if(brand<0||h2<0||brand>h2)return result;
+      const pos=html.lastIndexOf('</div>',h2);
+      if(pos<brand)return result;
+      view.innerHTML=html.slice(0,pos+6)+indicator(this)+html.slice(pos+6);
+      return result;
+    };
+    Card.prototype._mgpApiIndicator=BUILD;
+  }
+  customElements.whenDefined(TAG).then(install);
+})();
+;
+/* HA-MGP: session-status dots, scoped to matching sessions. */
+(() => {
+'use strict';
+const TAG_OVERVIEW='ha-motogp-next-overview-card';
+const TAG_TIMING='ha-motogp-next-timing-card';
+const BUILD='session-dots-20261108-01';
+const SENSOR='sensor.motogp_session_status';
+const STYLES=`
+.mgp-session-dot{display:inline-block;flex:none;width:8px;height:8px;border-radius:50%;vertical-align:middle;margin-right:5px;background:#94a3b8}
+.mgp-session-dot[data-status="started"]{background:#16a34a;box-shadow:0 0 0 2px rgba(22,163,74,.15)}
+.mgp-session-dot[data-status="not-started"]{background:#eab308}
+.mgp-session-dot[data-status="finished"]{background:#6b7280}
+.mgp-session-dot[data-status="unknown"]{background:#d97706}
+`;
+const norm=value=>String(value||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+const cls=value=>{
+ const m=/moto\s*(gp|2|3|e)/i.exec(String(value||''));
+ return m?({gp:'MotoGP','2':'Moto2','3':'Moto3',e:'MotoE'})[m[1].toLowerCase()]:String(value||'');
+};
+const sess=value=>{
+ const s=String(value||'').toUpperCase();
+ return ({RAC:'Race',SPR:'Sprint',PR:'Practice',WUP:'Warm Up'})[s]||String(value||'');
+};
+function parsed(card){
+ const state=card._hass?.states?.[SENSOR];
+ const a=state?.attributes||{};
+ const raw=String(state?.state||'').toLowerCase();
+ const id=String(a.session_status_id||'').toUpperCase();
+ const status=(raw==='in progress'||id==='I'||id==='S')?'started':
+  (raw==='not started'||id==='N')?'not-started':
+  (raw==='finished'||id==='F')?'finished':'unknown';
+ const name=a.session_name||a.session_shortname;
+ return {status,category:cls(a.category),name:sess(name),valid:!!(a.category&&name)};
+}
+function dot(status){
+ const text={started:'In Progress','not-started':'Not Started',finished:'Finished',unknown:'Unknown'}[status];
+ return '<span class="mgp-session-dot" data-status="'+status+'" role="img" title="'+text+'" aria-label="Session: '+text+'"></span>';
+}
+function match(source,category,name){
+ return source.valid&&norm(source.category)===norm(category)&&norm(source.name)===norm(name);
+}
+function decorateTiming(html,source){
+ // The timing header names a live or next session. The dot is not a generic
+ // "API online" indicator and MUST NOT be put on a different session.
+ return html.replace(/(<span class="nt-label">🏁 )(?:Nästa: |Schemalagd: )?([^<]*?)(<\/span>)/,(whole,prefix,title,end)=>{
+  const clean=title.replace(/^Nästa:\s*|^Schemalagd:\s*/,'');
+  const m=/^\s*(MotoGP|Moto2|Moto3|MotoE)\s*·\s*(.*?)\s*$/.exec(clean);
+  if(!m||!match(source,m[1],m[2]))return whole;
+  return prefix+dot(source.status)+title+end;
+ });
+}
+function decorateSchedule(html,source){
+ // Each race card already has its own API schedule status. Only supplement
+ // exactly the current matching session with the dynamic status sensor.
+ return html.replace(/(<div class="name">)(MotoGP|Moto2|Moto3|MotoE)\s*·\s*([^<]+)(<\/div>)/g,(whole,open,category,name,close)=>{
+  if(!match(source,category,name))return whole;
+  return open+dot(source.status)+category+' · '+name+close;
+ });
+}
+function install(tag){
+ const Card=customElements.get(tag);
+ if(!Card||Card.prototype._mgpSessionDots)return;
+ if(tag===TAG_TIMING){
+  const old=Card.prototype._timing;
+  Card.prototype._timing=function(...args){
+   const html=old.apply(this,args);
+   return typeof html==='string'?decorateTiming(html,parsed(this)):html;
+  };
+ } else {
+  const old=Card.prototype._schedule;
+  Card.prototype._schedule=function(...args){
+   const html=old.apply(this,args);
+   return typeof html==='string'?decorateSchedule(html,parsed(this)):html;
+  };
+ }
+ const render=Card.prototype._render;
+ Card.prototype._render=function(...args){
+  if(this.shadowRoot&&!this.shadowRoot.querySelector?.('[data-mgp-session-dot-style]')){
+   const style=document.createElement('style');
+   style.setAttribute('data-mgp-session-dot-style','');
+   style.textContent=STYLES;
+   this.shadowRoot.appendChild(style);
+  }
+  return render.apply(this,args);
+ };
+ Card.prototype._mgpSessionDots=BUILD;
+}
+Promise.all([customElements.whenDefined(TAG_OVERVIEW),customElements.whenDefined(TAG_TIMING)]).then(()=>{
+ install(TAG_OVERVIEW);
+ install(TAG_TIMING);
+});
+})();
+;
+/* HA-MGP: clock/start icon, timer/countdown icon and T-minus-five urgency. */
+(() => {
+'use strict';
+const TAG='ha-motogp-next-timing-card';
+const BUILD='timing-icons-20261108-01';
+const STYLE=`
+.mgp-timer-line{display:inline-flex;align-items:center;gap:4px}
+.mgp-start-time{display:inline-flex;align-items:center;gap:5px}
+.mgp-timer-line.mgp-urgent,.mgp-timer-line.mgp-urgent .next-countdown{color:#e10600!important;font-weight:900}
+`;
+function updateUrgency(root){
+ if(!root||typeof root.querySelectorAll!=='function')return;
+ for(const line of root.querySelectorAll('.mgp-timer-line')){
+  const clock=line.querySelector?.('[data-next-start]');
+  const stamp=Number(clock?.getAttribute?.('data-next-start'));
+  if(!Number.isFinite(stamp)||stamp<=0)continue;
+  const remaining=stamp-Date.now();
+  line.classList?.toggle('mgp-urgent',remaining>0&&remaining<300000);
+ }
+}
+function decorate(html){
+ if(typeof html!=='string'||!html.includes('next-countdown'))return html;
+ return html.replace(/(<span class="nt-clock">)<span>(\d{1,2}:\d{2})<\/span><small>(<span class="next-countdown"[^>]*>[\s\S]*?<\/span>)<\/small>/,
+  (_all,start,time,count)=>start+'<span class="mgp-start-time">🕒 '+time+'</span>'+
+   '<small class="mgp-timer-line">⏱ '+count+'</small>');
+}
+function install(){
+ const Card=customElements.get(TAG);
+ if(!Card||Card.prototype._mgpTimingIcons)return;
+ const oldTiming=Card.prototype._timing;
+ Card.prototype._timing=function(...args){return decorate(oldTiming.apply(this,args));};
+ const oldRender=Card.prototype._render;
+ Card.prototype._render=function(...args){
+  if(this.shadowRoot&&!this.shadowRoot.querySelector?.('[data-mgp-timing-icon-style]')){
+   const style=document.createElement('style');
+   style.setAttribute('data-mgp-timing-icon-style','');
+   style.textContent=STYLE;
+   this.shadowRoot.appendChild(style);
+  }
+  const result=oldRender.apply(this,args);
+  updateUrgency(this.shadowRoot);
+  return result;
+ };
+ const oldConnected=Card.prototype.connectedCallback;
+ const oldDisconnected=Card.prototype.disconnectedCallback;
+ Card.prototype.connectedCallback=function(...args){
+  const result=oldConnected?.apply(this,args);
+  if(!this._mgpUrgencyTimer)this._mgpUrgencyTimer=setInterval(()=>updateUrgency(this.shadowRoot),1000);
+  updateUrgency(this.shadowRoot);
+  return result;
+ };
+ Card.prototype.disconnectedCallback=function(...args){
+  if(this._mgpUrgencyTimer){clearInterval(this._mgpUrgencyTimer);this._mgpUrgencyTimer=null;}
+  return oldDisconnected?.apply(this,args);
+ };
+ Card.prototype._mgpTimingIcons=BUILD;
+}
+customElements.whenDefined(TAG).then(install);
 })();
