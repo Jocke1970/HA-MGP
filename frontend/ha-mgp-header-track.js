@@ -173,6 +173,7 @@ function install(){
   Overview.prototype._weather=function(){return '';};
   const original=Overview.prototype._render;
   Overview.prototype._render=function(){
+    const previousScroll=this.shadowRoot?.querySelector?.('.mgp-weekend-dialog-body')?.scrollTop||0;
     original.call(this);
     if(!this._hass||!this.shadowRoot)return;
     if(!this.shadowRoot.querySelector?.('[data-mgp-venue-style]')){
@@ -217,7 +218,6 @@ function install(){
     const footer='<details class="mgp-ui-footer"><summary>ⓘ UI-information</summary>'+
       '<div>Frontend: '+esc(uiVersion)+' · Bas-kort: '+esc(Overview.buildInfo?.version||'okänd')+
       '<br>Backendversion hanteras separat.</div></details>';
-    const previousScroll=this.shadowRoot.querySelector?.('.mgp-weekend-dialog-body')?.scrollTop||0;
     const output=markup.slice(0,innerStart)+body+markup.slice(end);
     view.innerHTML=output.includes('<div class="foot">')?
       output.replace('<div class="foot">','<div class="foot">'+footer):output+footer;
