@@ -6,6 +6,7 @@ The API gives offset-aware starts, unlike Results API's disguised wall times.
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import re
 from typing import Any
 
 from .schedule_time import session_wall_time_to_utc
@@ -59,9 +60,8 @@ def broadcast_schedule_rows(
             continue
         known.add(identity)
         short = str(item.get("shortname") or "").upper()
-        valid_short = short in {"RAC", "SPR", "WUP", "PR"} or (
-            len(short) <= 5 and short.startswith(("FP", "Q")) and short[2:].isdigit()
-            if short.startswith("FP") else len(short) <= 5 and short.startswith("Q") and short[1:].isdigit()
+        valid_short = short in {"RAC", "SPR", "WUP", "PR"} or bool(
+            re.fullmatch(r"(?:FP[1-9][0-9]?|Q[1-9][0-9]?)", short)
         )
         label = short if valid_short else str(item.get("name") or "").strip()[:80]
         label = {"RAC": "Race", "SPR": "Sprint",
