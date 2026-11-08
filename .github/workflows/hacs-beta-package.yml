@@ -103,7 +103,7 @@ jobs:
           assert '"es":{' in source
           assert "calendar-20261108-02" in source
           assert "mgp-season" in source
-          assert 'HA-MGP UI · 0.3.0-dev.43' in source
+          assert 'HA-MGP UI · 0.3.0-dev.46' in source
           assert source == Path('custom_components/motogp_sensor/www/ha-motogp-next.js').read_text(encoding='utf-8')
           assert "mgp-ui-footer" in source
           assert "data-mgp-schedule-jump" in source
@@ -151,7 +151,7 @@ jobs:
           manifest = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
           assert manifest['domain'] == 'motogp_sensor'
           assert manifest['name'] == 'HA-MGP'
-          assert manifest['version'] == '2026.11.0b20'
+          assert manifest['version'] == '2026.11.0b21'
           assert all((root / 'translations' / (lang + '.json')).is_file() for lang in ('en','sv','es','it','fr'))
           assert manifest.get('codeowners') == ['@Jocke1970']
           assert {'http', 'frontend'}.issubset(manifest['dependencies'])
@@ -171,20 +171,20 @@ jobs:
           assert hacs.get('name')
           assert not hacs.get('content_in_root')
           assert not hacs.get('zip_release')
-          print('Verified HA-MGP beta: 2026.11.0b20 with season calendar, five locales and timing records')
+          print('Verified HA-MGP beta: 2026.11.0b21 with season calendar, five locales and timing records')
           PY
       - name: Publish tagged GitHub prerelease
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          TAG=2026.11.0b20
+          TAG=2026.11.0b21
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "$TAG already exists; leaving the immutable prerelease untouched."
             gh release view "$TAG" --json tagName,isPrerelease,url,targetCommitish
             exit 0
           fi
           gh release create "$TAG" --target "$(git rev-parse HEAD)" --prerelease \
-            --title 'HA-MGP 2026.11.0b20 — persistent Pulselive diagnostic event journal' \
+            --title 'HA-MGP 2026.11.0b21 — persistent Pulselive diagnostic event journal' \
             --notes-file docs/hacs-beta-release-notes.md
           gh release view "$TAG" --json tagName,isPrerelease,url,targetCommitish

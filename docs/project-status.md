@@ -1,16 +1,14 @@
-# HA-MGP — status 8 november 2026
+# HA-MGP status — 2026-11-08
 
-**Publicerad beta före b20:** `2026.11.0b19`, UI `0.3.0-dev.40`. **Samlad b20-kandidat:** `2026.11.0b20`, UI `0.3.0-dev.43`.
+**Publicerad beta före kandidat:** b20. **b21-kandidat:** `2026.11.0b21`, frontend `0.3.0-dev.46`, main oförändrad.
 
-b19:s beständiga diagnostik finns kvar: `/config/motogp_data/api_diagnostics/YYYY-MM-DD.jsonl`. Händelser registreras från TV-delay-godkänd befintlig live-polling utan extra anrop, inte per poll. Sensorn är inaktiverad som standard; filjournalen är oberoende.
+## Nytt i b21
+- Utökad append-only, TV-delay-godkänd och källisolerad loggning av första start, första varv, första förarposition, första riktiga tidsavstånd, begränsade gap-uppdateringar samt första färdig varvtid. Inget sector event utan verifierad sektordata. Äldre `first_lap` bevaras.
+- Varvräknare visar aktuellt pågående varv inklusive det kvarvarande antalet; `num_lap == num_laps` betyder `Sista varvet`, inte säkert raceavslut.
+- Pulselive `F`/`C` ger fyra minuters avslutsfönster; då pollas samma session var 15 s och senaste frysta resultat får korrigeras med godkänd samma sessions förardata.
+- B20:s modul, helgschema-modal, klassfilter och röd sessionens snabbaste varv bibehålls.
 
-## B20 UI
-- Legacy Helgschema-panel som återkom under toppkortet vid livepass borttagen. Modalen i toppkortet är den enda schemakontrollen.
-- Endast snabbaste observerade sessionsvarvet färgas rött. Övriga personbästa neutrala; PB-indikatorn består.
-- Toppchippet har förbättrad fallback för aktiv session om backendstatuser kan verifieras innan exakt livetimingmatch; aldrig falskt LIVE.
-- Moto3/Moto2/MotoGP:s fungerande typografiska filter kvar, riktiga grafiska klassloggor inte implementerade.
-
-## Releasekontrakt
-Bygg kandidat från beta b19, inte genom att blint merga divergerad dev. Kör CI och HACS-paketering innan publicering. Efter HACS-b20: uppdatera HA endast mellan pass, kontrollera UI-version, journal och Recorder. Rollback b19. Main orörd.
-
-**Separat arbete:** identifiera riktiga klassloggor, förskjuten racegrid samt timing-lite startlista. Dessa ingår inte i b20.
+## Verifiering och gränser
+- Offline regressioner testar gap-före-varvtid, nollgap, inga extra events per poll, avslutsfönster och UI sista varvet. CI och HACS-gate krävs före prerelease.
+- Inte i b21: permanenta resultat-diffar med officiell slutlighetsmarkering, verifierade sektortider, officiella klasslogotyper eller förskjuten startgrid.
+- HA-omstart endast mellan pass. Kontrollera ny JSONL-journal under nästa livepass. Rollback b20.
