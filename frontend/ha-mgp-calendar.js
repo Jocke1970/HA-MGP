@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const TAG='ha-motogp-next-overview-card';
-  const BUILD='calendar-20261108-01';
+  const BUILD='calendar-20261108-02';
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const parseDate=raw=>{
     const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(raw||''));
@@ -40,7 +40,7 @@
     return events.some(e=>today>=dateKey(e.start)&&today<=dateKey(e.end));
   };
   const STYLES=`
-    .mgp-season{min-width:0;border:1px solid var(--divider-color,#ddd);border-radius:15px;overflow:hidden;background:var(--ha-card-background,var(--card-background-color,#fff))}
+    .mgp-season{container-type:inline-size;min-width:0;border:1px solid var(--divider-color,#ddd);border-radius:15px;overflow:hidden;background:var(--ha-card-background,var(--card-background-color,#fff))}
     .mgp-season-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:13px 16px;border-bottom:1px solid var(--divider-color,#ddd)}
     .mgp-season-head strong{font-size:20px;font-weight:900}
     .mgp-season-head small{font-size:11px;color:var(--secondary-text-color)}
