@@ -4,7 +4,7 @@
   const OVERVIEW='ha-motogp-next-overview-card';
   const TIMING='ha-motogp-next-timing-card';
   const REQUIRED='0.2.0-split.2';
-  const BUILD='ui-preview-20261108-05';
+  const BUILD='ui-preview-20261108-06';
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const valid=v=>v!==null&&v!==undefined&&!['','unknown','unavailable','none','null','hidden'].includes(String(v).trim().toLowerCase());
   const cat=v=>{const m=/moto\s*(gp|2|3|e)/i.exec(String(v||''));return m?({gp:'MotoGP','2':'Moto2','3':'Moto3',e:'MotoE'})[m[1].toLowerCase()]:String(v||'');};
@@ -25,12 +25,30 @@
     const flag=countryFlag(value);
     return flag?'<span class="mgp-rider-flag" role="img" aria-label="Nation: '+esc(String(value).toUpperCase())+'">'+flag+'</span>':'';
   };
-  // Local vector marks are an interim graphic until verified original logo assets are located.
+  // Genuine 2024 class SVGs, not skewed-font imitations. Wikimedia Commons
+  // identifies these as PD-textlogo (trademark caveat applies). External
+  // images are optional; accessible plain text survives failed image loads.
+  // https://commons.wikimedia.org/wiki/Category:MotoGP_logos
+  const CLASS_LOGOS=Object.freeze({
+    MotoGP:'https://upload.wikimedia.org/wikipedia/commons/f/f9/MotoGP_logo_%282024%29.svg',
+    Moto2:'https://upload.wikimedia.org/wikipedia/commons/4/46/Moto2_logo_%282024%29.svg',
+    Moto3:'https://upload.wikimedia.org/wikipedia/commons/d/d7/Moto3_logo_%282024%29.svg'
+  });
   const classMark=value=>{
     const name=String(value||'');
-    if(!['MotoGP','Moto2','Moto3'].includes(name))return esc(name);
-    return '<svg class="mgp-class-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 146 34" role="img" aria-label="'+name+'">'+
-      '<text x="8" y="26" fill="currentColor" font-size="28" font-family="Arial,Helvetica,sans-serif" font-style="italic" font-weight="900" letter-spacing="-2.2" transform="skewX(-8)">'+name+'</text></svg>';
+    if(!Object.prototype.hasOwnProperty.call(CLASS_LOGOS,name))return esc(name);
+    return '<span class="mgp-class-logo-wrap"><img class="mgp-class-mark" src="'+
+      CLASS_LOGOS[name]+'" alt="" loading="lazy" decoding="async" data-ready="false">'+
+      '<span class="mgp-class-logo-fallback">'+esc(name)+'</span></span>';
+  };
+  const readyClassMarks=view=>{
+    for(const img of view.querySelectorAll?.('img.mgp-class-mark')||[]){
+      const ready=()=>{img.dataset.ready='true';};
+      const failed=()=>{img.dataset.ready='false';};
+      img.addEventListener('load',ready,{once:true});
+      img.addEventListener('error',failed,{once:true});
+      if(img.complete){if(img.naturalWidth>0)ready();else failed();}
+    }
   };
   // Current GP records are supplied by sensor.motogp_next_race, separately per class.
   // No new API calls and no fallback to records belonging to another class.
@@ -143,10 +161,14 @@
     .mgp-all-mark{font-size:15px;font-weight:900;letter-spacing:.04em}
     @media(max-width:480px){.cats{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.cats .cat{min-height:45px}}
     .np-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:10px 12px}
-    .mgp-class-mark{display:block;width:min(100%,146px);height:31px;overflow:visible}
+    .mgp-class-logo-wrap{display:flex;align-items:center;justify-content:center;width:100%;height:31px}
+    .mgp-class-mark{display:none;max-width:min(100%,146px);max-height:29px;width:auto;height:auto;object-fit:contain}
+    .mgp-class-mark[data-ready="true"]{display:block}
+    .mgp-class-logo-fallback{font-size:16px;font-weight:900;font-style:normal}
+    .mgp-class-mark[data-ready="true"]+.mgp-class-logo-fallback{display:none}
     .mgp-rider-flag{display:inline-block;vertical-align:-.08em;line-height:1;margin-right:6px;font-size:15px;white-space:nowrap}
     .nt-person-text .mgp-rider-flag{font-size:15px}
-    @media(max-width:480px){.np-tabs{gap:5px;padding:8px}.mgp-class-mark{height:24px}.mgp-rider-flag{font-size:13px}}
+    @media(max-width:480px){.np-tabs{gap:5px;padding:8px}.mgp-class-logo-wrap{height:24px}.mgp-class-mark{max-height:22px}.mgp-rider-flag{font-size:13px}}
     .np-tab{border:1px solid var(--divider-color,#ddd);background:transparent;border-radius:13px;padding:7px 9px;color:inherit;font:inherit;font-size:11px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;min-height:41px}
     .np-tab[aria-selected=true]{border-color:#0099dc;background:rgba(0,153,220,.12)}
     /* Compact leaderboard rather than a full-width spreadsheet. */
@@ -451,6 +473,7 @@
         const standings=standingsHtml(this);
         view.innerHTML=view.innerHTML.replace('</section>', '</section>'+standings);
       }
+      readyClassMarks(view);
     };
     Timing.prototype._motogpUiPreview=BUILD;
     Overview.prototype._motogpUiPreview=BUILD;
