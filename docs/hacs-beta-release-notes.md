@@ -1,20 +1,13 @@
-# HA-MGP 2026.11.0b18 – helgschema, snabbaste varv och API-debug
+# HA-MGP 2026.11.0b19 — beständig Pulselive-diagnostik
 
-**HACS beta:** `2026.11.0b18` · **Frontend:** `0.3.0-dev.40`.
+**Beta:** `2026.11.0b19` · **UI:** `0.3.0-dev.40` (samma frontend som b18).
 
-## Nytt
-- Helgschema öppnas som modal så det inte skjuter ned live-timingen mellan översiktskortet och timingkortet.
-- Moto3, Moto2 och MotoGP grafiska/typografiska klassfilter, med förstärkta klick- och klassisoleringsregressioner.
-- Förarens giltiga snabbaste varv markeras rött.
-- Sessionens snabbaste **observerade** varv ligger kvar med det frysta resultatet efter målgång; ska inte ersättas av nästa pass.
-- Valfri **Pulselive API debug**-sensor, avstängd som standard. Loggar förändringstidpunkter för session, status, första förarlista, första varvet och högsta observerade varv från samma godkända TV-fördröjda feed; ingen extra polling.
-- Alla b17-funktioner (T−30 grid, avflaggningsfönster, spoilerskydd, säsongskalender och fem språk) behålls.
+- Beständig append-only JSONL-journal i `/config/motogp_data/api_diagnostics/YYYY-MM-DD.jsonl`.
+- Registrerar feed_online/offline, session_changed, status_changed, first_roster, roster_count_changed, first_lap och lap_count_increased.
+- Endast ändringar från befintlig TV-delay-godkänd data. Inga nya API-anrop, ingen rå förardump. Filskrivning via HA-executor.
+- Journalen fungerar även om `Pulselive API debug` är inaktiverad; entiteten är fortsatt opt-in för Recorder.
+- UI och befintlig b18-backend i övrigt oförändrade. `/event/.../entry` används inte (HTTP 400 vid tidigare test).
 
-## Begränsningar
-- `/event/{eventId}/entry` returnerade HTTP 400 i verifierade tester. Detta anrop är inte aktiverat i b18. Den säsongsbaserade `/riders`-katalogen är inte en bekräftad deltagarlista för en viss session.
-- Sessionens snabbaste tid är den snabbaste **observerade** bland verifierade förarposter i just detta frontend-snapshot, inte ett påstående om slutligt officiellt varv.
-- Diagnostikens första observation kan ske efter officiell start, särskilt efter HA-omstart. Inga tidsstämplar skapas på nytt per poll utan verklig ändring.
-- En kall frontendstart utan ett föregående sessionssnapshot ger ännu inte garanterad återläsning av senaste resultatet. PB-arkivavvikelser måste följas upp under beta.
+**Begränsningar:** Endast framtida observationer från när b19 startats; tiden är HA:s observationstid, inte officiell bantid. Omstart kan ge ny first_seen för pågående session. Ingen automatisk gallring ännu.
 
-## Säkerhet, installation och rollback
-Uppdatera via HACS-beta. Behåll endast JS-modulen `/motogp_sensor/ha-mgp.js`; det gamla aliaset är byte-identiskt. Omstart endast mellan pass. **Rollback:** `2026.11.0b17`. **Main oförändrad.**
+Installera via HACS-beta och starta om HA **mellan pass**, aldrig under aktivt race. Rollback `2026.11.0b18`; `main` förblir orörd.

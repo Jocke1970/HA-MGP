@@ -26,23 +26,41 @@ class PulseliveDiagnostics:
 
     def observe(
         self, live: dict[str, Any] | None, online: bool, at: datetime,
-    ) -> None:
-        """Observe *exposed* TV-delayed data, not raw/undelayed data."""
+    ) -> list[dict[str, Any]]:
+        """Return meaningful transition events from TV-delay-approved samples."""
         timestamp = at.isoformat()
+        changes: list[dict[str, Any]] = []
+        def record(kind: str) -> None:
+            approved = isinstance(live, dict) and live.get("tv_delay_ready") is True
+            identity = self._identity if approved and self._identity else ("", "", "")
+            changes.append({
+                "observed_at": timestamp,
+                "event": kind,
+                "source": "pulselive_livetiming_lite",
+                "event_id": identity[0] or None,
+                "category": identity[1] or None,
+                "session_id": identity[2] or None,
+                "session_status_id": self._status,
+                "rider_count": self._count,
+                "max_observed_lap": self._max_laps,
+                "tv_delay_ready": approved,
+            })
+            self._last_event = kind
         if self._online is not online:
             self._online = online
             self._feed_changed_at = timestamp
-            self._last_event = "feed_online" if online else "feed_offline"
+            # Feed events do not include raw session data (unapproved until delay).
+            record("feed_online" if online else "feed_offline")
 
         if not live or live.get("tv_delay_ready") is not True:
-            return
+            return changes
 
         identity = tuple(str(live.get(field) or "") for field in (
             "event_id", "category", "session_id"
         ))
         if not all(identity):
             # No trusted identity: do not associate riders with a session.
-            return
+            return changes
 
         if identity != self._identity:
             self._identity = identity
@@ -52,24 +70,24 @@ class PulseliveDiagnostics:
             self._first_roster_at = None
             self._first_lap_at = None
             self._session_seen_at = timestamp
-            self._last_event = "session_changed"
+            record("session_changed")
 
         status = str(live.get("session_status_id") or "")
         if status != self._status:
             self._status = status
             self._status_changed_at = timestamp
-            self._last_event = "status_changed"
+            record("status_changed")
 
         riders = live.get("riders")
         if not isinstance(riders, list):
-            return
+            return changes
         count = len(riders)
         if count and not self._first_roster_at:
             self._first_roster_at = timestamp
-            self._last_event = "first_roster"
+            record("first_roster")
         if count != self._count:
             self._count = count
-            self._last_event = "roster_count_changed"
+            record("roster_count_changed")
 
         laps = []
         for rider in riders:
@@ -82,10 +100,11 @@ class PulseliveDiagnostics:
         max_laps = max(laps, default=0)
         if max_laps and not self._first_lap_at:
             self._first_lap_at = timestamp
-            self._last_event = "first_lap"
+            record("first_lap")
         if max_laps > self._max_laps:
             self._max_laps = max_laps
-            self._last_event = "lap_count_increased"
+            record("lap_count_increased")
+        return changes
 
     def state(self) -> str:
         """Small, stable Recorder state for meaningful transitions."""

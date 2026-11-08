@@ -1,12 +1,11 @@
-# Installera HA-MGP HACS beta 2026.11.0b18
+# Installera HA-MGP beta 2026.11.0b19
 
-**Frontend:** `0.3.0-dev.40`. Installera enbart via HACS beta, inte från dev.
+**Frontend:** `0.3.0-dev.40`, oförändrad från b18.
 
-1. Säkerhetskopiera HA-konfigurationen. Behåll `/config/motogp_data/`.
-2. Välj HACS-prerelease `2026.11.0b18` när den publicerats. Starta om HA när inga sessioner pågår.
-3. Behåll exakt **en** JavaScript module-resurs: `/motogp_sensor/ha-mgp.js`. Registrera inte det identiska aliaset samtidigt.
-4. Gör hård omladdning i webbläsaren (`Ctrl+Shift+R`); kontrollera `0.3.0-dev.40`.
-5. Verifiera: helgschema i dialog (Stäng/Escape), Moto3/Moto2/MotoGP-knappar, röd snabbaste-tid, sessionens snabbaste varv efter målflagga, T−30 startgrid, spoilerskydd och mobil.
-6. Valfri loggning: i HA:s entitetsregister, aktivera den som standard **inaktiverade** diagnostikentiteten **Pulselive API debug**. Den ger status och tidpunkter i historiken och gör inga extra nätverksanrop.
+1. Säkerhetskopiera Home Assistant och bevara `/config/motogp_data/`.
+2. Installera `2026.11.0b19` via HACS-beta efter publicerad prerelease. **Starta inte om HA mitt i ett pågående race**; välj ett mellanrum mellan pass.
+3. Behåll en JS module: `/motogp_sensor/ha-mgp.js`. Hård omladdning (`Ctrl+Shift+R`) vid behov.
+4. Efter nästa observerade API-övergång: inspektera `/config/motogp_data/api_diagnostics/YYYY-MM-DD.jsonl` med File Editor eller SSH. Datum i filnamnet följer observationens datum.
+5. Journalen kräver **inte** att `Pulselive API debug` aktiveras. Vill du ha en sammanfattning i entitetsregistret, aktivera den separat under Inställningar → Enheter och tjänster → Entiteter.
 
-**Rollback:** HACS-beta `2026.11.0b17`. Radera inte entiteter eller sessionsarkiv.
+Ingen retroaktiv återfyllning av tidigare pass. Rollback: `2026.11.0b18`, utan att radera journalen eller sessionsarkivet.

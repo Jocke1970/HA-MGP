@@ -53,6 +53,7 @@ jobs:
       - name: Run backend and archive regression tests
         run: |
           python -m unittest discover -s tests -p 'test_api_diagnostics.py' -v
+          python -m unittest discover -s tests -p 'test_api_event_archive.py' -v
           python tests/test_weekend_regressions.py
           python -m unittest discover -s tests -p 'test_session_lap_archive.py' -v
           python -m unittest discover -s tests -p 'test_lap_history_*.py' -v
@@ -148,7 +149,7 @@ jobs:
           manifest = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
           assert manifest['domain'] == 'motogp_sensor'
           assert manifest['name'] == 'HA-MGP'
-          assert manifest['version'] == '2026.11.0b18'
+          assert manifest['version'] == '2026.11.0b19'
           assert all((root / 'translations' / (lang + '.json')).is_file() for lang in ('en','sv','es','it','fr'))
           assert manifest.get('codeowners') == ['@Jocke1970']
           assert {'http', 'frontend'}.issubset(manifest['dependencies'])
@@ -159,6 +160,7 @@ jobs:
               'lap_history_ws.py', 'lap_history_response.py',
               'qualifying_grid.py',
               'api_diagnostics.py',
+              'api_event_archive.py',
               'www/ha-mgp.js', 'www/ha-motogp-next.js', 'www/ha-motogp-card.js',
           }
           missing = sorted(name for name in required if not (root / name).is_file())
@@ -167,20 +169,20 @@ jobs:
           assert hacs.get('name')
           assert not hacs.get('content_in_root')
           assert not hacs.get('zip_release')
-          print('Verified HA-MGP beta: 2026.11.0b18 with season calendar, five locales and timing records')
+          print('Verified HA-MGP beta: 2026.11.0b19 with season calendar, five locales and timing records')
           PY
       - name: Publish tagged GitHub prerelease
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          TAG=2026.11.0b18
+          TAG=2026.11.0b19
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "$TAG already exists; leaving the immutable prerelease untouched."
             gh release view "$TAG" --json tagName,isPrerelease,url,targetCommitish
             exit 0
           fi
           gh release create "$TAG" --target "$(git rev-parse HEAD)" --prerelease \
-            --title 'HA-MGP 2026.11.0b18 — weekend modal, fastest laps and API diagnostics' \
+            --title 'HA-MGP 2026.11.0b19 — persistent Pulselive diagnostic event journal' \
             --notes-file docs/hacs-beta-release-notes.md
           gh release view "$TAG" --json tagName,isPrerelease,url,targetCommitish
