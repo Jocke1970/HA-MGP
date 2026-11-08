@@ -188,6 +188,7 @@ class PulseliveDiagnostics:
             changed = sum(
                 1 for rider_id, value in gaps.items()
                 if rider_id in self._previous_gaps
+                and any(old is not None for old in self._previous_gaps[rider_id])
                 and value != self._previous_gaps[rider_id]
             )
             if changed and (
