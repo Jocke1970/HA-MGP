@@ -1,4 +1,4 @@
-/* MotoGP Next SINGLE Lovelace resource | build next-one-20261108-06 | read only. */
+/* MotoGP Next SINGLE Lovelace resource | build next-one-20261108-07 | read only. */
 /* MotoGP Next: isolated frontend for motogp-test. No HA writes or service calls. */
 (() => {
   'use strict';
@@ -303,9 +303,9 @@
       this._track(now,race);
       const event=valid(race?.state)?race.state:'Inget evenemang tillgängligt';
       const meta=[a.circuit,a.country,a.date_start&&a.date_end?dateRange(a.date_start,a.date_end):''].filter(valid);
-      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.31</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
+      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.32</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
         this._schedule(race,now)+`<div class="root">${this._weather()}${this._timing()}</div>`+
-        `<div class="foot">HA-MGP UI · 0.3.0-dev.31 · UI-preview</div></div>`;
+        `<div class="foot">HA-MGP UI · 0.3.0-dev.32 · UI-preview</div></div>`;
     }
     getCardSize(){return 8;}
     getGridOptions(){return {columns:12,rows:'auto',min_columns:6};}
@@ -2071,7 +2071,7 @@ customElements.whenDefined(OVERVIEW).then(install);
 (() => {
   'use strict';
   const TAG='ha-motogp-next-overview-card';
-  const BUILD='calendar-20261108-01';
+  const BUILD='calendar-20261108-02';
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const parseDate=raw=>{
     const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(raw||''));
@@ -2109,7 +2109,7 @@ customElements.whenDefined(OVERVIEW).then(install);
     return events.some(e=>today>=dateKey(e.start)&&today<=dateKey(e.end));
   };
   const STYLES=`
-    .mgp-season{min-width:0;border:1px solid var(--divider-color,#ddd);border-radius:15px;overflow:hidden;background:var(--ha-card-background,var(--card-background-color,#fff))}
+    .mgp-season{container-type:inline-size;min-width:0;border:1px solid var(--divider-color,#ddd);border-radius:15px;overflow:hidden;background:var(--ha-card-background,var(--card-background-color,#fff))}
     .mgp-season-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:13px 16px;border-bottom:1px solid var(--divider-color,#ddd)}
     .mgp-season-head strong{font-size:20px;font-weight:900}
     .mgp-season-head small{font-size:11px;color:var(--secondary-text-color)}
