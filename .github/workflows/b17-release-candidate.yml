@@ -1,4 +1,4 @@
-name: HA-MGP b18 release candidate gate
+name: HA-MGP b19 release candidate gate
 
 on:
   push:
@@ -29,15 +29,16 @@ jobs:
           python3 tests/test_frontend_package.py
           python3 -m compileall -q custom_components/motogp_sensor
           python3 -m unittest discover -s tests -p 'test_api_diagnostics.py' -v
+          python3 -m unittest discover -s tests -p 'test_api_event_archive.py' -v
           python3 - <<'PY'
           import json
           from pathlib import Path
           m=json.loads(Path('custom_components/motogp_sensor/manifest.json').read_text())
-          assert m['version']=='2026.11.0b18'
+          assert m['version']=='2026.11.0b19'
           code=Path('custom_components/motogp_sensor/coordinator.py').read_text()
-          assert 'async_get_entry_list(' not in code, 'Unsupported entry endpoint must not be called in b18'
+          assert 'async_get_entry_list(' not in code, 'Unsupported entry endpoint must not be called in b19'
           assert 'PulseliveDiagnostics' in code, 'Passive diagnostics missing'
-          print('PASS: b18 manifest, static routing, no unverified entry API calls')
+          print('PASS: b19 manifest, static routing, no unverified entry API calls')
           PY
       - name: Verify packaged JS and regression behavior
         run: |
