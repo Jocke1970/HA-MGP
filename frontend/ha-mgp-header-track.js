@@ -171,7 +171,7 @@ function venue(card){
   const mapHtml=(map||localPath)?'<div class="mgp-track-layer">'+
     (localPath?'<img class="mgp-track-local" src="'+esc(localPath)+'" alt="Banlayout med kurvnummer och sektorer för '+esc(circuit)+'" loading="lazy">':'')+
     '<div class="mgp-track-fallback">'+(fallback||'<div class="mgp-track-empty">Lokal SVG saknas</div>')+'</div></div>'+
-    '<div class="mgp-track-note">Lokal SVG där den finns · annars schematisk banform</div>':
+    '<div class="mgp-track-note">Schematisk banform som fallback · lokal SVG där den finns</div>':
     '<div class="mgp-track-empty">Ingen verifierad banritning tillgänglig</div>';
   const temperature=weatherNumber(weather.air,'°C');
   const ground=weatherNumber(weather.ground,'°C');
