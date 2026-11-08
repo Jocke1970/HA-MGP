@@ -1,39 +1,27 @@
-# MotoGP Sensor 2026.10.0b4 — weekend beta
+# HA-MGP 2026.11.0b17 — resultat mellan pass och förhandsstartgrid
 
-**Fixes a five-minute blind spot between finished and upcoming sessions.** Saturday archive evidence showed Q1→Q2 handoffs exactly ~300 seconds apart and Sprint archiving beginning 5m43s after the scheduled start. b3 keeps 300-second idle polling normally, but switches to 30-second standby polling from 15 minutes before until 30 minutes after a normalized scheduled session start.
+**HACS beta `2026.11.0b17` · UI `0.3.0-dev.37`**
 
-**Supersedes broken 2026.10.0b1.** b1 fails during Home Assistant import because the Broadcast event URL constant eagerly evaluates an undefined `uuid` name. b2 fixes that constant and adds an executable import-time release regression.
+## Nytt jämfört med b16
 
-**Beta target:** 2026-10-09. This prerelease keeps the existing `motogp_sensor` domain and is intended for live validation before any promotion to `main`.
+- Senaste verifierade live-resultatet visas mellan passen tills nästa pass ligger inom 30 minuter, med manuell kollapsning.
+- T−30 övergår kortet till kommande sessions startvy. För Race/Sprint används officiellt publicerad startgrid (`start_grids` från den befintliga b16-backenden), med tomma tidsfält tills klass- och sessionsmatchad live-data kommer.
+- Om ingen verifierad startgrid/deltagarlista finns visas väntmeddelande utan fiktiva placeringar eller tider.
+- Vid passerad schemastart får väntvyn ligga kvar kort tills verifierad livetiming anländer.
+- Avflaggning ger högst två minuters efterstabilisering av korrekt samma-sessions snapshot.
+- UI-status per klass, aktiv session i toppchip, nedräkningsikoner och röd färg under fem minuter.
+- Bevarad visuell säsongskalender från b16 och fem UI-språk.
 
-## Fixes
+## Medvetna begränsningar och tester
 
-- **Red Flag / Delayed live polling:** `R` and `D` now remain on the 5-second active-session polling cadence instead of dropping to the 300-second idle cadence. This fixes the reproduced Mandalika case where HA stayed on Red Flag for up to five minutes after the broadcast returned to green.
-- **Consistent active-session context:** the same `I/S/R/D` set is used by `session_in_progress`, live-condition refresh and adaptive polling.
-- **Timezone-aware weekend schedule:** backend obtains the event IANA timezone from the MotoGP Broadcast API, keeps the raw Results API wall-clock `date`, and adds a true `date_utc` for each normalized weekend session.
-- **Timezone metadata:** `sensor.motogp_next_race` exposes `time_zone`.
+- Pulselive `/event/{eventId}/entry` gav HTTP 400 i kontrollerade anrop; b17 använder **inte** den nya dev-backendens deltagarlista. Officiell startgrid från `/results/event/.../grid` returnerade HTTP 200 i test för Malaysias GP 2026.
+- Ingen säker deltagarlista före träning/kval när ett verifierat API-svar saknas. Säsongsteam är inte liktydigt med faktisk startlista.
+- Föregående resultat förutsätter ett tidigare observerat live-snapshot under kortets livslängd. Efter omstart saknas automatisk återläsning av komplett slutklassificering.
+- Senaste arkiverade PB/varv kontra slutresultat måste kontrolleras under ett riktigt racepass.
+- Inga ändringar av integrationsdomän, Lovelace-taggar, befintliga HA-entiteter eller `/config/motogp_data/`.
 
-Regression coverage includes Mandalika **14:05 → 08:05 Europe/Stockholm** and the Red Flag/Delayed polling contract.
+## Installation och återställning
 
-## Separate Next dashboard update
+HACS prerelease `2026.11.0b17`. Lovelace JavaScript module: `/motogp_sensor/ha-mgp.js` (endast en resurs). Hård omladdning. Starta inte om HA under pågående pass.
 
-The HACS integration does **not** install `/config/www/ha-motogp-next.js`. A separately verified **Next 0.3.0-dev.5** bundle prefers the new `date_utc` field and renders browser-local time. Its Git blob is:
-
-`4c73aa7f22ec8876b77beede369d565e86e08e0d`
-
-Keep the existing Lovelace resource; replace only its JS file using the pinned installer. No second resource is required.
-
-## Validation boundary
-
-Dev CI is green, but this is still a beta:
-- confirm live `R → I/S` recovery on the actual HA host;
-- confirm timezone metadata/session `date_utc` from the current event;
-- inspect archive JSON after a qualifying session;
-- do not promote to `main` solely because CI passed.
-
-TV delay remains the operator's setting and is not changed by this release. Existing `/config/motogp_data` is preserved.
-
-
-## 2026.10.0b4
-
-Refines session-start polling from the broad b3 standby window. The coordinator now stays at 300 seconds until T-5 minutes, switches to 15-second polling from T-5 through T+10 while the feed is not active, keeps a 30-second delayed-start fallback through T+30, and uses 5 seconds whenever I/S/R/D is reported. This targets the observed lap-1 losses while reducing unnecessary API traffic.
+**Rollback:** `2026.11.0b16`. **main** förblir orörd.
