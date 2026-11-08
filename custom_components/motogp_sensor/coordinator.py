@@ -787,6 +787,7 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         schedule_event = self.static.get("next_event")
         self.static["schedule_time_zone"] = None
 
+        broadcast_event = None
         if isinstance(schedule_event, dict):
             broadcast_uuid = schedule_event.get("toad_api_uuid")
             if broadcast_uuid:
@@ -852,40 +853,8 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 if not schedule_category_uuid or not schedule_category_name:
                     continue
 
-                # Snapshot of the officially entered riders. Kept separate from
-                # both the live timing feed and the published race grid.
-                try:
-                    entrants = await self.api.async_get_entry_list(
-                        schedule_event["id"], schedule_category_uuid
-                    )
-                except MotogpApiError as err:
-                    _LOGGER.debug("Entrants unavailable for %s: %s", schedule_category_name, err)
-                    entrants = []
-                roster = []
-                seen_numbers = set()
-                for row in entrants:
-                    rider = row.get("rider") or {}
-                    if not isinstance(rider, dict):
-                        continue
-                    number = row.get("number", rider.get("number"))
-                    number_key = str(number).strip() if number is not None else ""
-                    name = str(rider.get("full_name") or "").strip()
-                    if not number_key or not name or number_key in seen_numbers:
-                        continue
-                    seen_numbers.add(number_key)
-                    team = row.get("team") or {}
-                    if not isinstance(team, dict):
-                        team = {}
-                    roster.append({
-                        "number": number_key, "rider": name,
-                        "team": str(row.get("team_name") or team.get("name") or ""),
-                        "nation": str((rider.get("country") or {}).get("iso") or "")
-                        if isinstance(rider.get("country"), dict) else "",
-                    })
-                roster.sort(key=lambda x: (int(x["number"]) if x["number"].isdigit() else 9999, x["number"]))
-                if roster:
-                    self.static["entry_lists"][schedule_category_name] = roster
-
+                # An entrant list is not available from a verified Results endpoint.
+                # Leave it absent rather than calling an unsupported path.
                 try:
                     category_sessions = await self.api.async_get_sessions(
                         schedule_event["id"], schedule_category_uuid
@@ -935,6 +904,57 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                             "weather": condition.get("weather") or "",
                         }
                     )
+
+            # Broadcast API event contains future schedule rows before Results
+            # API publishes sessions. Its IDs are NOT Results session UUIDs.
+            # Use its data only for display and never to authorize archive/results.
+            broadcasts = (broadcast_event or {}).get("broadcasts")
+            if isinstance(broadcasts, list):
+                known = {
+                    (r["category"], str(r.get("date_utc") or r["date"])[:16])
+                    for r in all_sessions
+                }
+                for broadcast in broadcasts:
+                    if not isinstance(broadcast, dict) or str(broadcast.get("type") or "").upper() != "SESSION":
+                        continue
+                    cat = broadcast.get("category")
+                    if not isinstance(cat, dict):
+                        continue
+                    name = _schedule_category_name(cat.get("name") or cat.get("acronym"))
+                    if name not in {"MotoGP", "Moto2", "Moto3", "MotoE"}:
+                        continue
+                    when = broadcast.get("date_start")
+                    if not when:
+                        continue
+                    normalized_date = session_wall_time_to_utc(
+                        when, self.static.get("schedule_time_zone")
+                    ) or str(when)
+                    identity = (name, str(normalized_date)[:16])
+                    if identity in known:
+                        continue
+                    known.add(identity)
+                    shortname = str(broadcast.get("shortname") or "").upper()
+                    display_name = (shortname if shortname in {"RAC", "SPR", "WUP", "PR"}
+                                    or shortname.startswith(("FP", "Q"))
+                                    else str(broadcast.get("name") or "").strip()[:80])
+                    if display_name in {"RAC", "SPR", "WUP", "PR"}:
+                        display_name = {"RAC": "Race", "SPR": "Sprint",
+                                        "WUP": "Warm Up", "PR": "Practice"}[display_name]
+                    if not display_name:
+                        continue
+                    all_sessions.append({
+                        "id": "",  # Broadcast is schedule-only; not a Results session.
+                        "category": name,
+                        "category_raw": cat.get("name") or name,
+                        "category_id": None,
+                        "name": display_name,
+                        "type": shortname,
+                        "date": when, "date_utc": normalized_date,
+                        "status": broadcast.get("status") or "",
+                        "source": "broadcast_schedule",
+                    })
+                    if name not in seen_categories:
+                        seen_categories.append(name)
 
             all_sessions.sort(
                 key=lambda s: parse_api_date(
