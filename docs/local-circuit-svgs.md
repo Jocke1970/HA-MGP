@@ -40,6 +40,10 @@ there is no existing schematic source for that circuit.
 | Jerez | `jerez.svg` |
 | Goiânia | `goiania.svg` |
 
+The three circuits without local SVGs in this 2026 set are **Silverstone,
+MotorLand Aragón and Misano**; they continue using the existing schematic
+shapes. A missing local file never blocks the Overview card.
+
 These are internal HA-MGP filename identifiers, not claims about the
 original SVG element IDs. A file provided as `ger2-info.svg` was identified
 by the user as Sachsenring despite containing an NLD element ID.
