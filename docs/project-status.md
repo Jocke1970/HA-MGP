@@ -55,3 +55,12 @@ I frontend `0.3.0-dev.32` ersätter en responsiv säsongskalender översiktskort
 - Under tidsfönstret får bara **samma klass, session, event och TV-delay-godkända** förarlista ersätta den frysta snapshoten. Förare kopieras så att kommande feed-objekt inte muterar det visade resultatet. Nästa-passets nedräkning återkommer automatiskt när fönstret gått ut.
 - Inga varvtider konstrueras eller hämtas från okända/andra sessioner. Om källan fortfarande saknar senaste arkiverade varv kan resultatlistan fortfarande avvika från popupen. Arkivet är separat källa för observerade varv; detta kräver särskild uppföljning innan slutresultat kan kallas verifierade.
 - Endast på dev; behöver testas i Home Assistant under ett riktigt pass/slutvarv och jämföras med arkiv.
+
+## T−30-startlista och resultat mellan pass (dev.37, ej beta)
+
+- Utanför aktiv session behåller timingkortet **senast verifierade** resultatet öppet fram till 30 minuter före nästa schemalagda pass. Rubriken anger tydligt att resultatet inte är live. Manuellt hopfällt resultat respekteras.
+- Från T−30 visas officiell startgrid för race/sprint, om den är publicerad; annars används anmälda förare för rätt kategori i nummerordning. För träning/kval visas deltagarlistan, inte påhittade startpositioner. Inga tider fylls innan matchande live-feed är verifierad.
+- När schemalagd starttid passerat behålls deltagarlistan som väntvy i högst 15 minuter om matchad live-feed ännu saknas. Matchad live-feed tar alltid över. Spoilerläge stoppar båda vyerna.
+- Nytt öppet Pulselive-anrop `/event/{eventId}/entry?categoryUuid={categoryId}` ger backend `entry_lists` på `sensor.motogp_next_race`. Detta behöver testas mot aktuellt verkligt API-svar och i HA.
+- **Begränsning:** Resultatvisningen mellan pass använder det senaste bekräftade live-snapshot som timingkortet faktiskt har sett. Efter omstart/ny laddning utan sådant snapshot finns ännu ingen automatisk återhämtning av hela föregående resultatet.
+- CI kör separat T−30-regression för roster, grid, post-start väntläge, spoiler, manuell hopfällning och saknad startlista. `dev`-ändringar är inte en publicerad beta.
