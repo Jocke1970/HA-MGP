@@ -57,6 +57,8 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   assert.match(h,/SENASTE VARV/);assert.match(h,/FRAMFÖR/);assert.match(h,/LEDARE/);
   assert.match(h,/⏱ fastest/);assert.doesNotMatch(h,/⚡/);
   assert.match(h,/nt-last-main[\s\S]*nt-pb-chip[\s\S]*Snabbaste: 1&#39;29\.980/);
+  assert.match(h,/class="nt-rider-best"[^>]*>Snabbaste: 1&#39;29\.980/,'rider fastest lap highlighted in red');
+  assert.match(source,/\.nt-lap-pair>small\.nt-rider-best\{color:var\(--motogp-fastest-lap-color,var\(--error-color,#b71c1c\)\)/,'rider fastest style is red');
   assert.match(h,/▲ \+5/);assert.match(h,/RUNNING/);
   assert.match(h,/Nation: ITA[^>]*>🇮🇹/,'live timing uses supplied nationality');
   assert.match(h,/mgp-timing-records/,'records belong inside timing header');
