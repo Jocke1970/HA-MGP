@@ -2,6 +2,8 @@ name: Package HA-MGP HACS beta
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [beta]
   push:
     branches: [beta]
     paths:
@@ -176,6 +178,7 @@ jobs:
           print('Verified HA-MGP beta: 2026.11.0b22 with season calendar, five locales and timing records')
           PY
       - name: Publish tagged GitHub prerelease
+        if: github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
