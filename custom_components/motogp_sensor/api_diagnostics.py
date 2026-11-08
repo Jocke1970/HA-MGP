@@ -108,6 +108,8 @@ class PulseliveDiagnostics:
             self._status = status
             self._status_changed_at = timestamp
             record("status_changed")
+            if status in ("S", "I"):
+                record("session_started")
 
         riders = live.get("riders")
         if not isinstance(riders, list):
