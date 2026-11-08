@@ -84,6 +84,7 @@
     .nt-heading>span:nth-child(2){text-align:left!important}
     .nt-lap-pair{display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:0}
     .nt-lap-pair>small{font-size:10px;color:var(--secondary-text-color);font-weight:650;white-space:nowrap}
+    .nt-lap-pair>small.nt-rider-best{color:var(--motogp-fastest-lap-color,var(--error-color,#b71c1c));font-weight:850}
     .nt-lap-pair .nt-last-main{font-weight:850;white-space:nowrap}
     .nt-status-pair{display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:0}
     .nt-status-pair small{font-size:10px;color:var(--secondary-text-color)}
@@ -262,7 +263,7 @@
         if(range) {
           const original=row.slice(range.begin,range.end),best=lap(r.best_lap_time);
           const cell=`<span class="nt-lap-pair"><span class="nt-last-main">${original}</span>`+
-            `<small>Snabbaste: ${esc(best)}</small></span>`;
+            `<small${best!=='—'?' class="nt-rider-best"':''}>Snabbaste: ${esc(best)}</small></span>`;
           row=row.slice(0,range.begin)+cell+row.slice(range.end);
         }
         const status=r.on_pit?'PIT':valid(r.status_name)?String(r.status_name):valid(r.status_id)?String(r.status_id):'—';
