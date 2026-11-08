@@ -3,6 +3,7 @@
 import base64
 import hashlib
 import importlib.util
+import json
 import pathlib
 import sys
 import tempfile
@@ -12,8 +13,9 @@ QUAL_BLOB = '3cd24780166dcc578624221769a8a459c7b62819'
 HEADER_BLOB = '32b6030889f81a4836b357b9b04ab23438ff72de'
 HISTORY_BLOB = '8b7038e64df05cb7ffbc1e6059a966c867733fac'
 MOBILE_BLOB = '9fad86bfd7fdc2e461371efb458b17f6029df794'
-BUILD = 'next-one-20261108-04'
-VERSION = '0.3.0-dev.29'
+I18N_BLOB = '3a5bd509a76c8667ade302d84b191b81d3ca8e4e'
+BUILD = 'next-one-20261108-05'
+VERSION = '0.3.0-dev.30'
 
 
 def blob(data):
@@ -62,6 +64,31 @@ def main(frontend, target):
     history_bytes = history.read_bytes()
     if blob(history_bytes) != HISTORY_BLOB:
         raise SystemExit('STOP: unexpected session history source revision')
+    # Bundle all five translations into the one HACS resource, so no locale
+    # HTTP requests, stale caches or parallel Lovelace resources are required.
+    languages = {}
+    locales_dir = frontend / 'locales'
+    for locale in ('en', 'sv', 'es', 'it', 'fr'):
+        path = locales_dir / (locale + '.json')
+        if not path.is_file() or path.is_symlink():
+            raise SystemExit('STOP: missing/unsafe locale file ' + locale)
+        item = json.loads(path.read_text(encoding='utf-8'))
+        if not isinstance(item, dict) or not all(isinstance(k, str) and isinstance(v, str) for k, v in item.items()):
+            raise SystemExit('STOP: invalid locale entries in ' + locale)
+        languages[locale] = item
+    canonical = set(languages['en'])
+    if not canonical or any(set(values) != canonical for values in languages.values()):
+        raise SystemExit('STOP: incomplete locale keys, English must be canonical')
+    i18n_path = frontend / 'ha-mgp-i18n.js'
+    if not i18n_path.is_file() or i18n_path.is_symlink():
+        raise SystemExit('STOP: missing/unsafe HA-MGP i18n addon')
+    i18n_bytes = i18n_path.read_bytes()
+    if blob(i18n_bytes) != I18N_BLOB:
+        raise SystemExit('STOP: unexpected HA-MGP i18n addon revision')
+    i18n_source = i18n_bytes.decode('utf-8')
+    if i18n_source.count('__MGP_UI_LOCALES_JSON__') != 1:
+        raise SystemExit('STOP: unexpected locale catalog placeholder')
+    i18n_source = i18n_source.replace('__MGP_UI_LOCALES_JSON__', json.dumps(languages, ensure_ascii=True, separators=(',', ':')))
     with tempfile.TemporaryDirectory() as temp:
         base = pathlib.Path(temp) / 'base.js'
         module.build(frontend, base)
@@ -84,7 +111,7 @@ def main(frontend, target):
     if header_source.count('__MGP_APPROVED_BRAND_DATA_URI__') != 1:
         raise SystemExit('STOP: missing or duplicate MGP logo placeholder')
     header_source = header_source.replace('__MGP_APPROVED_BRAND_DATA_URI__', logo_uri)
-    result = (text + '\n;\n' + ui.decode('utf-8') + '\n;\n' + mobile_bytes.decode('utf-8') + '\n;\n' + qual_bytes.decode('utf-8') + '\n;\n' + header_source + '\n;\n' + history_bytes.decode('utf-8')).encode('utf-8')
+    result = (text + '\n;\n' + ui.decode('utf-8') + '\n;\n' + mobile_bytes.decode('utf-8') + '\n;\n' + qual_bytes.decode('utf-8') + '\n;\n' + header_source + '\n;\n' + history_bytes.decode('utf-8') + '\\n;\\n' + i18n_source).encode('utf-8')
     pathlib.Path(target).write_bytes(result)
     print(f'UI preview built: {target} ({len(result)} bytes, git blob {blob(result)})')
 
