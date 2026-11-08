@@ -40,6 +40,13 @@ LIVE = "live"
 STATIC = "static"
 
 SENSOR_DESCRIPTIONS: dict[str, SensorEntityDescription] = {
+    "api_debug": SensorEntityDescription(
+        key="api_debug",
+        name="Pulselive API debug",
+        icon="mdi:bug-outline",
+        entity_category="diagnostic",
+        entity_registry_enabled_default=False,
+    ),
     SENSOR_SESSION_STATUS: SensorEntityDescription(
         key=SENSOR_SESSION_STATUS,
         translation_key=SENSOR_SESSION_STATUS,
@@ -141,6 +148,14 @@ async def async_setup_entry(
         entities.append(
             MotogpSensor(coordinator, device_name, description, key, sensor_type)
         )
+    # Diagnostic entity is opt-in via the HA entity registry, independent of
+    # the existing selectable production sensor set.
+    entities.append(
+        MotogpSensor(
+            coordinator, device_name, SENSOR_DESCRIPTIONS["api_debug"],
+            "api_debug", STATIC,
+        )
+    )
     async_add_entities(entities)
 
 
@@ -165,6 +180,8 @@ class MotogpSensor(MotogpEntity, SensorEntity):
     @property
     def native_value(self) -> Any:
         """Return the sensor state."""
+        if self._key == "api_debug":
+            return "Hidden" if self.coordinator.no_spoiler else self.coordinator.api_diagnostics.state()
         if self._type == LIVE:
             if self.coordinator.no_spoiler:
                 return "Hidden"
@@ -186,6 +203,8 @@ class MotogpSensor(MotogpEntity, SensorEntity):
                 return None
             _update_lap_history(self.coordinator, live)
             return _live_attributes(self._key, live, self.coordinator)
+        if self._key == "api_debug":
+            return {"spoiler_mode": True} if self.coordinator.no_spoiler else self.coordinator.api_diagnostics.attributes()
         return _static_attributes(self._key, self.coordinator)
 
 
