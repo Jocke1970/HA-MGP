@@ -23,7 +23,7 @@ function validFinishingFeed(card,hold){
 }
 function resultRows(card){
  const items=card._hass?.states?.[card._ids.riders]?.attributes?.riders;
- return items.filter(r=>r&&typeof r==='object').slice().sort((a,b)=>{
+ return items.filter(r=>r&&typeof r==='object').map(r=>({...r})).sort((a,b)=>{
   const p=v=>Number(v)>0?Number(v):999;return p(a.position)-p(b.position);
  });
 }
