@@ -42,6 +42,12 @@ const ctx={Date:DateClock,customElements:{get:()=>Timing,whenDefined:()=>Promise
  assert.equal(t._snapshot.riders[0].best_lap_time,"1'52.281",'cross-class data rejected');
  clock+=240001;t._track(new DateClock(),race);
  assert.match(t._timing(),/Nästa: Moto3/,'normal countdown restored after bounded hold');
+ const c=new Timing();
+ c._hass.states.status.state='Finished';
+ c._hass.states.status.attributes.session_status_id='C';
+ c._track(new DateClock(),race);
+ assert.match(c._timing(),/Avflaggat: MotoGP · Warm Up/,'C is official finished status too');
+ assert.equal(c._snapshot.riders[0].best_lap_time,"1'52.281",'C permits late same-session finish correction');
  const spoiler=new Timing();spoiler.hidden=true;spoiler._track(new DateClock(),race);
  assert.doesNotMatch(spoiler._timing(),/Avflaggat/,'spoiler guard');
  console.log('PASS: 4-minute finish settling, late same-session PB, no cross-class leaks, expiry and spoiler');
