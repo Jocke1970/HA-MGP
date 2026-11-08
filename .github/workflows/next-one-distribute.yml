@@ -10,6 +10,7 @@ on:
       - 'frontend/ha-mgp-gap-trends.js'
       - 'frontend/ha-mgp-ui.js'
       - 'frontend/ha-mgp-i18n.js'
+      - 'frontend/ha-mgp-calendar.js'
       - 'frontend/locales/**'
       - 'custom_components/motogp_sensor/translations/**'
       - 'frontend/ha-mgp-mobile-laps.js'
@@ -21,6 +22,7 @@ on:
       - 'tests/frontend-next-one.cjs'
       - 'tests/frontend-next-ui-preview.cjs'
       - 'tests/frontend-i18n.cjs'
+      - 'tests/frontend-calendar.cjs'
       - 'tests/test_frontend_package.py'
       - 'tests/frontend-mobile-laps.cjs'
       - 'tests/frontend-next-qual-grid.cjs'
@@ -57,6 +59,7 @@ jobs:
           node --check frontend/ha-mgp-ui.js
           node tests/frontend-next-ui-preview.cjs frontend/ha-mgp-ui.js
           node tests/frontend-i18n.cjs
+          node tests/frontend-calendar.cjs
           python3 scripts/build-next-ui-preview.py frontend dist/ha-mgp.js
           node --check dist/ha-mgp.js
           cp dist/ha-mgp.js custom_components/motogp_sensor/www/ha-mgp.js

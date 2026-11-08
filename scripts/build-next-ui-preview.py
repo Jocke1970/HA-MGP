@@ -14,8 +14,9 @@ HEADER_BLOB = '32b6030889f81a4836b357b9b04ab23438ff72de'
 HISTORY_BLOB = '8b7038e64df05cb7ffbc1e6059a966c867733fac'
 MOBILE_BLOB = '9fad86bfd7fdc2e461371efb458b17f6029df794'
 I18N_BLOB = '3a5bd509a76c8667ade302d84b191b81d3ca8e4e'
-BUILD = 'next-one-20261108-05'
-VERSION = '0.3.0-dev.30'
+CALENDAR_BLOB = '06506ebccde98ac106007feab473fc5a56f5b217'
+BUILD = 'next-one-20261108-06'
+VERSION = '0.3.0-dev.31'
 
 
 def blob(data):
@@ -89,6 +90,12 @@ def main(frontend, target):
     if i18n_source.count('__MGP_UI_LOCALES_JSON__') != 1:
         raise SystemExit('STOP: unexpected locale catalog placeholder')
     i18n_source = i18n_source.replace('__MGP_UI_LOCALES_JSON__', json.dumps(languages, ensure_ascii=True, separators=(',', ':')))
+    calendar_path = frontend / 'ha-mgp-calendar.js'
+    if not calendar_path.is_file() or calendar_path.is_symlink():
+        raise SystemExit('STOP: missing/unsafe season calendar addon')
+    calendar_bytes = calendar_path.read_bytes()
+    if blob(calendar_bytes) != CALENDAR_BLOB:
+        raise SystemExit('STOP: unexpected season calendar source revision')
     with tempfile.TemporaryDirectory() as temp:
         base = pathlib.Path(temp) / 'base.js'
         module.build(frontend, base)
@@ -111,7 +118,7 @@ def main(frontend, target):
     if header_source.count('__MGP_APPROVED_BRAND_DATA_URI__') != 1:
         raise SystemExit('STOP: missing or duplicate MGP logo placeholder')
     header_source = header_source.replace('__MGP_APPROVED_BRAND_DATA_URI__', logo_uri)
-    result = (text + '\n;\n' + ui.decode('utf-8') + '\n;\n' + mobile_bytes.decode('utf-8') + '\n;\n' + qual_bytes.decode('utf-8') + '\n;\n' + header_source + '\n;\n' + history_bytes.decode('utf-8') + '\n;\n' + i18n_source).encode('utf-8')
+    result = (text + '\n;\n' + ui.decode('utf-8') + '\n;\n' + mobile_bytes.decode('utf-8') + '\n;\n' + qual_bytes.decode('utf-8') + '\n;\n' + header_source + '\n;\n' + history_bytes.decode('utf-8') + '\n;\n' + i18n_source + '\n;\n' + calendar_bytes.decode('utf-8')).encode('utf-8')
     pathlib.Path(target).write_bytes(result)
     print(f'UI preview built: {target} ({len(result)} bytes, git blob {blob(result)})')
 
