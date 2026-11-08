@@ -206,8 +206,6 @@ class MotogpSensor(MotogpEntity, SensorEntity):
                 return None
             _update_lap_history(self.coordinator, live)
             return _live_attributes(self._key, live, self.coordinator)
-        if self._key == "api_debug":
-            return {"spoiler_mode": True} if self.coordinator.no_spoiler else self.coordinator.api_diagnostics.attributes()
         return _static_attributes(self._key, self.coordinator)
 
 
