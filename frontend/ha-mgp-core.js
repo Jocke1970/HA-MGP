@@ -118,7 +118,7 @@
     if (isRace && total !== null) {
       if (now !== null) out.push(`Varv ${now}/${total}`);
       else out.push(`${total} varv`);
-      if (now !== null) out.push(now===total ? "Sista varvet" : `${Math.max(0,total-now+1)} varv kvar`);
+      if (now !== null) out.push(`${Math.max(0,total-now)} varv kvar`);
     } else {
       const countdown=clock(remain?.state);
       if (countdown) out.push(`${countdown} kvar`);
