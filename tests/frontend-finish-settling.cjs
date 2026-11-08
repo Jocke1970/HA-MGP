@@ -40,7 +40,7 @@ const ctx={Date:DateClock,customElements:{get:()=>Timing,whenDefined:()=>Promise
  t._hass.states.riders.attributes.riders[0].best_lap_time="1'20.111";
  t._track(new DateClock(),race);
  assert.equal(t._snapshot.riders[0].best_lap_time,"1'52.281",'cross-class data rejected');
- clock+=120001;t._track(new DateClock(),race);
+ clock+=240001;t._track(new DateClock(),race);
  assert.match(t._timing(),/Nästa: Moto3/,'normal countdown restored after bounded hold');
  const spoiler=new Timing();spoiler.hidden=true;spoiler._track(new DateClock(),race);
  assert.doesNotMatch(spoiler._timing(),/Avflaggat/,'spoiler guard');
