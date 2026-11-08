@@ -1,4 +1,4 @@
-/* MotoGP Next SINGLE Lovelace resource | build next-one-20261108-14 | read only. */
+/* MotoGP Next SINGLE Lovelace resource | build next-one-20261108-15 | read only. */
 /* MotoGP Next: isolated frontend for motogp-test. No HA writes or service calls. */
 (() => {
   'use strict';
@@ -303,9 +303,9 @@
       this._track(now,race);
       const event=valid(race?.state)?race.state:'Inget evenemang tillgängligt';
       const meta=[a.circuit,a.country,a.date_start&&a.date_end?dateRange(a.date_start,a.date_end):''].filter(valid);
-      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.39</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
+      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.40</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
         this._schedule(race,now)+`<div class="root">${this._weather()}${this._timing()}</div>`+
-        `<div class="foot">HA-MGP UI · 0.3.0-dev.39 · UI-preview</div></div>`;
+        `<div class="foot">HA-MGP UI · 0.3.0-dev.40 · UI-preview</div></div>`;
     }
     getCardSize(){return 8;}
     getGridOptions(){return {columns:12,rows:'auto',min_columns:6};}
@@ -975,6 +975,24 @@
     return '<div class="mgp-timing-records" role="group" aria-label="'+esc(category)+' circuit records">'+
       ['lap','pole','race'].map(k=>found.get(k)||'').join('')+'</div>';
   };
+  // An ended session must keep its fastest observed lap with its own frozen
+  // same-session roster, never with the incoming race's live attributes.
+  const sessionFastest=card=>{
+    const snap=card._snapshot;
+    if(!snap||snap.day!==card._today||!Array.isArray(snap.riders)||!snap.riders.length)return '';
+    const candidates=snap.riders.map(r=>{
+      const raw=lap(r.best_lap_time);
+      const match=/^(?:(\d+)[:'])?(\d{1,2})\.(\d{3})$/.exec(raw);
+      if(!match)return null;
+      const seconds=Number(match[1]||0)*60+Number(match[2])+Number(match[3])/1000;
+      if(!Number.isFinite(seconds)||seconds<=0)return null;
+      return {seconds,time:raw,rider:String(r.surname||r.shortname||r.firstname||'').trim()};
+    }).filter(Boolean).sort((a,b)=>a.seconds-b.seconds);
+    if(!candidates.length)return '';
+    const best=candidates[0];
+    return '<div class="nt-session-observed-best" role="status">⏱ Sessionens snabbaste observerade: '+
+      '<strong>'+esc(best.time)+'</strong>'+(best.rider?' · '+esc(best.rider):'')+'</div>';
+  };
   const session=v=>({RAC:'Race',SPR:'Sprint'})[String(v||'').toUpperCase()]||String(v||'');
   const number=v=>/^#?\d+$/.test(String(v??'').trim())?String(Number(String(v).replace('#',''))):'';
   // Use only colors explicitly supplied by the provider; neutral fallback.
@@ -999,6 +1017,8 @@
     .nt-position-zero{color:var(--secondary-text-color);font-weight:750}
     .nt-position-empty{color:var(--secondary-text-color)}
     .nt-session-record strong{color:var(--motogp-fastest-lap-color,var(--error-color,#b71c1c))}
+    .nt-session-observed-best{padding:6px 10px;font-size:11px;font-weight:650;color:var(--primary-text-color);border-bottom:1px solid var(--divider-color,#ddd)}
+    .nt-session-observed-best strong{font-size:12px;color:var(--motogp-fastest-lap-color,var(--error-color,#b71c1c))}
     .mgp-timing-records{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:6px 10px 9px;border-bottom:1px solid var(--divider-color,#ddd)}
     .mgp-timing-record-chip{display:flex;align-items:center;justify-content:space-between;gap:4px 8px;min-width:0;border:1px solid var(--divider-color,#ddd);border-radius:9px;padding:6px 8px;background:var(--secondary-background-color,rgba(127,127,127,.045))}
     .mgp-timing-record-chip small{font-size:9px;font-weight:700;color:var(--secondary-text-color);white-space:nowrap}
@@ -1144,6 +1164,8 @@
       if(html.includes('<button type="button" class="nt-head"')&&html.includes('</button>')){
         const chips=recordChips(this,category);
         if(chips)html=html.replace('</button>','</button>'+chips);
+        const sessionBest=sessionFastest(this);
+        if(sessionBest)html=html.replace('</button>','</button>'+sessionBest);
       }
       if(!this._snapshot?.riders?.length||this._snapshot.day!==this._today)return html;
       if(this._live)html=html.replace('<span class="nt-label">🏁 ',
