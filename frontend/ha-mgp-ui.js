@@ -304,8 +304,6 @@
       const target=e.target;
       const standings=target?.closest?.('[data-motogp-standings-toggle]');
       if(standings){this._standingOpen=!this._standingOpen;if(this._standingOpen)this._scheduleOpen=false;this._render();return;}
-      const schedule=target?.closest?.('[data-motogp-schedule-toggle]');
-      if(schedule){this._scheduleOpen=!this._scheduleOpen;if(this._scheduleOpen)this._standingOpen=false;this._render();return;}
       const tab=target?.closest?.('[data-motogp-standing]');
       if(tab){this._standingTab=tab.getAttribute('data-motogp-standing');this._render();return;}
       return oldClick.call(this,e);
@@ -318,17 +316,9 @@
         (_full,start,name,end,close)=>start+name+end+classMark(name)+close)
         .replace(/(<button type="button" class="cat" data-category="Total"[^>]*>)Total(<\/button>)/g,
           '$1<span class="mgp-all-mark">🏁 ALL</span>$2');
-      if(!this._live||this._spoiler())return formatted;
-      const open=this._scheduleOpen===true;
-      const control='<section class="panel" aria-label="Helgens schema">'+
-        '<div class="np-heading"><span>🗓️ Helgens schema</span>'+
-        '<button type="button" class="np-show-button" data-motogp-schedule-toggle '+
-        'aria-expanded="'+open+'">'+(open?'Dölj schema':'Visa schema')+'</button></div></section>';
-      if(!open)return control;
-      const header='<section class="panel">';
-      const close='<div class="np-hide-row"><button type="button" class="np-show-button" '+
-        'data-motogp-schedule-toggle aria-expanded="true">Dölj schema</button></div>';
-      return formatted.includes(header)?formatted.replace(header,header+close):control+formatted;
+      // Weekend schedule visibility is owned solely by the event-header modal.
+      // Never insert a second panel above the separately rendered timing card.
+      return formatted;
     };
     function gridHtml(card,now) {
       if(card._spoiler())return '';
