@@ -34,6 +34,7 @@ on:
       - 'tests/frontend-timing-icons.cjs'
       - 'tests/frontend-active-chip.cjs'
       - 'tests/frontend-finish-settling.cjs'
+      - 'tests/frontend-live-freshness.cjs'
       - 'tests/test_frontend_package.py'
       - 'tests/frontend-mobile-laps.cjs'
       - 'tests/frontend-next-qual-grid.cjs'
