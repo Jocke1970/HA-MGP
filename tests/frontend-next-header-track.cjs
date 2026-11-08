@@ -4,14 +4,14 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const file=process.argv[2]||'frontend/ha-mgp-header-track.js';
 const src=fs.readFileSync(file,'utf8');
-assert.match(src,/header-track-weather-20261108-05/);
+assert.match(src,/header-track-weather-20261108-06/);
 const docs=[];
 class Overview {
   static buildInfo={version:'0.2.0-split.2'};
   constructor(){
     this._ids={race:'sensor.motogp_next_race',weather:'sensor.motogp_track_weather'};
     this._hass={states:{
-      'sensor.motogp_next_race':{attributes:{circuit:'Lusail International Circuit',country:'Qatar',
+      'sensor.motogp_next_race':{attributes:{circuit:'Lusail International Circuit',country:'Qatar',event_id:'qatar-gp',date_start:'2026-11-07',
          records_by_category:{
            MotoGP:[
              {type:'LAP_RECORD',time:'01:50.028',rider:'BEZZECCHI',year:2026,speed:176},
@@ -24,7 +24,7 @@ class Overview {
          records_session_by_category:{MotoGP:{type:'SPR'}},
          sessions_all:[{category:'MotoGP',name:'WUP',date_utc:'2099-11-08T11:40:00Z',status:'SCHEDULED'}]}},
       'sensor.motogp_track_weather':{attributes:{
-        category:'Moto2',session:'Q1',air:'31º',ground:'42°',humidity:'51%',track:'Dry',weather:'Clear',
+        results_event_uuid:'qatar-gp',category:'Moto2',session:'Q1',air:'31º',ground:'42°',humidity:'51%',track:'Dry',weather:'Clear',
         updated_at:'2026-11-07T14:01:00Z'
       }}
     }};
@@ -67,6 +67,10 @@ const context={customElements:{
   assert.match(card.root.innerHTML,/mgp-track-svg/,'Lusail verified layout rendered');
   assert.match(card.root.innerHTML,/\/local\/ha-mgp\/circuits\/lusail\.svg/,'local SVG is preferred when installed');
   assert.match(card.root.innerHTML,/mgp-track-fallback/,'fallback remains while SVG is unavailable');
+  assert.match(card.root.innerHTML,/data-mgp-circuit-open/,'circuit map clickable');
+  assert.match(card.root.innerHTML,/mgp-circuit-dialog/,'detail modal exists');
+  assert.match(card.root.innerHTML,/data-mgp-circuit-dismiss/,'detail dialog has close control');
+  assert.match(src,/mgp-circuit-detail-grid/,'responsive circuit facts present');
   assert.match(src,/addEventListener\('load'/,'verified local image can replace fallback');
   assert.match(src,/addEventListener\('error'/,'missing local image safely keeps fallback');
   assert.match(card.root.innerHTML,/5,38 km/,'verified lap length shown in header');
@@ -112,6 +116,13 @@ const context={customElements:{
   assert.match(card.root.innerHTML,/Clear/);
   assert.match(card.root.innerHTML,/Moto2 · Q1/);
   assert.match(card.root.innerHTML,/Senast rapporterat · inte livegaranti/);
+  const raceAttrs=card._hass.states['sensor.motogp_next_race'].attributes;
+  raceAttrs.event_id='different-event';
+  card._render();
+  assert.match(card.root.innerHTML,/tidigare sessionsvärden döljs/,'weather must match displayed GP');
+  assert.doesNotMatch(card.root.innerHTML,/31 °C/,'previous GP temperature cannot show');
+  raceAttrs.event_id='qatar-gp';
+  card._render();
   const report=card._hass.states['sensor.motogp_track_weather'];
   report.attributes={...report.attributes,fetch_status:'ok',poll_count:4,change_count:2,
     checked_at:'2026-11-08T14:05:00Z',last_success_at:'2026-11-08T14:05:00Z',
