@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const file=process.argv[2]||'frontend/ha-mgp-header-track.js';
 const src=fs.readFileSync(file,'utf8');
-assert.match(src,/header-track-weather-20261108-02/);
+assert.match(src,/header-track-weather-20261108-03/);
 const docs=[];
 class Overview {
   static buildInfo={version:'0.2.0-split.2'};
@@ -65,6 +65,10 @@ const context={customElements:{
   assert.match(card.root.innerHTML,/mgp-venue-strip/);
   assert.match(card.root.innerHTML,/data-mgp-hero-grid/,'header contains the unified hero');
   assert.match(card.root.innerHTML,/mgp-track-svg/,'Lusail verified layout rendered');
+  assert.match(card.root.innerHTML,/5,38 km/,'verified lap length shown in header');
+  assert.match(card.root.innerHTML,/1 068 m/,'longest straight shown in header');
+  assert.match(card.root.innerHTML,/10 · ↰ 6/,'right and left turns shown');
+  assert.match(card.root.innerHTML,/qat-info\\.svg/,'official SVG is linked, not loaded as an unverified replacement');
   const eventHeader=card.root.innerHTML.match(/<section class="panel header">([\s\S]*?)<\/section>/);
   assert.ok(eventHeader,'single event header exists');
   assert.match(eventHeader[1],/GRAND PRIX OF QATAR/);
