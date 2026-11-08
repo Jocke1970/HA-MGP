@@ -110,11 +110,12 @@ function trackFor(name){
 const LOCAL_CIRCUITS=new Set([
   'lusail','buriram','austin','mandalika','redbullring','motegi',
   'phillip','sepang','valencia','portimao','sachsenring','assen',
-  'brno','hungaroring','misano','mugello','barcelona','jerez','goiania'
+  'brno','hungaroring','mugello','barcelona','jerez','goiania','lemans'
 ]);
 const LOCAL_CIRCUIT_PATH='/local/ha-mgp/circuits/';
-function localCircuitPath(map){
-  return map&&LOCAL_CIRCUITS.has(map.id)?LOCAL_CIRCUIT_PATH+map.id+'.svg':null;
+function localCircuitPath(map,circuit){
+  const id=map?.id||(/\\b(le mans|bugatti)\\b/i.test(String(circuit||''))?'lemans':null);
+  return id&&LOCAL_CIRCUITS.has(id)?LOCAL_CIRCUIT_PATH+id+'.svg':null;
 }
 function weatherNumber(value,unit){
   if(value===null||value===undefined)return null;
@@ -169,14 +170,14 @@ function venue(card){
     Number.isInteger(weather.poll_count)?'Kontroller '+weather.poll_count:'',
     Number.isInteger(weather.change_count)?'Ändringar '+weather.change_count:''
   ].filter(Boolean).join(' · ');
-  const localPath=localCircuitPath(map);
+  const localPath=localCircuitPath(map,circuit);
   const fallback=map?'<svg class="mgp-track-svg" viewBox="0 0 280 160" role="img" aria-label="Schematisk banlayout för '+
     esc(circuit)+'" preserveAspectRatio="xMidYMid meet">'+
     '<path class="mgp-track-shadow" d="'+map.d+'"></path>'+
     '<path class="mgp-track-outline" d="'+map.d+'"></path></svg>':'';
-  const mapHtml=map?'<div class="mgp-track-layer">'+
+  const mapHtml=(map||localPath)?'<div class="mgp-track-layer">'+
     (localPath?'<img class="mgp-track-local" src="'+esc(localPath)+'" alt="Banlayout med kurvnummer och sektorer för '+esc(circuit)+'" loading="lazy">':'')+
-    '<div class="mgp-track-fallback">'+fallback+'</div></div>'+
+    '<div class="mgp-track-fallback">'+(fallback||'<div class="mgp-track-empty">Lokal SVG saknas</div>')+'</div></div>'+
     '<div class="mgp-track-note">Lokal SVG där den finns · annars schematisk banform</div>':
     '<div class="mgp-track-empty">Ingen verifierad banritning tillgänglig</div>';
   const temperature=weatherNumber(weather.air,'°C');
