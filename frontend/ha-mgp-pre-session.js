@@ -25,7 +25,12 @@ function rowsFor(session,attrs){
  const grid=attrs.start_grids?.[category];
  const roster=Array.isArray(entrants)?entrants.filter(x=>x&&valid(x.number)&&valid(x.rider)):[];
  const race=/^(race|sprint)$/i.test(label(session.name||session.type));
- if(race&&Array.isArray(grid)&&grid.length){
+ // Never call a partial list an official start grid. A race grid must have
+ // consecutive slots and cover the known entrants, with a safe class floor.
+ const floor=category==='MotoGP'?13:['Moto2','Moto3'].includes(category)?19:Infinity;
+ const complete=Array.isArray(grid)&&grid.length>=floor&&
+  (!roster.length||grid.length===roster.length);
+ if(race&&complete){
   const seen=new Set(),positions=new Set(),out=[];
   for(const g of grid){
    const position=Number(g?.position),number=String(g?.number??'').trim();
@@ -36,7 +41,10 @@ function rowsFor(session,attrs){
    if(!rider)return [];
    out.push({position,number,rider,team:g.team||entrant?.team||'',nation:entrant?.nation||''});
   }
-  return out.sort((x,y)=>x.position-y.position);
+  if(out.length&&new Set(out.map(x=>x.position)).size===out.length&&
+     Math.min(...out.map(x=>x.position))===1&&
+     Math.max(...out.map(x=>x.position))===out.length)
+   return out.sort((x,y)=>x.position-y.position);
  }
  return roster.map(r=>({position:null,number:r.number,rider:r.rider,team:r.team||'',nation:r.nation||''}));
 }
@@ -44,7 +52,7 @@ function before(card,next,attrs){
  const s=next?.s;
  if(!s||card._live||card._spoiler?.()||next.at-Date.now()>30*60000)return null;
  return {session:s,rows:rowsFor(s,attrs),grid:/^(race|sprint)$/i.test(label(s.name||s.type))&&
-  Array.isArray(attrs.start_grids?.[s.category])&&attrs.start_grids[s.category].length>0};
+  rowsFor(s,attrs).length>0&&rowsFor(s,attrs)[0].position!==null};
 }
 function countdown(at){
  const s=Math.max(0,Math.ceil((at-Date.now())/1000));
