@@ -34,6 +34,7 @@ on:
       - 'tests/frontend-timing-icons.cjs'
       - 'tests/frontend-active-chip.cjs'
       - 'tests/frontend-finish-settling.cjs'
+      - 'tests/frontend-pre-session.cjs'
       - 'tests/frontend-live-freshness.cjs'
       - 'tests/test_frontend_package.py'
       - 'tests/frontend-mobile-laps.cjs'
@@ -78,6 +79,7 @@ jobs:
           node tests/frontend-timing-icons.cjs
           node tests/frontend-active-chip.cjs
           node tests/frontend-finish-settling.cjs
+          node tests/frontend-pre-session.cjs
           node --check frontend/ha-mgp-pre-session.js
           python3 scripts/build-next-ui-preview.py frontend dist/ha-mgp.js
           node --check dist/ha-mgp.js
