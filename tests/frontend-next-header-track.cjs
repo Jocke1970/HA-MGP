@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const file=process.argv[2]||'frontend/ha-mgp-header-track.js';
 const src=fs.readFileSync(file,'utf8');
-assert.match(src,/header-track-weather-20261108-04/);
+assert.match(src,/header-track-weather-20261108-05/);
 const docs=[];
 class Overview {
   static buildInfo={version:'0.2.0-split.2'};
@@ -65,6 +65,10 @@ const context={customElements:{
   assert.match(card.root.innerHTML,/mgp-venue-strip/);
   assert.match(card.root.innerHTML,/data-mgp-hero-grid/,'header contains the unified hero');
   assert.match(card.root.innerHTML,/mgp-track-svg/,'Lusail verified layout rendered');
+  assert.match(card.root.innerHTML,/\/local\/ha-mgp\/circuits\/lusail\.svg/,'local SVG is preferred when installed');
+  assert.match(card.root.innerHTML,/mgp-track-fallback/,'fallback remains while SVG is unavailable');
+  assert.match(src,/addEventListener\('load'/,'verified local image can replace fallback');
+  assert.match(src,/addEventListener\('error'/,'missing local image safely keeps fallback');
   assert.match(card.root.innerHTML,/5,38 km/,'verified lap length shown in header');
   assert.match(card.root.innerHTML,/1 068 m/,'longest straight shown in header');
   assert.match(card.root.innerHTML,/10 · ↰ 6/,'right and left turns shown');
@@ -172,6 +176,10 @@ const context={customElements:{
   card._render();
   assert.match(card.root.innerHTML,/Ingen verifierad banritning tillgänglig/);
   assert.doesNotMatch(card.root.innerHTML,/mgp-track-svg/,'no fabricated outline');
+  other.attributes.circuit='Le Mans Bugatti Circuit';
+  card._render();
+  assert.match(card.root.innerHTML,/\/local\/ha-mgp\/circuits\/lemans\.svg/,'Le Mans local-only asset mapped');
+  assert.match(card.root.innerHTML,/Lokal SVG saknas/,'Le Mans without SVG uses an explicit neutral placeholder');
   other.attributes.circuit='Misano World Circuit';
   card._render();
   assert.match(card.root.innerHTML,/mgp-track-svg/,'other track mapped too');
