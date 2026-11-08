@@ -223,7 +223,7 @@ function venue(card){
   return '<div class="mgp-venue-strip" data-mgp-venue-header>'+
     '<div class="mgp-weather-panel"><div class="mgp-weather-head">'+
     '<span class="mgp-venue-caption">🌤️ Banväder</span>'+
-    '<span class="mgp-weather-source">Senast rapporterat · inte livegaranti'+
+    '<span class="mgp-weather-source">'+(isSameEvent&&dateMatches?'Senast rapporterat · inte livegaranti':'Rapport för detta GP saknas')+
     (provenance?' · '+esc(provenance):'')+'</span>'+
     (isSameEvent&&dateMatches&&diagnostic?'<span class="mgp-weather-source" data-mgp-weather-diagnostics>'+esc(diagnostic)+'</span>':'')+
     '</div>'+weatherHtml+'</div>'+
