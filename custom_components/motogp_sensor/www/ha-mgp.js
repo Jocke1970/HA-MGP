@@ -1,4 +1,4 @@
-/* MotoGP Next SINGLE Lovelace resource | build next-one-20261108-23 | read only. */
+/* MotoGP Next SINGLE Lovelace resource | build next-one-20261108-24 | read only. */
 /* MotoGP Next: isolated frontend for motogp-test. No HA writes or service calls. */
 (() => {
   'use strict';
@@ -303,9 +303,9 @@
       this._track(now,race);
       const event=valid(race?.state)?race.state:'Inget evenemang tillgängligt';
       const meta=[a.circuit,a.country,a.date_start&&a.date_end?dateRange(a.date_start,a.date_end):''].filter(valid);
-      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.48</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
+      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.49</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
         this._schedule(race,now)+`<div class="root">${this._weather()}${this._timing()}</div>`+
-        `<div class="foot">HA-MGP UI · 0.3.0-dev.48 · UI-preview</div></div>`;
+        `<div class="foot">HA-MGP UI · 0.3.0-dev.49 · UI-preview</div></div>`;
     }
     getCardSize(){return 8;}
     getGridOptions(){return {columns:12,rows:'auto',min_columns:6};}
@@ -2673,11 +2673,44 @@ customElements.whenDefined(TAG).then(install);
 /* HA-MGP dev.37: read-only transition from previous result to verified entrants/grid. */
 (()=>{
 'use strict';
-const TAG='ha-motogp-next-timing-card',BUILD='pre-session-roster-20261108-01';
+const TAG='ha-motogp-next-timing-card',BUILD='pre-session-grid-20261108-02';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const valid=v=>v!==null&&v!==undefined&&String(v).trim()!=='';
 const label=v=>({RAC:'Race',SPR:'Sprint',WUP:'Warm Up',PR:'Practice'})[String(v||'').toUpperCase()]||String(v||'');
-const matching=(a,b)=>String(a||'').trim().toLowerCase()===String(b||'').trim().toLowerCase();
+const GRID_STYLE='<style>'+
+ '.mgp-pre-grid-scroll{overflow-x:auto;padding:10px 10px 28px}'+
+ '.mgp-pre-start{font-size:11px;font-weight:800;text-align:center;margin:2px 0 12px;letter-spacing:.09em}'+
+ '.mgp-pre-wave{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;min-width:480px;'+
+ 'padding:0 0 22px;margin-bottom:12px;border-bottom:1px dashed var(--divider-color,#8886)}'+
+ '.mgp-pre-slot{display:flex;align-items:center;gap:8px;min-width:0;min-height:50px;padding:7px;'+
+ 'border:1px solid var(--divider-color,#8886);border-radius:9px;'+
+ 'background:var(--ha-card-background,var(--card-background-color,#fff))}'+
+ '.mgp-pre-slot-2{transform:translateY(12px)}.mgp-pre-slot-3{transform:translateY(24px)}'+
+ '.mgp-pre-position{font-size:11px;font-weight:900;flex:none;font-variant-numeric:tabular-nums}'+
+ '.mgp-pre-number{flex:none;display:grid;place-items:center;min-width:32px;height:30px;'+
+ 'padding:0 4px;border-radius:6px;font-weight:900;color:#fff;background:#555}'+
+ '.mgp-pre-name{min-width:0;display:flex;flex-direction:column;gap:2px}'+
+ '.mgp-pre-name b{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'+
+ '.mgp-pre-name small{font-size:10px;color:var(--secondary-text-color);'+
+ 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'+
+ '@container (max-width:530px){.mgp-pre-grid-scroll{padding:8px 5px 25px}}'+
+ '</style>';
+const safeColor=v=>/^#(?:[0-9a-f]{6})$/i.test(String(v||''))?String(v):'#555';
+function gridMarkup(rows){
+ let html=GRID_STYLE+'<div class="mgp-pre-grid-scroll"><div class="mgp-pre-start">START / POLE POSITION</div>';
+ for(let i=0;i<rows.length;i+=3){
+  html+='<div class="mgp-pre-wave">';
+  for(const r of rows.slice(i,i+3)){
+   const slot=(r.position-1)%3+1;
+   html+='<div class="mgp-pre-slot mgp-pre-slot-'+slot+'">'+
+    '<span class="mgp-pre-position">P'+esc(r.position)+'</span>'+
+    '<span class="mgp-pre-number" style="background:'+safeColor(r.color)+'">#'+esc(r.number)+'</span>'+
+    '<span class="mgp-pre-name"><b>'+esc(r.rider)+'</b><small>'+esc(r.team)+'</small></span></div>';
+  }
+  html+='</div>';
+ }
+ return html+'</div>';
+}
 function upcoming(card){
  const race=card._hass?.states?.[card._ids.race],a=race?.attributes||{};
  const all=Array.isArray(a.sessions_all)?a.sessions_all:[];
@@ -2697,26 +2730,35 @@ function rowsFor(session,attrs){
  const grid=attrs.start_grids?.[category];
  const roster=Array.isArray(entrants)?entrants.filter(x=>x&&valid(x.number)&&valid(x.rider)):[];
  const race=/^(race|sprint)$/i.test(label(session.name||session.type));
- if(race&&Array.isArray(grid)&&grid.length){
+ // Never call a partial list an official start grid. A race grid must have
+ // consecutive slots and cover the known entrants, with a safe class floor.
+ const floor=category==='MotoGP'?13:['Moto2','Moto3'].includes(category)?19:Infinity;
+ const complete=Array.isArray(grid)&&grid.length>=floor&&
+  (!roster.length||grid.length===roster.length);
+ if(race&&complete){
   const seen=new Set(),positions=new Set(),out=[];
   for(const g of grid){
    const position=Number(g?.position),number=String(g?.number??'').trim();
-   if(!Number.isInteger(position)||position<1||!number||seen.has(number)||positions.has(position))return [];
+   if(!Number.isInteger(position)||position<1||!number||seen.has(number)||positions.has(position))return roster.map(r=>({position:null,number:r.number,rider:r.rider,team:r.team||'',nation:r.nation||''}));
    seen.add(number);positions.add(position);
    const entrant=roster.find(r=>String(r.number)===number);
    const rider=String(g.rider||entrant?.rider||'').trim();
-   if(!rider)return [];
-   out.push({position,number,rider,team:g.team||entrant?.team||'',nation:entrant?.nation||''});
+   if(!rider)return roster.map(r=>({position:null,number:r.number,rider:r.rider,team:r.team||'',nation:r.nation||''}));
+   out.push({position,number,rider,team:g.team||entrant?.team||'',nation:entrant?.nation||'',color:g.color||entrant?.color||''});
   }
-  return out.sort((x,y)=>x.position-y.position);
+  if(out.length&&new Set(out.map(x=>x.position)).size===out.length&&
+     Math.min(...out.map(x=>x.position))===1&&
+     Math.max(...out.map(x=>x.position))===out.length)
+   return out.sort((x,y)=>x.position-y.position);
  }
  return roster.map(r=>({position:null,number:r.number,rider:r.rider,team:r.team||'',nation:r.nation||''}));
 }
 function before(card,next,attrs){
  const s=next?.s;
  if(!s||card._live||card._spoiler?.()||next.at-Date.now()>30*60000)return null;
- return {session:s,rows:rowsFor(s,attrs),grid:/^(race|sprint)$/i.test(label(s.name||s.type))&&
-  Array.isArray(attrs.start_grids?.[s.category])&&attrs.start_grids[s.category].length>0};
+ const rows=rowsFor(s,attrs);
+ return {session:s,rows,grid:/^(race|sprint)$/i.test(label(s.name||s.type))&&
+  rows.length>0&&rows[0].position!==null};
 }
 function countdown(at){
  const s=Math.max(0,Math.ceil((at-Date.now())/1000));
@@ -2744,6 +2786,7 @@ function install(){
    if(!roster.rows.length)return html+'<div class="nt-empty">Officiell deltagarlista/startgrid saknas ännu. Inga tider eller placeringar antas.</div></section>';
    html+='<div class="nt-results">'+(roster.grid?'Publicerad startgrid':'Anmälda förare · sorterade efter startnummer')+
     ' · tider visas först när matchande live-data finns</div>';
+   if(roster.grid)return html+gridMarkup(roster.rows)+'</section>';
    html+='<div class="nt-scroll"><div class="nt-table"><div class="nt-row nt-heading"><span>'+(roster.grid?'GRID':'NR')+'</span>'+
     '<span>FÖRARE / TEAM</span><span>VARV</span><span>SENASTE</span><span>Δ FRAMFÖR</span><span>Δ LEDARE</span><span>STATUS</span></div>';
    for(const r of roster.rows){
