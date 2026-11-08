@@ -44,5 +44,5 @@ const ctx={Date:DateClock,customElements:{get:()=>Timing,whenDefined:()=>Promise
  assert.match(t._timing(),/Nästa: Moto3/,'normal countdown restored after bounded hold');
  const spoiler=new Timing();spoiler.hidden=true;spoiler._track(new DateClock(),race);
  assert.doesNotMatch(spoiler._timing(),/Avflaggat/,'spoiler guard');
- console.log('PASS: 2-minute finish settling, late same-session PB, no cross-class leaks, expiry and spoiler');
+ console.log('PASS: 4-minute finish settling, late same-session PB, no cross-class leaks, expiry and spoiler');
 })().catch(err=>{console.error(err);process.exitCode=1;});
