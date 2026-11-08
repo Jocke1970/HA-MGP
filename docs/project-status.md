@@ -33,3 +33,7 @@ Frontend `0.3.0-dev.29` visar klassberoende rekordchips direkt under livetimingk
 ## Språkstöd (dev)
 
 Frontend `0.3.0-dev.30` innehåller de första fem inbyggda språkfilerna för `en`, `sv`, `es`, `it` och `fr`, med engelska som fallback; HA-integrationens konfigurations-/entitetsöversättningar levereras som separata JSON-filer. UI-texten översätts i den enda JS-resursen, utan nya anrop eller ändrade entiteter. **Visuell granskning av dynamiska texter återstår.** Se [språkguiden](localization.md).
+
+## Säsongskalender utanför racehelg (dev)
+
+I frontend `0.3.0-dev.32` ersätter en responsiv säsongskalender översiktskortet utanför racehelger. Data kommer från `sensor.motogp_next_race.attributes.season_calendar`, som redan innehåller hela säsongen. Nästa Grand Prix markeras separat med nedräkning, återstående tävlingar visas som kort och tidigare tävlingar ligger under en hopfällbar sektion. Racehelgen (primärt `binary_sensor.motogp_race_weekend_active`, alternativt `binary_sensor.motogp_race_week`, med datumbaserad reserv) lämnar det befintliga livegränssnittet orört. Ingen ny backendhämtning eller ny Lovelace-resurs. Kalendern har de fem befintliga UI-språken och engelsk fallback. **Endast på dev; inte testad visuellt i HA eller publicerad till beta.**
