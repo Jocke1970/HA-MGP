@@ -64,3 +64,15 @@ I frontend `0.3.0-dev.32` ersätter en responsiv säsongskalender översiktskort
 - Nytt öppet Pulselive-anrop `/event/{eventId}/entry?categoryUuid={categoryId}` ger backend `entry_lists` på `sensor.motogp_next_race`. Detta behöver testas mot aktuellt verkligt API-svar och i HA.
 - **Begränsning:** Resultatvisningen mellan pass använder det senaste bekräftade live-snapshot som timingkortet faktiskt har sett. Efter omstart/ny laddning utan sådant snapshot finns ännu ingen automatisk återhämtning av hela föregående resultatet.
 - CI kör separat T−30-regression för roster, grid, post-start väntläge, spoiler, manuell hopfällning och saknad startlista. `dev`-ändringar är inte en publicerad beta.
+
+## Pulselive API – verklig responskontroll 2026-11-08 (dev)
+
+Kördes via GitHub Actions `Pulselive public API diagnostics` utan kontouppgifter eller HA-åtkomst. Endpoints för 2026 års säsonger (78 totalt), categories (3), results events (29), broadcast events (46), live-timing lite, sessions, race grid (20 för Malaysias GP) och classification (inklusive `classification`/`records`) svarade HTTP 200.
+
+**Verifierat blockerande fynd för dev.37:** `/event/{eventId}/entry?categoryUuid={categoryId}` svarade HTTP 400 för Malaysias GP även med Results-/Broadcast-event-ID och motsvarande kategori-ID. Alternativa `/results/event/.../entry`-vägar gav HTTP 424/400. Backend fångar felet och lämnar roster tom, men det är **inte en bekräftad funktionell deltagarlista**. Resultatgrid fungerar för race/sprint när publicerad, men kan inte ersätta en officiell anmälningslista för träning/kval innan grid finns.
+
+Broadcast `/teams?categoryUuid=...&seasonYear=2026` svarade HTTP 200 med 12 team och 34 förarposter. Det är en *säsongsroster*, inte verifierat deltagande i en specifik session; visas därför inte automatiskt som officiell startlista.
+
+**Före beta:** välj dokumenterad fallback (t.ex. preliminär säsongslista tydligt märkt, eller förbli i väntläge), testa förar-ID:n och undvik upprepade onödiga 400-anrop. Ingen HA-installation från dev.
+
+Verifiering: [API-testets Actions-logg](https://github.com/Jocke1970/HA-MGP/actions/workflows/pulselive-probe.yml).
