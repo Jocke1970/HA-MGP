@@ -16,7 +16,7 @@ SCHEMA_VERSION = 1
 EVENT_TYPES = frozenset({
     "feed_online", "feed_offline", "session_changed", "status_changed",
     "first_roster", "roster_count_changed", "first_lap", "lap_count_increased",
-    "first_position", "first_gap_reported", "gap_updated",
+    "session_started", "first_position", "first_gap_reported", "gap_updated",
     "first_lap_started", "first_lap_completed",
 })
 
