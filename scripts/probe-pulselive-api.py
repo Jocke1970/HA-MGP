@@ -52,11 +52,18 @@ if not isinstance(events,list) or not isinstance(categories,list):
     raise SystemExit("Dynamic dependent tests skipped: events/categories unavailable")
 gp=next((c for c in categories if isinstance(c,dict) and "motogp" in str(c.get("name","")).lower()),None)
 if not gp: raise SystemExit("MotoGP category unavailable")
-event=next((e for e in reversed(events) if isinstance(e,dict) and e.get("id")),None)
+event=next((e for e in reversed(events) if isinstance(e,dict) and e.get("id") and not e.get("test") and str(e.get("status","")).lower() in ("finished","official","completed")),None) or next((e for e in events if isinstance(e,dict) and e.get("id") and not e.get("test")),None)
 if not event: raise SystemExit("Event ID unavailable")
 print(f"Selected event: {event.get('sponsored_name') or event.get('name')}, ID={event['id']}, class={gp['id']}",flush=True)
 sessions=probe("event sessions", "/results/sessions", {"eventUuid":event["id"],"categoryUuid":gp["id"]})
-entry=probe("event entry", f"/event/{event['id']}/entry", {"categoryUuid":gp["id"]})
+entry=probe("entry with Results UUID", f"/event/{event['id']}/entry", {"categoryUuid":gp["id"]})
+if not isinstance(entry, dict):
+    broadcast_uuid=event.get("toad_api_uuid")
+    if broadcast_uuid:
+        entry=probe("entry with Broadcast UUID + Results category", f"/event/{broadcast_uuid}/entry", {"categoryUuid":gp["id"]})
+        bcat=next((c for c in (probe("event broadcast metadata", f"/events/{broadcast_uuid}") or {}).get("categories",[]) if isinstance(c,dict) and "motogp" in str(c.get("name","")).lower()),None)
+        if bcat and bcat.get("id"):
+            probe("entry with Broadcast event/category UUIDs", f"/event/{broadcast_uuid}/entry", {"categoryUuid":bcat["id"]})
 grid=probe("event grid", f"/results/event/{event['id']}/category/{gp['id']}/grid")
 if isinstance(entry,dict):
     entrants=entry.get("entry")
@@ -70,7 +77,9 @@ if isinstance(grid,list):
 if isinstance(sessions,list) and sessions:
     sess=next((x for x in reversed(sessions) if isinstance(x,dict) and x.get("id") and str(x.get("status","")).lower() in ("official","finished")),None)
     if sess:
-        results=probe("classification",f"/results/session/{sess['id']}/classification")
+        results=probe("classification",f"/results/session/{sess['id']}/classification",{"test":"false"})
+        if not isinstance(results, dict):
+            results=probe("classification (no params)",f"/results/session/{sess['id']}/classification")
         if isinstance(results,dict):
             print(f"CLASSIFICATION: classification_type={type(results.get('classification')).__name__}, records_type={type(results.get('records')).__name__}",flush=True)
 print("Diagnostics complete. No raw full JSON or secrets written.",flush=True)
