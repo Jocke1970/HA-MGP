@@ -22,8 +22,8 @@ const ctx={Date:Clock,customElements:{get:()=>Timing,whenDefined:()=>Promise.res
  vm.runInNewContext(src,ctx);await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();
  let t=new Timing();let markup=t._timing();
  assert.match(markup,/🕒 12:40/);assert.match(markup,/⏱ /);
- t.connectedCallback();console.log('TIMING-DEBUG',t._mgpTimingIcons,typeof tick,t.node.urgent);assert.equal(t.node.urgent,true);assert.ok(tick);
- t.node.querySelector=()=>({getAttribute:()=>''+(now+310000)});tick();assert.equal(t.node.urgent,false);
+ t.connectedCallback();assert.equal(t.urgent,true);assert.ok(tick);
+ t.node.querySelector=()=>({getAttribute:()=>''+(now+310000)});tick();assert.equal(t.urgent,false);
  t.disconnectedCallback();assert.equal(cleared,1);
  console.log('PASS: session start/time icons and dynamic five-minute red countdown');
 })().catch(e=>{console.error(e);process.exitCode=1;});
