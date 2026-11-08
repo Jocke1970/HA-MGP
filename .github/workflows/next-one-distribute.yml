@@ -59,6 +59,7 @@ jobs:
           set -euo pipefail
           mkdir -p dist
           node --check frontend/ha-mgp-ui.js
+          node --check frontend/ha-mgp-api-status.js
           node tests/frontend-next-ui-preview.cjs frontend/ha-mgp-ui.js
           node tests/frontend-i18n.cjs
           node tests/frontend-calendar.cjs
