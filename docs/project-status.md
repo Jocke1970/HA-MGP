@@ -19,3 +19,10 @@
 ## Dev efter b18
 
 På dev finns fortsatt API-inventering, bl.a. `/riders`/`/teams` och en experimentell `/event/.../entry`-väg som svarade HTTP 400. Dessa är uttryckligen **inte med i b18:s produktionsbackend**. Nästa steg är att kartlägga historiska Analysis-PDF:er och förbättra det officiella deltagarunderlaget före en framtida beta.
+
+## UI-fix: dubbelt helgschema (dev.42, inte i beta)
+
+- Rotorsak: äldre UI-`_schedule` lade tillbaka en separat `Helgens schema`-panel precis ovanför den fristående live-timingen när en session var aktiv. Den nya toppkortsmodalen fanns samtidigt.
+- Åtgärd: äldre panel och dess extra toggle borttagna. Klassfiltren finns kvar i modalens sessionslista. Det är endast toppkortets Helgschema-knapp som äger modalens öppna/stängda läge.
+- Regression: live-fallet ska sakna `data-motogp-schedule-toggle`; paketeringskontrollen kräver `data-mgp-schedule-jump` och `mgp-weekend-dialog` samt förbjuder det gamla attributet.
+- UI `0.3.0-dev.42` byggt på dev; behöver full CI och visuell HA-verifiering via kommande beta. Publicerad b19 är orörd.
