@@ -59,6 +59,7 @@ jobs:
           python -m unittest discover -s tests -p 'test_lap_history_*.py' -v
           python -m unittest discover -s tests -p 'test_standings_enrichment.py' -v
           python -m unittest discover -s tests -p 'test_qualifying_grid.py' -v
+          python -m unittest discover -s tests -p 'test_weather_conditions.py' -v
       - name: Verify bundled frontend and safe static registration
         run: |
           python tests/test_frontend_package.py
@@ -89,8 +90,8 @@ jobs:
           assert "qualifying_q1_eliminated" in source
           assert "MELLAN PASSEN" in source
           assert "leaderboard=shown.map" in source
-          assert "ui-preview-20261108-04" in source
-          assert "header-track-weather-20261108-02" in source
+          assert "ui-preview-20261108-05" in source
+          assert "header-track-weather-20261108-05" in source
           assert "mgp-brand-logo" in source
           assert "mgp-rider-flag" in source
           assert "mgp-class-mark" in source
@@ -103,7 +104,7 @@ jobs:
           assert '"es":{' in source
           assert "calendar-20261108-02" in source
           assert "mgp-season" in source
-          assert 'HA-MGP UI · 0.3.0-dev.46' in source
+          assert 'HA-MGP UI · 0.3.0-dev.51' in source
           assert source == Path('custom_components/motogp_sensor/www/ha-motogp-next.js').read_text(encoding='utf-8')
           assert "mgp-ui-footer" in source
           assert "data-mgp-schedule-jump" in source
@@ -140,6 +141,7 @@ jobs:
           node tests/frontend-active-chip.cjs
           node tests/frontend-next-qual-grid.cjs /tmp/ha-mgp-b13-qual.js
           node tests/frontend-next-header-track.cjs /tmp/ha-mgp-b13-header.js
+          node tests/frontend-pre-session.cjs
           node tests/frontend-session-history.cjs /tmp/ha-mgp-b13-history.js
       - name: Verify HACS package metadata and runtime files
         run: |
@@ -151,7 +153,7 @@ jobs:
           manifest = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
           assert manifest['domain'] == 'motogp_sensor'
           assert manifest['name'] == 'HA-MGP'
-          assert manifest['version'] == '2026.11.0b21'
+          assert manifest['version'] == '2026.11.0b22'
           assert all((root / 'translations' / (lang + '.json')).is_file() for lang in ('en','sv','es','it','fr'))
           assert manifest.get('codeowners') == ['@Jocke1970']
           assert {'http', 'frontend'}.issubset(manifest['dependencies'])
@@ -171,20 +173,20 @@ jobs:
           assert hacs.get('name')
           assert not hacs.get('content_in_root')
           assert not hacs.get('zip_release')
-          print('Verified HA-MGP beta: 2026.11.0b21 with season calendar, five locales and timing records')
+          print('Verified HA-MGP beta: 2026.11.0b22 with season calendar, five locales and timing records')
           PY
       - name: Publish tagged GitHub prerelease
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          TAG=2026.11.0b21
+          TAG=2026.11.0b22
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "$TAG already exists; leaving the immutable prerelease untouched."
             gh release view "$TAG" --json tagName,isPrerelease,url,targetCommitish
             exit 0
           fi
           gh release create "$TAG" --target "$(git rev-parse HEAD)" --prerelease \
-            --title 'HA-MGP 2026.11.0b21 — persistent Pulselive diagnostic event journal' \
+            --title 'HA-MGP 2026.11.0b22 — persistent Pulselive diagnostic event journal' \
             --notes-file docs/hacs-beta-release-notes.md
           gh release view "$TAG" --json tagName,isPrerelease,url,targetCommitish
