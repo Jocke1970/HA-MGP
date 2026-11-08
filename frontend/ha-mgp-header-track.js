@@ -114,7 +114,7 @@ const LOCAL_CIRCUITS=new Set([
 ]);
 const LOCAL_CIRCUIT_PATH='/local/ha-mgp/circuits/';
 function localCircuitPath(map,circuit){
-  const id=map?.id||(/\\b(le mans|bugatti)\\b/i.test(String(circuit||''))?'lemans':null);
+  const id=map?.id||(/\b(le mans|bugatti)\b/i.test(String(circuit||''))?'lemans':null);
   return id&&LOCAL_CIRCUITS.has(id)?LOCAL_CIRCUIT_PATH+id+'.svg':null;
 }
 function weatherNumber(value,unit){
