@@ -152,7 +152,9 @@ const live=(category,name,riders)=>({
     'sensor.motogp_current_session':e('unknown'),
     'sensor.motogp_session_status':e('unknown'),
     'sensor.motogp_rider_positions':e('unknown')});
-  assert.match(timing.view.innerHTML,/Nästa: MotoGP · Sprint/);
+  // In dev.37 the pre-session roster replaces the old next-pass placeholder at T-30.
+  // The frozen dev.3 baseline still correctly renders the legacy next-pass heading.
+  assert.match(timing.view.innerHTML,/Nästa: MotoGP · Sprint|MotoGP · Sprint.*STARTLISTA/s);
   assert.match(timing.view.innerHTML,/17:00/);
   assert.match(timing.view.innerHTML,/MELLAN PASSEN/);
   assert.doesNotMatch(timing.view.innerHTML,/STATUS OKÄND|Moto2 · Q2|Moto2 Q2/,
