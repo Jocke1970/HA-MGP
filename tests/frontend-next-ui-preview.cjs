@@ -74,6 +74,9 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   assert.match(h,/▲ \+5/);assert.match(h,/RUNNING/);
   assert.match(h,/Nation: ITA[^>]*>🇮🇹/,'live timing uses supplied nationality');
   assert.match(h,/mgp-timing-records/,'records belong inside timing header');
+  assert.match(h,/<div class="mgp-timing-header"><button[^>]*class="nt-head"[\\s\\S]*?<\\/button>[\\s\\S]*?nt-session-observed-best[\\s\\S]*?mgp-timing-records[\\s\\S]*?<\\/div><div class="nt-session-record"/,
+    'all records and session best are nested in the timing header, outside its toggle button and before rider contents');
+  assert.equal((h.match(/class="mgp-timing-header"/g)||[]).length,1,'only one unified timing header');
   assert.match(h,/nt-session-observed-best[\s\S]*Sessionens snabbaste observerade/,'session best stays in timing header');
   assert.equal((h.match(/class="mgp-timing-record-chip"/g)||[]).length,3);
   assert.match(h,/01:50\.028/);assert.match(h,/01:52\.561/);
