@@ -57,9 +57,12 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   assert.match(h,/SENASTE VARV/);assert.match(h,/FRAMFÖR/);assert.match(h,/LEDARE/);
   assert.match(h,/⏱ fastest/);assert.doesNotMatch(h,/⚡/);
   assert.match(h,/nt-last-main[\s\S]*nt-pb-chip[\s\S]*Snabbaste: 1&#39;29\.980/);
+  assert.match(h,/class="nt-rider-best"[^>]*>Snabbaste: 1&#39;29\.980/,'rider fastest lap highlighted in red');
+
   assert.match(h,/▲ \+5/);assert.match(h,/RUNNING/);
   assert.match(h,/Nation: ITA[^>]*>🇮🇹/,'live timing uses supplied nationality');
   assert.match(h,/mgp-timing-records/,'records belong inside timing header');
+  assert.match(h,/nt-session-observed-best[\s\S]*Sessionens snabbaste observerade/,'session best stays in timing header');
   assert.equal((h.match(/class="mgp-timing-record-chip"/g)||[]).length,3);
   assert.match(h,/01:50\.028/);assert.match(h,/01:52\.561/);
   assert.doesNotMatch(h,/MOTO2 RIDER|MOTO3 RIDER|00:00\.001/);
@@ -67,6 +70,9 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   timing._snapshot.riders=[];
   assert.match(timing._timing(),/mgp-timing-records/,'chips remain when rider rows are collapsed or absent');
   timing._snapshot.riders=[r];
+  timing._live=null;
+  assert.match(timing._timing(),/nt-session-observed-best[\s\S]*Sessionens snabbaste observerade/,'finished session keeps best lap');
+  timing._live={category:'MotoGP',name:'Race'};
   timing._live.category='Moto2';timing._snapshot.category='Moto2';
   h=timing._timing();assert.match(h,/01:43\.111/);
   assert.doesNotMatch(h,/01:50\.028|01:55\.222/,'Moto2 never inherits MotoGP records');
@@ -102,6 +108,17 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   assert.match(overview.view.innerHTML,/Ducati Lenovo/);
   assert.match(overview.view.innerHTML,/Nation: SPA[^>]*>🇪🇸/,'VM standings country flag');
   assert.match(overview.view.innerHTML,/mgp-class-mark/,'graphical class buttons');
+  const classTabs=['Moto3','Moto2','MotoGP'];
+  const classTabsHtml=overview.view.innerHTML;
+  for(const label of classTabs) {
+    assert.match(classTabsHtml,new RegExp('data-motogp-standing="'+label+'"[^>]*role="tab"[^>]*aria-label="'+label+'"'),
+      label+' has a functioning class tab');
+  }
+  assert.ok(classTabsHtml.indexOf('data-motogp-standing="Moto3"')<
+    classTabsHtml.indexOf('data-motogp-standing="Moto2"')&&
+    classTabsHtml.indexOf('data-motogp-standing="Moto2"')<
+    classTabsHtml.indexOf('data-motogp-standing="MotoGP"'),
+    'class tabs retain Moto3, Moto2, MotoGP order');
   assert.match(overview.view.innerHTML,/background:#CC0000/);
   assert.match(overview.view.innerHTML,/np-standing-rank top-1/);
   assert.match(overview.view.innerHTML,/np-standing-track/);
@@ -140,6 +157,7 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   assert.match(overview.view.innerHTML,/background:var\(--divider-color,#b4b4b4\)/);
   // A narrow card hides the visual comparison while keeping data visible.
   const source=fs.readFileSync(process.argv[2]||'/mnt/data/ha-mgp-ui.js','utf8');
+  assert.match(source,/\.nt-lap-pair>small\.nt-rider-best\{color:var\(--motogp-fastest-lap-color,var\(--error-color,#b71c1c\)\)/,'rider fastest style is red');
   assert.match(source,/@container \(max-width:760px\)/);
   assert.match(source,/@container \(max-width:430px\)/);
   assert.match(source,/np-standing-visual\{display:none\}/);
