@@ -2,7 +2,7 @@
 
 Unofficial Home Assistant integration for MotoGP, Moto2 and Moto3.
 
-**HACS beta: `2026.11.0b23` · UI `0.3.0-dev.51`.**
+**HACS beta: `2026.11.0b24` · UI `0.3.0-dev.52`.**
 
 ## What's included
 
