@@ -19,7 +19,15 @@ def _gap(value: Any) -> str | None:
     if not isinstance(value, (str, int, float)) or isinstance(value, bool):
         return None
     candidate = str(value).strip().replace(",", ".")
-    return candidate if _GAP_RE.fullmatch(candidate) else None
+    if not _GAP_RE.fullmatch(candidate):
+        return None
+    try:
+        # The leader's 0.000 is not an observed inter-rider gap.
+        seconds = (sum(float(part) * multiplier for part, multiplier
+                       in zip(reversed(candidate.lstrip("+").split(":")), (1, 60))))
+    except (ValueError, OverflowError):
+        return None
+    return candidate if 0 < seconds < 3600 else None
 
 
 def _completed_lap(value: Any) -> bool:
@@ -39,6 +47,7 @@ class PulseliveDiagnostics:
         self._max_laps = 0
         self._first_roster_at: str | None = None
         self._first_lap_at: str | None = None  # legacy: first positive num_lap
+        self._first_session_started_at: str | None = None
         self._first_gap_at: str | None = None
         self._first_position_at: str | None = None
         self._first_lap_completed_at: str | None = None
@@ -95,6 +104,7 @@ class PulseliveDiagnostics:
             self._max_laps = 0
             self._first_roster_at = None
             self._first_lap_at = None
+            self._first_session_started_at = None
             self._first_gap_at = None
             self._first_position_at = None
             self._first_lap_completed_at = None
@@ -108,7 +118,8 @@ class PulseliveDiagnostics:
             self._status = status
             self._status_changed_at = timestamp
             record("status_changed")
-            if status in ("S", "I"):
+            if status in ("S", "I") and self._first_session_started_at is None:
+                self._first_session_started_at = timestamp
                 record("session_started")
 
         riders = live.get("riders")
@@ -210,6 +221,7 @@ class PulseliveDiagnostics:
             "first_roster_at": self._first_roster_at,
             "first_lap_at": self._first_lap_at,
             "first_lap_started_at": self._first_lap_at,
+            "session_started_at": self._first_session_started_at,
             "first_position_at": self._first_position_at,
             "first_gap_at": self._first_gap_at,
             "first_lap_completed_at": self._first_lap_completed_at,
