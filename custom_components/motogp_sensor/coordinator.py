@@ -17,6 +17,7 @@ from .api_diagnostics import PulseliveDiagnostics
 from .api_event_archive import PulseliveEventArchive, DiagnosticArchiveError
 from .session_lap_archive import ArchiveError, SessionLapArchive
 from .qualifying_grid import q1_eliminated_rows
+from .weather_conditions import select_session_weather, observe_weather_report
 from .schedule_time import (
     canonical_time_zone,
     scheduled_session_start_near,
@@ -101,6 +102,8 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self._last_live_poll_at: datetime | None = None
         self._prev_live_online: bool | None = None
         self._prev_session_status: str | None = None
+        # Keep recently finished matching sessions on a bounded refresh cadence
+        # long enough to receive final rider corrections after the chequered flag.
         self._last_raw_session_key: tuple[str, str, str] | None = None
         self._last_raw_session_status: str | None = None
         self._finish_refresh_key: tuple[str, str, str] | None = None
@@ -124,6 +127,7 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "constructor_standings": [],
             "last_race_results": [],
             "start_grids": {},
+            "entry_lists": {},
             "qualifying_q1_eliminated": {},
             "records_by_category": {},
             "records_session_by_category": {},
@@ -327,8 +331,9 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             await self._async_refresh_live_conditions(live, now)
             self._last_weather_refresh = now
 
-        # Continue sampling a just-finished race for late result corrections.
-        # Keep this bound to the identical feed session, never the next class.
+        # A final race result can arrive after the first FINISHED status.
+        # The public feed must keep being checked briefly; otherwise a 5-minute
+        # idle interval outlives the UI's post-finish settling window.
         raw_key = None
         raw_status = None
         if isinstance(live, dict):
@@ -339,9 +344,9 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         if raw_key != self._last_raw_session_key:
             self._finish_refresh_key = None
             self._finish_refresh_until = None
-        if (raw_key and raw_status in ("F", "C")
-            and self._last_raw_session_key == raw_key
-            and self._last_raw_session_status in LIVE_SESSION_STATUS_IDS):
+        if (raw_key and raw_status in ("F", "C") and
+            self._last_raw_session_key == raw_key and
+            self._last_raw_session_status in LIVE_SESSION_STATUS_IDS):
             self._finish_refresh_key = raw_key
             self._finish_refresh_until = now + timedelta(minutes=4)
         if raw_key:
@@ -427,100 +432,45 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         return {"live": live, "live_online": live_online}
 
     async def _async_refresh_live_conditions(
-        self,
-        live: dict[str, Any],
-        now: datetime,
+        self, live: dict[str, Any], now: datetime,
     ) -> None:
-        # Refresh track/air/ground/humidity for the active class/session.
+        """Refresh matching Results API session report; not proven live weather."""
         event = self.static.get("next_event")
         if not isinstance(event, dict) or not event.get("id"):
             return
-
         category_name = str(live.get("category") or "").strip()
-        live_shortname = str(live.get("session_shortname") or "").strip().upper()
-
-        category_uuid = None
-        for item in self.static.get("weekend_sessions_all", []):
-            if not isinstance(item, dict):
-                continue
-            if str(item.get("category") or "").strip() == category_name:
-                category_uuid = item.get("category_id")
-                if category_uuid:
-                    break
-
+        shortname = str(live.get("session_shortname") or "").strip().upper()
+        if not category_name or not shortname:
+            return
+        category_uuid = next((
+            str(c["id"]) for c in self.static.get("categories", [])
+            if isinstance(c, dict) and c.get("id")
+            and self._grid_records_category_name(c.get("name")) == category_name
+        ), None)
         if not category_uuid:
             return
-
+        event_uuid = str(event["id"])
+        fetch_status = "ok"
         try:
-            sessions = await self.api.async_get_sessions(
-                event["id"],
-                category_uuid,
-            )
+            sessions = await self.api.async_get_sessions(event_uuid, category_uuid)
         except MotogpApiError as err:
-            _LOGGER.debug("Live conditions refresh failed: %s", err)
-            return
-
-        def _shortname(sess: dict[str, Any]) -> str:
-            session_type = str(sess.get("type") or "").upper()
-            number = sess.get("number")
-
-            if session_type in ("FP", "Q", "RAC"):
-                if number not in (None, "", 0, "0"):
-                    return f"{session_type}{number}"
-            return session_type
-
-        exact = None
-        fallback = None
-        fallback_date = None
-
-        for sess in sessions:
-            if not isinstance(sess, dict):
-                continue
-
-            condition = sess.get("condition")
-            if not isinstance(condition, dict) or not condition:
-                continue
-
-            shortname = _shortname(sess)
-            session_type = str(sess.get("type") or "").upper()
-
-            if shortname == live_shortname or session_type == live_shortname:
-                exact = sess
-                break
-
-            session_date = parse_api_date(
-                session_wall_time_to_utc(
-                    sess.get("date"), self.static.get("schedule_time_zone")
-                )
-                or sess.get("date")
-            )
-            if (
-                session_date is not None
-                and session_date <= now
-                and (fallback_date is None or session_date > fallback_date)
-            ):
-                fallback = sess
-                fallback_date = session_date
-
-        selected = exact or fallback
-        if selected is None:
-            return
-
-        condition = selected.get("condition")
-        if not isinstance(condition, dict):
-            return
-
-        self.static["track_weather"] = {
-            "track": condition.get("track") or "",
-            "air": condition.get("air") or "",
-            "ground": condition.get("ground") or "",
-            "humidity": condition.get("humidity") or "",
-            "weather": condition.get("weather") or "",
-            "category": category_name,
-            "session": live_shortname,
-            "source_session": _shortname(selected),
-            "updated_at": now.isoformat(),
-        }
+            _LOGGER.debug("Live condition lookup failed: %s", err)
+            sessions = None
+            fetch_status = "error"
+        report = select_session_weather(
+            sessions, event_uuid=event_uuid, category_uuid=category_uuid,
+            session_shortname=shortname,
+        )
+        if report is None and fetch_status == "ok":
+            fetch_status = "no_data"
+        observation = observe_weather_report(
+            report, self.static.get("track_weather"), checked_at=now.isoformat(),
+            event_uuid=event_uuid, category_uuid=category_uuid,
+            session=shortname, status=fetch_status,
+        )
+        observation["category"] = category_name
+        observation["session"] = shortname
+        self.static["track_weather"] = observation
 
     @staticmethod
     def _grid_records_category_name(value: Any) -> str:
@@ -885,6 +835,7 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
             return session_type or "Session"
 
+        self.static["entry_lists"] = {}
         if schedule_event is not None:
             all_sessions: list[dict[str, Any]] = []
             seen_categories: list[str] = []
@@ -900,6 +851,40 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
                 if not schedule_category_uuid or not schedule_category_name:
                     continue
+
+                # Snapshot of the officially entered riders. Kept separate from
+                # both the live timing feed and the published race grid.
+                try:
+                    entrants = await self.api.async_get_entry_list(
+                        schedule_event["id"], schedule_category_uuid
+                    )
+                except MotogpApiError as err:
+                    _LOGGER.debug("Entrants unavailable for %s: %s", schedule_category_name, err)
+                    entrants = []
+                roster = []
+                seen_numbers = set()
+                for row in entrants:
+                    rider = row.get("rider") or {}
+                    if not isinstance(rider, dict):
+                        continue
+                    number = row.get("number", rider.get("number"))
+                    number_key = str(number).strip() if number is not None else ""
+                    name = str(rider.get("full_name") or "").strip()
+                    if not number_key or not name or number_key in seen_numbers:
+                        continue
+                    seen_numbers.add(number_key)
+                    team = row.get("team") or {}
+                    if not isinstance(team, dict):
+                        team = {}
+                    roster.append({
+                        "number": number_key, "rider": name,
+                        "team": str(row.get("team_name") or team.get("name") or ""),
+                        "nation": str((rider.get("country") or {}).get("iso") or "")
+                        if isinstance(rider.get("country"), dict) else "",
+                    })
+                roster.sort(key=lambda x: (int(x["number"]) if x["number"].isdigit() else 9999, x["number"]))
+                if roster:
+                    self.static["entry_lists"][schedule_category_name] = roster
 
                 try:
                     category_sessions = await self.api.async_get_sessions(
@@ -1131,39 +1116,40 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
             self.static["weekend_sessions"] = normalized_sessions
 
-        # Weather: from the current weekend if we are inside it, otherwise
-        # from the most recent finished event (which has real conditions).
-        weather_event = None
-        target = self.static.get("next_event")
-        if target is not None:
-            start = parse_api_date(target.get("date_start"))
-            end = parse_api_date(target.get("date_end"))
-            if start is not None and end is not None and start <= now <= end + EVENT_WINDOW_GRACE:
-                weather_event = target
-        if weather_event is None:
-            weather_event = last_event
-
-        if weather_event is not None:
+        # Historical session weather. Never overwrite a report belonging to
+        # the active live session with another session's weather.
+        weather_event = self.static.get("next_event") or last_event
+        active_weather = self.static.get("track_weather")
+        if isinstance(weather_event, dict) and weather_event.get("id") and category_uuid:
             try:
-                sessions = await self.api.async_get_sessions(
-                    weather_event["id"], category_uuid
+                weather_sessions = await self.api.async_get_sessions(
+                    str(weather_event["id"]), str(category_uuid)
                 )
             except MotogpApiError as err:
-                _LOGGER.debug("Sessions failed: %s", err)
-                sessions = []
-
-            weather = None
-            for sess in sessions:
-                cond = sess.get("condition")
-                if isinstance(cond, dict) and cond:
-                    weather = {
-                        "track": cond.get("track") or "",
-                        "air": cond.get("air") or "",
-                        "ground": cond.get("ground") or "",
-                        "humidity": cond.get("humidity") or "",
-                        "weather": cond.get("weather") or "",
-                    }
-            self.static["track_weather"] = weather
+                _LOGGER.debug("Historical session weather unavailable: %s", err)
+            else:
+                report = select_session_weather(
+                    weather_sessions, event_uuid=str(weather_event["id"]),
+                    category_uuid=str(category_uuid),
+                )
+                # Keep an exact-session report even if historical static
+                # refresh runs during or immediately after that session.
+                if report and not (
+                    isinstance(active_weather, dict)
+                    and active_weather.get("results_event_uuid") == str(weather_event["id"])
+                    and active_weather.get("session") == active_weather.get("source_session")
+                    and active_weather.get("source_session")
+                ):
+                    observation = observe_weather_report(
+                        report, self.static.get("track_weather"),
+                        checked_at=now.isoformat(),
+                        event_uuid=str(weather_event["id"]),
+                        category_uuid=str(category_uuid),
+                        session=report["source_session"],
+                    )
+                    observation["category"] = "MotoGP"
+                    observation["session"] = report["source_session"]
+                    self.static["track_weather"] = observation
 
         # Last race results: from the most recent finished event
         if last_event is None:
