@@ -671,6 +671,17 @@ def _static_attributes(key: str, coordinator: MotogpCoordinator) -> dict[str, An
         weather = static.get("track_weather")
         if weather:
             attrs.update(weather)
+            # Age since an observed payload change, not an asserted sensor measurement.
+            stamp = weather.get("updated_at")
+            if stamp:
+                try:
+                    last_change = datetime.fromisoformat(str(stamp).replace("Z", "+00:00"))
+                    if last_change.tzinfo is not None:
+                        attrs["data_age_seconds"] = max(0, int(
+                            (datetime.now(timezone.utc) - last_change).total_seconds()
+                        ))
+                except (TypeError, ValueError, OverflowError):
+                    pass
     return attrs
 
 
