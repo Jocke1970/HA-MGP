@@ -1,4 +1,4 @@
-/* MotoGP Next SINGLE Lovelace resource | build next-one-20261108-17 | read only. */
+/* MotoGP Next SINGLE Lovelace resource | build next-one-20261108-18 | read only. */
 /* MotoGP Next: isolated frontend for motogp-test. No HA writes or service calls. */
 (() => {
   'use strict';
@@ -303,9 +303,9 @@
       this._track(now,race);
       const event=valid(race?.state)?race.state:'Inget evenemang tillgängligt';
       const meta=[a.circuit,a.country,a.date_start&&a.date_end?dateRange(a.date_start,a.date_end):''].filter(valid);
-      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.42</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
+      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.43</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
         this._schedule(race,now)+`<div class="root">${this._weather()}${this._timing()}</div>`+
-        `<div class="foot">HA-MGP UI · 0.3.0-dev.42 · UI-preview</div></div>`;
+        `<div class="foot">HA-MGP UI · 0.3.0-dev.43 · UI-preview</div></div>`;
     }
     getCardSize(){return 8;}
     getGridOptions(){return {columns:12,rows:'auto',min_columns:6};}
@@ -977,6 +977,18 @@
   };
   // An ended session must keep its fastest observed lap with its own frozen
   // same-session roster, never with the incoming race's live attributes.
+  const lapSeconds=raw=>{
+    const match=/^(?:(\d+)[:'])?(\d{1,2})\.(\d{3})$/.exec(lap(raw));
+    if(!match)return null;
+    const seconds=Number(match[1]||0)*60+Number(match[2])+Number(match[3])/1000;
+    return Number.isFinite(seconds)&&seconds>0?seconds:null;
+  };
+  const fastestSnapshotLap=card=>{
+    const snap=card._snapshot;
+    if(!snap||snap.day!==card._today||!Array.isArray(snap.riders))return null;
+    const times=snap.riders.map(r=>lapSeconds(r.best_lap_time)).filter(v=>v!==null);
+    return times.length?Math.min(...times):null;
+  };
   const sessionFastest=card=>{
     const snap=card._snapshot;
     if(!snap||snap.day!==card._today||!Array.isArray(snap.riders)||!snap.riders.length)return '';
@@ -1009,7 +1021,7 @@
     .nt-heading>span:nth-child(2){text-align:left!important}
     .nt-lap-pair{display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:0}
     .nt-lap-pair>small{font-size:10px;color:var(--secondary-text-color);font-weight:650;white-space:nowrap}
-    .nt-lap-pair>small.nt-rider-best{color:var(--motogp-fastest-lap-color,var(--error-color,#b71c1c));font-weight:850}
+    .nt-lap-pair>small.nt-session-best{color:var(--motogp-fastest-lap-color,var(--error-color,#b71c1c));font-weight:850}
     .nt-lap-pair .nt-last-main{font-weight:850;white-space:nowrap}
     .nt-status-pair{display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:0}
     .nt-status-pair small{font-size:10px;color:var(--secondary-text-color)}
@@ -1176,6 +1188,7 @@
       html=html.replace('<span>SENASTE</span>','<span>SENASTE VARV</span>')
         .replace('<span>Δ FRAMFÖR</span>','<span>FRAMFÖR</span>')
         .replace('<span>Δ LEDARE</span>','<span>LEDARE</span>');
+      const fastest=fastestSnapshotLap(this);
       let n=0;
       // The rider-lap popup extension can install before this UI extension.
       // It adds safe data-* / accessibility attributes to <div class="nt-row">.
@@ -1191,8 +1204,10 @@
         const range=lapCellRange(row,r);
         if(range) {
           const original=row.slice(range.begin,range.end),best=lap(r.best_lap_time);
+          const seconds=lapSeconds(r.best_lap_time);
+          const overall=fastest!==null&&seconds!==null&&Math.abs(seconds-fastest)<0.0005;
           const cell=`<span class="nt-lap-pair"><span class="nt-last-main">${original}</span>`+
-            `<small${best!=='—'?' class="nt-rider-best"':''}>Snabbaste: ${esc(best)}</small></span>`;
+            `<small${overall?' class="nt-session-best"':''}>Snabbaste: ${esc(best)}</small></span>`;
           row=row.slice(0,range.begin)+cell+row.slice(range.end);
         }
         const status=r.on_pit?'PIT':valid(r.status_name)?String(r.status_name):valid(r.status_id)?String(r.status_id):'—';
