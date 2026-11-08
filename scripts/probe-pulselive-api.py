@@ -50,6 +50,10 @@ if isinstance(live_payload,dict):
     head=live_payload.get("head")
     rr=live_payload.get("rider")
     print(f"LIVE HEAD: keys={list(head) if isinstance(head,dict) else type(head).__name__}, status={head.get('session_status_id') if isinstance(head,dict) else '-'}, session={head.get('session_shortname') if isinstance(head,dict) else '-'}, category={head.get('category') if isinstance(head,dict) else '-'}",flush=True)
+    if isinstance(rr,dict):
+        print(f"LIVE RIDER OBJECT: count={len(rr)}, top_keys={list(rr)[:12]}",flush=True)
+        first=next(iter(rr.values()),None)
+        print(f"LIVE RIDER ENTRY: type={type(first).__name__}, keys={list(first)[:35] if isinstance(first,dict) else []}",flush=True)
     sample=next((x for x in rr if isinstance(x,dict)),None) if isinstance(rr,list) else None
     print(f"LIVE RIDER: type={type(rr).__name__}, count={len(rr) if isinstance(rr,list) else '-'}, keys={list(sample) if sample else []}",flush=True)
     if sample:
