@@ -19,7 +19,7 @@ const ctx={Date:Clock,customElements:{get:()=>Timing,whenDefined:()=>Promise.res
  document:{createElement:()=>({setAttribute(){},textContent:''})},
  setInterval:f=>{tick=f;return 1;},clearInterval:id=>{cleared=id;},console};
 (async()=>{
- vm.runInNewContext(src,ctx);await Promise.resolve();await Promise.resolve();
+ vm.runInNewContext(src,ctx);await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();
  let t=new Timing();let markup=t._timing();
  assert.match(markup,/🕒 12:40/);assert.match(markup,/⏱ /);
  t.connectedCallback();assert.equal(t.node.urgent,true);assert.ok(tick);
