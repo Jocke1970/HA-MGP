@@ -1,11 +1,11 @@
-# HA-MGP — status 2026-11-07
+# HA-MGP — status 2026-11-08
 
 ## Projekt och releaser
 
 - GitHub: [Jocke1970/HA-MGP](https://github.com/Jocke1970/HA-MGP), tidigare `ha-motogp`.
 - Produktnamn: **HA-MGP**, med backend + frontend i samma HACS-integration.
-- Publicerad HACS-beta: **2026.11.0b12**, frontend **0.3.0-dev.23**.
-- Aktuell dev-kandidat: **0.3.0-dev.25** med det nya produktnamnet **HA-MGP** i UI. Den är **inte** publicerad som beta.
+- Publicerad HACS-beta: **2026.11.0b17**, frontend **0.3.0-dev.37** (verifierad GitHub-prerelease).
+- Nästa dev-kandidat: **0.3.0-dev.38**. Helgschema som modal, passiv API-diagnostik och klassfilterregressioner. **Inte publicerad som beta.**
 - Ordning: **dev → beta → main**.
 
 ## Funktioner
@@ -14,7 +14,7 @@ Grand Prix-toppkort, banväder och schematisk banlayout, dynamisk nationsflagga 
 
 I den ännu opublicerade dev-versionen är helgschema och VM-ställning ömsesidigt uteslutande, dubbel schemarubrik borttagen och VM-listan inte längre begränsad till tio förare.
 
-**Kvar att göra:** förarnas nationsflaggor i livetiming och VM-ställning, klassloggor som filterknappar (originalmaterialet måste hittas/verifieras), verkliga livepassprov och kontroll av historikfunktionens beroende till backend.
+**Kvar att göra:** riktiga licens-/ursprungsverifierade klasslogotyper (tills dess används textbaserade SVG-märken), verkliga livepassprov och jämförelse mellan sista PB/varv och sessionsarkiv. Förarflaggor och klassknappar finns redan i b17; deras visuella layout behöver fortfarande HA-granskas.
 
 ## Kompatibilitet
 
@@ -76,3 +76,12 @@ Broadcast `/teams?categoryUuid=...&seasonYear=2026` svarade HTTP 200 med 12 team
 **Före beta:** välj dokumenterad fallback (t.ex. preliminär säsongslista tydligt märkt, eller förbli i väntläge), testa förar-ID:n och undvik upprepade onödiga 400-anrop. Ingen HA-installation från dev.
 
 Verifiering: [API-testets Actions-logg](https://github.com/Jocke1970/HA-MGP/actions/workflows/pulselive-probe.yml).
+
+## Nästa beta-kandidat: helgschema, klassknappar och Pulselive-debug (dev, ej release)
+
+- **Helgschema:** översiktskortets knapp öppnar ett modal-fönster i stället för att lägga schemat mellan toppkort och den separata livetimingen. Stäng-knapp och Escape stöds. Tester täcker öppen/stängd visning och att schemat inte skjuter ned layouten. Tillhör UI `0.3.0-dev.38`, bara på dev.
+- **Klassknappar:** de befintliga grafiska/typografiska klassmarkörerna och klickbara filtren för **Moto3, Moto2, MotoGP** finns i VM-ställningen och i schemats kategorifilter. Ytterligare regressionstest låser ordning, tillgängliga knappar och klassisolerad data. Originalmärken får inte förväxlas med dessa interimistiska SVG-märken.
+- **Diagnostiksensor:** `sensor.motogp_pulselive_api_debug` (föreslaget namn; exakt entity_id kan avvika) skapas som **diagnostikentitet avstängd som standard**. Den använder redan hämtade, TV-delay-godkända data från `livetiming-lite`; inga extra HTTP-anrop. Övergångar registrerar källstatus, sessions-ID, klass, status, första förarlistan, första varvet och högsta observerade varv. **Inga stora rider-payloads eller nya tidsstämplar per poll** i Recorder.
+- **Sekundära API-källor:** `/riders` och `/teams` har verifierats som öppna kataloger men är inte verifierade startlistor för en viss session. Därför introduceras ännu inga regelbundna anrop för dem i produktion. `/event/.../entry` svarar 400 och ingår inte i b17; dev-koden behöver städas för den vägen före nästa beta.
+- **Spoiler-/sessionssäkerhet:** diagnostik sparar bara koordinatorns *exponerade* TV-delay-godkända snapshot, inte råfeed. Diagnostiksensorn visar `Hidden` och inga sessionsattribut i spoilerläge. Kända begränsningar: efter integrationens omstart återställs debug-observationsminnet och dess 'första' observation är relativ till startup, inte garanterad officiell start.
+- **Kvar inför beta:** kör full CI, paketeringskontroll, kontroll av eventuella missade API-svar och installations-/rollbackdokumentation. Ingen direktinstallation av dev.
