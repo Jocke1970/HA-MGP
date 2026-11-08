@@ -68,7 +68,7 @@ const context={customElements:{
   assert.match(card.root.innerHTML,/5,38 km/,'verified lap length shown in header');
   assert.match(card.root.innerHTML,/1 068 m/,'longest straight shown in header');
   assert.match(card.root.innerHTML,/10 · ↰ 6/,'right and left turns shown');
-  assert.match(card.root.innerHTML,/qat-info\\.svg/,'official SVG is linked, not loaded as an unverified replacement');
+  assert.match(card.root.innerHTML,/qat-info\.svg/,'official SVG is linked, not loaded as an unverified replacement');
   const eventHeader=card.root.innerHTML.match(/<section class="panel header">([\s\S]*?)<\/section>/);
   assert.ok(eventHeader,'single event header exists');
   assert.match(eventHeader[1],/GRAND PRIX OF QATAR/);
