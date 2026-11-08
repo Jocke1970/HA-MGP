@@ -91,4 +91,28 @@ if isinstance(sessions,list) and sessions:
             results=probe("classification (no params)",f"/results/session/{sess['id']}/classification")
         if isinstance(results,dict):
             print(f"CLASSIFICATION: classification_type={type(results.get('classification')).__name__}, records_type={type(results.get('records')).__name__}",flush=True)
+print("=== Broadcast session ID and rider directory investigation ===",flush=True)
+b_uuid=event.get("toad_api_uuid")
+b_event=probe("deep broadcast event",f"/events/{b_uuid}") if b_uuid else None
+if isinstance(b_event,dict):
+    bc=b_event.get("broadcasts")
+    print(f"ID CHAIN: results_event={event.get('id')} broadcast_event={b_event.get('id')} timing_id={b_event.get('timing_id')} broadcast_passes={len(bc) if isinstance(bc,list) else '-'}",flush=True)
+    if isinstance(bc,list) and bc and isinstance(bc[0],dict):
+        print(f"BROADCAST PASS: keys={list(bc[0])[:30]}, category_keys={list(bc[0].get('category',{})) if isinstance(bc[0].get('category'),dict) else []}",flush=True)
+if isinstance(sessions,list) and sessions:
+    sess=sessions[-1]
+    print(f"RESULT SESSION: id={sess.get('id')}, category={sess.get('category')}, event={sess.get('event')}, type={sess.get('type')}",flush=True)
+    probe("session details",f"/results/sessions/{sess['id']}")
+riders=probe("broadcast rider directory","/riders")
+if isinstance(riders,list):
+    print(f"RIDER DIR: count={len(riders)}, first_keys={list(riders[0])[:25] if riders and isinstance(riders[0],dict) else []}",flush=True)
+    curr=[r for r in riders if isinstance(r,dict) and isinstance(r.get('current_career_step'),dict) and r['current_career_step'].get('season')==2026]
+    print(f"RIDER CURRENT 2026: count={len(curr)}, first_step_keys={list(curr[0]['current_career_step'])[:22] if curr else []}",flush=True)
+    if curr and curr[0].get('id'):
+        probe("single rider profile",f"/riders/{curr[0]['id']}")
+if isinstance(grid,list) and grid and isinstance(teams,list):
+    gridnums={str(g.get('rider',{}).get('number')) for g in grid if isinstance(g,dict) and isinstance(g.get('rider'),dict)}
+    teamrows=[r for t in teams if isinstance(t,dict) for r in t.get('riders',[]) if isinstance(r,dict)]
+    teamnums={str(r.get('number')) for r in teamrows if r.get('number') is not None}
+    print(f"GRID vs TEAMS: grid_numbers={len(gridnums)} team_numbers={len(teamnums)} overlap={len(gridnums & teamnums)} grid_only={len(gridnums-teamnums)}",flush=True)
 print("Diagnostics complete. No raw full JSON or secrets written.",flush=True)
