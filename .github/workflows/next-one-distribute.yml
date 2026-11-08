@@ -14,6 +14,7 @@ on:
       - 'frontend/ha-mgp-api-status.js'
       - 'frontend/ha-mgp-session-dots.js'
       - 'frontend/ha-mgp-timing-icons.js'
+      - 'frontend/ha-mgp-active-chip.js'
       - 'frontend/locales/**'
       - 'custom_components/motogp_sensor/translations/**'
       - 'frontend/ha-mgp-mobile-laps.js'
@@ -29,6 +30,7 @@ on:
       - 'tests/frontend-api-status.cjs'
       - 'tests/frontend-session-dots.cjs'
       - 'tests/frontend-timing-icons.cjs'
+      - 'tests/frontend-active-chip.cjs'
       - 'tests/test_frontend_package.py'
       - 'tests/frontend-mobile-laps.cjs'
       - 'tests/frontend-next-qual-grid.cjs'
@@ -70,6 +72,7 @@ jobs:
           node tests/frontend-api-status.cjs
           node tests/frontend-session-dots.cjs
           node tests/frontend-timing-icons.cjs
+          node tests/frontend-active-chip.cjs
           python3 scripts/build-next-ui-preview.py frontend dist/ha-mgp.js
           node --check dist/ha-mgp.js
           cp dist/ha-mgp.js custom_components/motogp_sensor/www/ha-mgp.js

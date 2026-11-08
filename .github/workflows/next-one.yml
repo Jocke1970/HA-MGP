@@ -41,6 +41,7 @@ jobs:
           node tests/frontend-api-status.cjs
           node tests/frontend-session-dots.cjs
           node tests/frontend-timing-icons.cjs
+          node tests/frontend-active-chip.cjs
           node tests/frontend-next-lap-pair.cjs frontend/ha-mgp-ui.js frontend/ha-mgp-mobile-laps.js
           node tests/frontend-next-header-track.cjs frontend/ha-mgp-header-track.js
           node tests/frontend-session-history.cjs frontend/ha-mgp-session-history.js

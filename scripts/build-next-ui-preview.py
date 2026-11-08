@@ -18,8 +18,9 @@ CALENDAR_BLOB = '564bcf4010ab6c243c05bd8e0732165596530e85'
 API_STATUS_BLOB = '32490df85fde2a651ef9b69ee7f515b57e6c267c'
 SESSION_DOTS_BLOB = '717aa859c7a096a439d36d408f5dfbdd3b30f9d9'
 TIMING_ICONS_BLOB = 'd44d19a911051d4ab67513d4191942f03eeb09b0'
-BUILD = 'next-one-20261108-09'
-VERSION = '0.3.0-dev.34'
+ACTIVE_CHIP_BLOB = 'e9170bf96b1237de4967bd4dde5c837bf04d4050'
+BUILD = 'next-one-20261108-10'
+VERSION = '0.3.0-dev.35'
 
 
 def blob(data):
@@ -115,6 +116,12 @@ def main(frontend, target):
             raise SystemExit('STOP: unexpected HA-MGP ' + name + ' source')
     session_dots_bytes = session_dots_path.read_bytes()
     timing_icons_bytes = timing_icons_path.read_bytes()
+    active_chip_path = frontend / 'ha-mgp-active-chip.js'
+    if not active_chip_path.is_file() or active_chip_path.is_symlink():
+        raise SystemExit('STOP: missing/unsafe active session chip')
+    active_chip_bytes = active_chip_path.read_bytes()
+    if blob(active_chip_bytes) != ACTIVE_CHIP_BLOB:
+        raise SystemExit('STOP: unexpected active session chip revision')
     with tempfile.TemporaryDirectory() as temp:
         base = pathlib.Path(temp) / 'base.js'
         module.build(frontend, base)
@@ -137,7 +144,7 @@ def main(frontend, target):
     if header_source.count('__MGP_APPROVED_BRAND_DATA_URI__') != 1:
         raise SystemExit('STOP: missing or duplicate MGP logo placeholder')
     header_source = header_source.replace('__MGP_APPROVED_BRAND_DATA_URI__', logo_uri)
-    result = (text + '\n;\n' + ui.decode('utf-8') + '\n;\n' + mobile_bytes.decode('utf-8') + '\n;\n' + qual_bytes.decode('utf-8') + '\n;\n' + header_source + '\n;\n' + history_bytes.decode('utf-8') + '\n;\n' + i18n_source + '\n;\n' + calendar_bytes.decode('utf-8') + '\n;\n' + api_status_bytes.decode('utf-8') + '\n;\n' + session_dots_bytes.decode('utf-8') + '\n;\n' + timing_icons_bytes.decode('utf-8')).encode('utf-8')
+    result = (text + '\n;\n' + ui.decode('utf-8') + '\n;\n' + mobile_bytes.decode('utf-8') + '\n;\n' + qual_bytes.decode('utf-8') + '\n;\n' + header_source + '\n;\n' + history_bytes.decode('utf-8') + '\n;\n' + i18n_source + '\n;\n' + calendar_bytes.decode('utf-8') + '\n;\n' + api_status_bytes.decode('utf-8') + '\n;\n' + session_dots_bytes.decode('utf-8') + '\n;\n' + timing_icons_bytes.decode('utf-8') + '\n;\n' + active_chip_bytes.decode('utf-8')).encode('utf-8')
     pathlib.Path(target).write_bytes(result)
     print(f'UI preview built: {target} ({len(result)} bytes, git blob {blob(result)})')
 
