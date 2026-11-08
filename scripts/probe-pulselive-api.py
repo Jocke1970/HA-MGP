@@ -115,4 +115,16 @@ if isinstance(grid,list) and grid and isinstance(teams,list):
     teamrows=[r for t in teams if isinstance(t,dict) for r in t.get('riders',[]) if isinstance(r,dict)]
     teamnums={str(r.get('number')) for r in teamrows if r.get('number') is not None}
     print(f"GRID vs TEAMS: grid_numbers={len(gridnums)} team_numbers={len(teamnums)} overlap={len(gridnums & teamnums)} grid_only={len(gridnums-teamnums)}",flush=True)
+if isinstance(grid,list) and grid:
+    g=grid[0]
+    ri=g.get('rider') if isinstance(g,dict) else None
+    print(f"GRID RIDER SHAPE: keys={list(ri)[:30] if isinstance(ri,dict) else type(ri).__name__}, number_sample={repr(ri.get('number')) if isinstance(ri,dict) else '-'}, grid_item_keys={list(g) if isinstance(g,dict) else []}",flush=True)
+if isinstance(teams,list) and teams:
+    tr=next((r for t in teams if isinstance(t,dict) for r in t.get('riders',[]) if isinstance(r,dict)),None)
+    print(f"TEAM RIDER SHAPE: keys={list(tr)[:35] if tr else []}, number_sample={repr(tr.get('number')) if tr else '-'}",flush=True)
+if isinstance(riders,list):
+    from collections import Counter
+    current=[r for r in riders if isinstance(r,dict) and isinstance(r.get('current_career_step'),dict) and r['current_career_step'].get('current') is True]
+    print(f"RIDER FILTERS: all={len(riders)}, current_step={len(current)}, in_grid_true={sum(r['current_career_step'].get('in_grid') is True for r in current)}, by_category={dict(Counter(str(r['current_career_step'].get('category',{}).get('name')) for r in current if isinstance(r['current_career_step'].get('category'),dict)))}",flush=True)
+    print(f"CURRENT NUMBER SHAPE: first={repr(current[0]['current_career_step'].get('number')) if current else '-'}",flush=True)
 print("Diagnostics complete. No raw full JSON or secrets written.",flush=True)
