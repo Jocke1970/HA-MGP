@@ -68,6 +68,24 @@
     return '<div class="mgp-timing-records" role="group" aria-label="'+esc(category)+' circuit records">'+
       ['lap','pole','race'].map(k=>found.get(k)||'').join('')+'</div>';
   };
+  // An ended session must keep its fastest observed lap with its own frozen
+  // same-session roster, never with the incoming race's live attributes.
+  const sessionFastest=card=>{
+    const snap=card._snapshot;
+    if(!snap||snap.day!==card._today||!Array.isArray(snap.riders)||!snap.riders.length)return '';
+    const candidates=snap.riders.map(r=>{
+      const raw=lap(r.best_lap_time);
+      const match=/^(?:(\d+)[:'])?(\d{1,2})\.(\d{3})$/.exec(raw);
+      if(!match)return null;
+      const seconds=Number(match[1]||0)*60+Number(match[2])+Number(match[3])/1000;
+      if(!Number.isFinite(seconds)||seconds<=0)return null;
+      return {seconds,time:raw,rider:String(r.surname||r.shortname||r.firstname||'').trim()};
+    }).filter(Boolean).sort((a,b)=>a.seconds-b.seconds);
+    if(!candidates.length)return '';
+    const best=candidates[0];
+    return '<div class="nt-session-observed-best" role="status">⏱ Sessionens snabbaste observerade: '+
+      '<strong>'+esc(best.time)+'</strong>'+(best.rider?' · '+esc(best.rider):'')+'</div>';
+  };
   const session=v=>({RAC:'Race',SPR:'Sprint'})[String(v||'').toUpperCase()]||String(v||'');
   const number=v=>/^#?\d+$/.test(String(v??'').trim())?String(Number(String(v).replace('#',''))):'';
   // Use only colors explicitly supplied by the provider; neutral fallback.
@@ -92,6 +110,8 @@
     .nt-position-zero{color:var(--secondary-text-color);font-weight:750}
     .nt-position-empty{color:var(--secondary-text-color)}
     .nt-session-record strong{color:var(--motogp-fastest-lap-color,var(--error-color,#b71c1c))}
+    .nt-session-observed-best{padding:6px 10px;font-size:11px;font-weight:650;color:var(--primary-text-color);border-bottom:1px solid var(--divider-color,#ddd)}
+    .nt-session-observed-best strong{font-size:12px;color:var(--motogp-fastest-lap-color,var(--error-color,#b71c1c))}
     .mgp-timing-records{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:6px 10px 9px;border-bottom:1px solid var(--divider-color,#ddd)}
     .mgp-timing-record-chip{display:flex;align-items:center;justify-content:space-between;gap:4px 8px;min-width:0;border:1px solid var(--divider-color,#ddd);border-radius:9px;padding:6px 8px;background:var(--secondary-background-color,rgba(127,127,127,.045))}
     .mgp-timing-record-chip small{font-size:9px;font-weight:700;color:var(--secondary-text-color);white-space:nowrap}
@@ -237,6 +257,8 @@
       if(html.includes('<button type="button" class="nt-head"')&&html.includes('</button>')){
         const chips=recordChips(this,category);
         if(chips)html=html.replace('</button>','</button>'+chips);
+        const sessionBest=sessionFastest(this);
+        if(sessionBest)html=html.replace('</button>','</button>'+sessionBest);
       }
       if(!this._snapshot?.riders?.length||this._snapshot.day!==this._today)return html;
       if(this._live)html=html.replace('<span class="nt-label">🏁 ',
