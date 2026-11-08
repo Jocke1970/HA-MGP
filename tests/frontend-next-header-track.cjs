@@ -112,7 +112,9 @@ const context={customElements:{
   card._scheduleOpen=true;
   assert.match(card._schedule(),/Filters/,'schedule filters remain');
   assert.match(card._schedule(),/Days/,'schedule day list remains');
-  assert.doesNotMatch(card._schedule(),/Helgens schema/,'redundant schedule heading removed');
+  assert.match(card._schedule(),/<dialog class="mgp-weekend-dialog"/,'open schedule uses native modal');
+  assert.match(card._schedule(),/data-mgp-schedule-dismiss/,'dialog has a close button');
+  assert.match(card._schedule(),/Helgens schema/,'dialog has accessible schedule title');
   card._scheduleOpen=false;
   const first=card.root.innerHTML;
   card._render();assert.equal(card.root.innerHTML,first,'no duplicate panels');
