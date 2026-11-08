@@ -40,6 +40,7 @@ push({'sensor.motogp_current_session':ent('Sprint',meta),'sensor.motogp_session_
 assert.match(html(),/Varv 8\/14/);assert.match(html(),/7 varv kvar/);assert.doesNotMatch(html(),/RIDERA/);
 click({timing:''});assert.match(html(),/data-timing aria-expanded="false"/);assert.match(html(),/7 varv kvar/);
 push({'sensor.motogp_race_lap_count':ent('9',{num_laps:14})});assert.match(html(),/6 varv kvar/);
+push({'sensor.motogp_race_lap_count':ent('14',{num_laps:14})});assert.match(html(),/Varv 14\\/14/);assert.match(html(),/Sista varvet/);assert.doesNotMatch(html(),/0 varv kvar/);
 // Never fabricate total laps; use current lap alone.
 push({'sensor.motogp_race_lap_count':ent('10',{num_laps:0})});assert.match(html(),/Varv 10/);assert.doesNotMatch(html(),/varv kvar|\/0/);
 // Mismatched rider category fails closed, so old FP2 riders do not leak into Sprint.
