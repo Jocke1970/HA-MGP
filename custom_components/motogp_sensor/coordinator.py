@@ -18,6 +18,7 @@ from .api_event_archive import PulseliveEventArchive, DiagnosticArchiveError
 from .session_lap_archive import ArchiveError, SessionLapArchive
 from .qualifying_grid import q1_eliminated_rows
 from .weather_conditions import select_session_weather, observe_weather_report
+from .broadcast_schedule import broadcast_schedule_rows
 from .schedule_time import (
     canonical_time_zone,
     scheduled_session_start_near,
@@ -905,56 +906,15 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                         }
                     )
 
-            # Broadcast API event contains future schedule rows before Results
-            # API publishes sessions. Its IDs are NOT Results session UUIDs.
-            # Use its data only for display and never to authorize archive/results.
-            broadcasts = (broadcast_event or {}).get("broadcasts")
-            if isinstance(broadcasts, list):
-                known = {
-                    (r["category"], str(r.get("date_utc") or r["date"])[:16])
-                    for r in all_sessions
-                }
-                for broadcast in broadcasts:
-                    if not isinstance(broadcast, dict) or str(broadcast.get("type") or "").upper() != "SESSION":
-                        continue
-                    cat = broadcast.get("category")
-                    if not isinstance(cat, dict):
-                        continue
-                    name = _schedule_category_name(cat.get("name") or cat.get("acronym"))
-                    if name not in {"MotoGP", "Moto2", "Moto3", "MotoE"}:
-                        continue
-                    when = broadcast.get("date_start")
-                    if not when:
-                        continue
-                    normalized_date = session_wall_time_to_utc(
-                        when, self.static.get("schedule_time_zone")
-                    ) or str(when)
-                    identity = (name, str(normalized_date)[:16])
-                    if identity in known:
-                        continue
-                    known.add(identity)
-                    shortname = str(broadcast.get("shortname") or "").upper()
-                    display_name = (shortname if shortname in {"RAC", "SPR", "WUP", "PR"}
-                                    or shortname.startswith(("FP", "Q"))
-                                    else str(broadcast.get("name") or "").strip()[:80])
-                    if display_name in {"RAC", "SPR", "WUP", "PR"}:
-                        display_name = {"RAC": "Race", "SPR": "Sprint",
-                                        "WUP": "Warm Up", "PR": "Practice"}[display_name]
-                    if not display_name:
-                        continue
-                    all_sessions.append({
-                        "id": "",  # Broadcast is schedule-only; not a Results session.
-                        "category": name,
-                        "category_raw": cat.get("name") or name,
-                        "category_id": None,
-                        "name": display_name,
-                        "type": shortname,
-                        "date": when, "date_utc": normalized_date,
-                        "status": broadcast.get("status") or "",
-                        "source": "broadcast_schedule",
-                    })
-                    if name not in seen_categories:
-                        seen_categories.append(name)
+            # Broadcast API is a schedule-only fallback for future sessions;
+            # never use Broadcast UUIDs as authenticated Results IDs.
+            broadcast_rows = broadcast_schedule_rows(
+                broadcast_event, all_sessions, self.static.get("schedule_time_zone")
+            )
+            all_sessions.extend(broadcast_rows)
+            for item in broadcast_rows:
+                if item["category"] not in seen_categories:
+                    seen_categories.append(item["category"])
 
             all_sessions.sort(
                 key=lambda s: parse_api_date(
