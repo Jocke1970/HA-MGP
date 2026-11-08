@@ -13,6 +13,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from homeassistant.util import dt as dt_util
 
 from .api import MotogpApiClient, MotogpApiError
+from .api_diagnostics import PulseliveDiagnostics
 from .session_lap_archive import ArchiveError, SessionLapArchive
 from .qualifying_grid import q1_eliminated_rows
 from .schedule_time import (
@@ -82,6 +83,7 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             update_interval=LIVE_POLLING_IDLE,
         )
         self.api = api
+        self.api_diagnostics = PulseliveDiagnostics()
         # Backend-owned archive: no UI, sensor-property or helper dependency.
         self._session_lap_archive = SessionLapArchive(hass.config.path("motogp_data"))
         self.live_source = live_source
@@ -324,6 +326,7 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         # continues to be sampled quickly while a session is active.
         raw_live = live
         live = self._apply_tv_delay(raw_live, dt_util.utcnow())
+        self.api_diagnostics.observe(live, live_online, dt_util.utcnow())
 
         # Archive ONLY a validated, coordinator-exposed TV-delayed sample.
         # Do not record raw_live or an unready warm-up sample.
