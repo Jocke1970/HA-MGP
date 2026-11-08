@@ -101,6 +101,10 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self._last_live_poll_at: datetime | None = None
         self._prev_live_online: bool | None = None
         self._prev_session_status: str | None = None
+        self._last_raw_session_key: tuple[str, str, str] | None = None
+        self._last_raw_session_status: str | None = None
+        self._finish_refresh_key: tuple[str, str, str] | None = None
+        self._finish_refresh_until: datetime | None = None
         self._prev_race_week: bool | None = None
 
         # TV-sync buffer. Raw live snapshots are retained here and the
@@ -323,6 +327,27 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             await self._async_refresh_live_conditions(live, now)
             self._last_weather_refresh = now
 
+        # Continue sampling a just-finished race for late result corrections.
+        # Keep this bound to the identical feed session, never the next class.
+        raw_key = None
+        raw_status = None
+        if isinstance(live, dict):
+            parts = tuple(str(live.get(field) or "") for field in
+                          ("event_id", "category", "session_id"))
+            raw_key = parts if all(parts) else None
+            raw_status = str(live.get("session_status_id") or "").upper()
+        if raw_key != self._last_raw_session_key:
+            self._finish_refresh_key = None
+            self._finish_refresh_until = None
+        if (raw_key and raw_status in ("F", "C")
+            and self._last_raw_session_key == raw_key
+            and self._last_raw_session_status in LIVE_SESSION_STATUS_IDS):
+            self._finish_refresh_key = raw_key
+            self._finish_refresh_until = now + timedelta(minutes=4)
+        if raw_key:
+            self._last_raw_session_key = raw_key
+            self._last_raw_session_status = raw_status
+
         # Apply broadcast delay only to the exposed live snapshot.
         # Polling activity still follows the real/raw feed so the history
         # continues to be sampled quickly while a session is active.
@@ -382,8 +407,16 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 after=timedelta(minutes=30),
             )
         )
+        settling = (
+            raw_key is not None and raw_status in ("F", "C")
+            and raw_key == self._finish_refresh_key
+            and self._finish_refresh_until is not None
+            and now < self._finish_refresh_until
+        )
         if active:
             self.update_interval = LIVE_POLLING_ACTIVE
+        elif settling:
+            self.update_interval = LIVE_POLLING_PRESTART
         elif prestart:
             self.update_interval = LIVE_POLLING_PRESTART
         elif standby:
