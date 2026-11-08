@@ -1,0 +1,106 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "HA-MGP",
+        "data": {
+          "device_name": "Device name",
+          "enabled_sensors": "Enabled sensors",
+          "live_source": "Live timing source",
+          "race_week_start_day": "Race week starts"
+        }
+      }
+    },
+    "error": {
+      "required": "A device name is required"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options",
+        "data": {
+          "device_name": "Device name",
+          "enabled_sensors": "Enabled sensors",
+          "live_source": "Live timing source",
+          "race_week_start_day": "Race week starts"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "session_status": {
+        "name": "Session status"
+      },
+      "current_session": {
+        "name": "Current session"
+      },
+      "race_lap_count": {
+        "name": "Race lap count"
+      },
+      "rider_positions": {
+        "name": "Rider positions"
+      },
+      "top_three": {
+        "name": "Top three"
+      },
+      "leader": {
+        "name": "Leader"
+      },
+      "fastest_lap": {
+        "name": "Fastest lap"
+      },
+      "session_time_remaining": {
+        "name": "Session time remaining"
+      },
+      "track_weather": {
+        "name": "Track weather"
+      },
+      "pit_stops": {
+        "name": "Pit stops"
+      },
+      "next_race": {
+        "name": "Next race"
+      },
+      "next_race_in": {
+        "name": "Days until next race"
+      },
+      "current_season": {
+        "name": "Current season"
+      },
+      "rider_standings": {
+        "name": "Rider standings"
+      },
+      "constructor_standings": {
+        "name": "Constructor standings"
+      },
+      "last_race_results": {
+        "name": "Last race results"
+      }
+    },
+    "binary_sensor": {
+      "race_week": {
+        "name": "Race week"
+      },
+      "live_timing_online": {
+        "name": "Live timing online"
+      }
+    },
+    "switch": {
+      "no_spoiler": {
+        "name": "Spoiler protection"
+      }
+    },
+    "select": {
+      "live_source": {
+        "name": "Live timing source",
+        "state": {
+          "pulselive": "Pulselive (recommended)",
+          "official": "Official MotoGP (experimental)",
+          "auto": "Automatic (Pulselive with official fallback)"
+        }
+      }
+    }
+  }
+}

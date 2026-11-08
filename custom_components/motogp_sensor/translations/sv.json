@@ -1,0 +1,106 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "HA-MGP",
+        "data": {
+          "device_name": "Enhetsnamn",
+          "enabled_sensors": "Aktiverade sensorer",
+          "live_source": "Källa för livetiming",
+          "race_week_start_day": "Tävlingsveckan börjar"
+        }
+      }
+    },
+    "error": {
+      "required": "Enhetsnamn krävs"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Alternativ",
+        "data": {
+          "device_name": "Enhetsnamn",
+          "enabled_sensors": "Aktiverade sensorer",
+          "live_source": "Källa för livetiming",
+          "race_week_start_day": "Tävlingsveckan börjar"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "session_status": {
+        "name": "Sessionsstatus"
+      },
+      "current_session": {
+        "name": "Aktuellt pass"
+      },
+      "race_lap_count": {
+        "name": "Antal tävlingsvarv"
+      },
+      "rider_positions": {
+        "name": "Förarpositioner"
+      },
+      "top_three": {
+        "name": "Topp tre"
+      },
+      "leader": {
+        "name": "Ledare"
+      },
+      "fastest_lap": {
+        "name": "Snabbaste varv"
+      },
+      "session_time_remaining": {
+        "name": "Återstående sessionstid"
+      },
+      "track_weather": {
+        "name": "Banväder"
+      },
+      "pit_stops": {
+        "name": "Depåstopp"
+      },
+      "next_race": {
+        "name": "Nästa tävling"
+      },
+      "next_race_in": {
+        "name": "Dagar till nästa tävling"
+      },
+      "current_season": {
+        "name": "Aktuell säsong"
+      },
+      "rider_standings": {
+        "name": "Förarställning"
+      },
+      "constructor_standings": {
+        "name": "Konstruktörsställning"
+      },
+      "last_race_results": {
+        "name": "Senaste tävlingsresultat"
+      }
+    },
+    "binary_sensor": {
+      "race_week": {
+        "name": "Tävlingsvecka"
+      },
+      "live_timing_online": {
+        "name": "Livetiming online"
+      }
+    },
+    "switch": {
+      "no_spoiler": {
+        "name": "Spoilerskydd"
+      }
+    },
+    "select": {
+      "live_source": {
+        "name": "Källa för livetiming",
+        "state": {
+          "pulselive": "Pulselive (rekommenderas)",
+          "official": "Officiell MotoGP (experimentell)",
+          "auto": "Automatisk (Pulselive med officiell reserv)"
+        }
+      }
+    }
+  }
+}
