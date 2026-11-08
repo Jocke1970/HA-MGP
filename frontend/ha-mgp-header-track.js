@@ -128,7 +128,7 @@ function venue(card){
   const attrs=card._hass?.states?.[card._ids?.race]?.attributes||{};
   const circuit=String(attrs.circuit||'').trim();
   const map=trackFor(circuit);
-  const specs=/\\b(lusail|losail)\\b/i.test(circuit)?CIRCUIT_FACTS.lusail:null;
+  const specs=/\b(lusail|losail)\b/i.test(circuit)?CIRCUIT_FACTS.lusail:null;
   const factsHtml=specs?'<div class="mgp-circuit-facts" aria-label="Banans mått">'+
     '<span>'+esc(specs.length)+' / varv</span><span>↔ '+esc(specs.width)+'</span>'+
     '<span>Raka '+esc(specs.straight)+'</span>'+
