@@ -51,6 +51,13 @@ if isinstance(live_payload,dict):
     rr=live_payload.get("rider")
     print(f"LIVE HEAD: keys={list(head) if isinstance(head,dict) else type(head).__name__}, status={head.get('session_status_id') if isinstance(head,dict) else '-'}, session={head.get('session_shortname') if isinstance(head,dict) else '-'}, category={head.get('category') if isinstance(head,dict) else '-'}",flush=True)
     if isinstance(rr,dict):
+        values=[v for v in rr.values() if isinstance(v,dict)]
+        identifiers=[v for v in values if v.get("rider_id") is not None and v.get("rider_number") not in (None,"")]
+        zeros=[v for v in values if str(v.get("num_lap",0)) in ("0","", "None")]
+        pos=[v.get("pos") for v in values]
+        print(f"LIVE GRID CANDIDATE: session_status={head.get('session_status_id') if isinstance(head,dict) else None}, category={head.get('category') if isinstance(head,dict) else None}, rider_count={len(values)}, identifiable={len(identifiers)}, zero_laps={len(zeros)}, positions_positive={sum(isinstance(q,int) and q>0 for q in pos)}",flush=True)
+        print(f"LIVE GRID FIELDS: first={list(values[0])[:30] if values else []}, sample_number={values[0].get('rider_number') if values else None}, sample_order={values[0].get('order') if values else None}, sample_position={values[0].get('pos') if values else None}",flush=True)
+    if isinstance(rr,dict):
         print(f"LIVE RIDER OBJECT: count={len(rr)}, top_keys={list(rr)[:12]}",flush=True)
         first=next(iter(rr.values()),None)
         print(f"LIVE RIDER ENTRY: type={type(first).__name__}, keys={list(first)[:35] if isinstance(first,dict) else []}",flush=True)
