@@ -83,6 +83,13 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
  c._click({target:clickTarget('data-mgp-season-year','2027')});
  assert.match(c.root.innerHTML,/Tävlingskalender 2027/,'2027 is selectable');
  assert.match(c.root.innerHTML,/22 GP/,'FIM has 22 official 2027 rounds');
+ assert.doesNotMatch(c.root.innerHTML,/mgp-season-next-layout/,
+   'future season has no next-GP hero card');
+ assert.match(c.root.innerHTML,/data-mgp-season-event="published-2027-01"/,
+   'Thailand R1 is an ordinary clickable upcoming race');
+ assert.equal((c.root.innerHTML.match(/class="mgp-season-event/g)||[]).length,22,
+   'all 22 upcoming 2027 rounds are visible in calendar tiles');
+
  assert.match(c.root.innerHTML,/Buenos Aires/,'Argentina 2027 location shown');
  assert.match(c.root.innerHTML,/Adelaide Street Circuit/,'Australia 2027 venue shown');
  c._click({target:clickTarget('data-mgp-season-event','published-2027-21')});
@@ -103,6 +110,29 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
  c._click({target:clickTarget('data-mgp-season-close','')});
  c._click({target:clickTarget('data-mgp-season-year','2026')});
  assert.match(c.root.innerHTML,/Tävlingskalender 2026/,'switching back restores 2026');
+ // Simulate crossing 1 January 2027: default to 2027 while preserving 2026
+ // as a selectable historical year, without showing wrong-year API events.
+ today=Date.parse('2027-01-02T12:00:00+01:00');
+ c._mgpCalendarYear=null;
+ c._hass.states['sensor.motogp_current_season'].state='2027';
+ c._render();
+ assert.match(c.root.innerHTML,/Tävlingskalender 2027/,'new year defaults to 2027');
+ assert.match(c.root.innerHTML,/data-mgp-season-year="2026"/,'2026 remains selectable');
+ c._click({target:clickTarget('data-mgp-season-year','2026')});
+ assert.match(c.root.innerHTML,/Historisk kalender för 2026 är inte tillgänglig/,
+   'never relabel 2027 Pulselive data as 2026 history');
+ c._click({target:clickTarget('data-mgp-season-year','2027')});
+ today=Date.parse('2028-01-02T12:00:00+01:00');
+ c._mgpCalendarYear=null;
+ c._hass.states['sensor.motogp_current_season'].state='2028';
+ c._render();
+ assert.match(c.root.innerHTML,/data-mgp-season-year="2028"/,
+   'future season selector expands rather than freezing at 2027');
+ today=Date.parse('2026-11-08T12:00:00+01:00');
+ c._hass.states['sensor.motogp_current_season'].state='2026';
+ c._mgpCalendarYear=2026;
+ c._render();
+
  
  assert.doesNotMatch(c.root.innerHTML,/LIVE OVERVIEW/);
  assert.ok(c.root.innerHTML.indexOf('Valencia GP')<c.root.innerHTML.indexOf('Second race'));
