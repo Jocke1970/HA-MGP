@@ -84,3 +84,7 @@ The 2027 preview uses Creative Commons credits **in the visible detail dialog** 
 | Buenos Aires | [Autódromo Oscar y Juan Gálvez reference](https://commons.wikimedia.org/w/index.php?curid=38920822) | Gustavo Girardelli | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | Historical map reference; exact 2027 configuration not validated |
 
 The Buenos Aires work contains information derived from OpenStreetMap and carries the ODbL provenance notice. Its share-alike condition applies to adaptations. Both files require visible attribution (artist, source, license, indication of modifications). We currently **link** the Buenos Aires reference, without treating its unknown historical variant as MotoGP 2027. Adelaide's proposed layout is linked as an external preview, explicitly labeled as unverified. No third-party SVG file is bundled or transformed by HA-MGP. Attribution in the UI does not imply that either artist endorses HA-MGP, and the proposed Adelaide profile must not be labeled as an approved 2027 race layout.
+
+## Weekend agenda layout (dev.60)
+
+The weekend agenda now expands as a normal full-width section directly **below** the existing GP header, following the championship-standings interaction pattern instead of covering the hero in a modal. Its Moto3 / Moto2 / MotoGP / ALL filter controls, event order, collapsible days and close button are unchanged. The circuit information dialog remains separate; no changes to MotoGP class buttons. This UI experiment belongs to `dev` only until visually reviewed for a later beta.
