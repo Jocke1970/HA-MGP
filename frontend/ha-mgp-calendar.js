@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const TAG='ha-motogp-next-overview-card';
-  const BUILD='calendar-20261109-08';
+  const BUILD='calendar-20261109-09';
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const parseDate=raw=>{
     const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(raw||''));
@@ -329,8 +329,6 @@
         originalHeader?.outerHTML?.includes('data-mgp-hero-grid')&&selectedYear===backendYear
       );
       const headerHtml=useStandardHeader?originalHeader.outerHTML:'';
-      const scheduleHtml=useStandardHeader&&this._scheduleOpen===true?
-        (view.querySelector?.('.mgp-weekend-dialog')?.outerHTML||''):'';
       const standingsHtml=useStandardHeader&&this._standingOpen===true?
         (view.querySelector?.('.np-card[aria-label="VM-ställning"]')?.outerHTML||''):'';
       // The real GP's existing modal owns the UI while its schedule, circuit
@@ -347,12 +345,11 @@
       // During non-race weeks the calendar replaces the live overview content.
       // Live timing stays in its separate card, unchanged and spoiler-protected.
       const footer=(view.innerHTML.match(/<div class="foot">[\s\S]*?<\/div>/)||[])[0]||'';
-      view.innerHTML='<div class="root">'+headerHtml+scheduleHtml+standingsHtml+value+footer+'</div>';
+      view.innerHTML='<div class="root">'+headerHtml+standingsHtml+value+footer+'</div>';
       // Any modal opened by the header renderer must survive the calendar
       // replacement; restore it in the top layer (with its own scroll).
       for(const [selector,active] of [
         ['.mgp-season-dialog',Boolean(this._mgpSelectedEventId)],
-        ['.mgp-weekend-dialog',this._scheduleOpen===true&&useStandardHeader],
         ['.mgp-circuit-dialog',this._circuitOpen===true&&useStandardHeader]
       ]){
         const dialog=view.querySelector?.(selector);
@@ -360,7 +357,6 @@
           dialog.addEventListener('cancel',event=>{
             event.preventDefault();
             if(selector==='.mgp-season-dialog')this._mgpSelectedEventId=null;
-            if(selector==='.mgp-weekend-dialog')this._scheduleOpen=false;
             if(selector==='.mgp-circuit-dialog')this._circuitOpen=false;
             this._render();
           },{once:true});
