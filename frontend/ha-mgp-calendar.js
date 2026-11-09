@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const TAG='ha-motogp-next-overview-card';
-  const BUILD='calendar-20261109-09';
+  const BUILD='calendar-20261109-10';
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const parseDate=raw=>{
     const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(raw||''));
@@ -96,6 +96,10 @@
     .mgp-season-track img.is-ready{opacity:1}
     .mgp-season-track img.is-ready+svg{opacity:0}
     .mgp-season-track--next{height:155px}
+    .mgp-season-track--detail{height:clamp(205px,34dvh,330px);margin:6px 0 16px}
+    .mgp-season-detail-map .mgp-season-track--next{height:clamp(205px,34dvh,330px);margin:6px 0 16px}
+    .mgp-season-detail-map svg{width:100%;height:100%;max-width:660px}
+    .mgp-season-track--detail svg{max-width:660px;width:100%;height:100%}
     .mgp-season-track--tile{height:73px;margin:2px 0}
     .mgp-season-track-note{display:block;font-size:10px;color:var(--secondary-text-color);text-align:center}
     .mgp-season-art-credit{display:grid;gap:3px;margin-top:5px;font-size:10px;color:var(--secondary-text-color)}
@@ -111,13 +115,13 @@
     button.mgp-season-event:hover{border-color:var(--primary-color,#039be5)}
     button.mgp-season-event:focus-visible{outline:2px solid var(--primary-color,#039be5);outline-offset:2px}
     .mgp-season-event .mgp-open-label{font-size:10px;color:var(--primary-color,#039be5);margin-top:auto}
-    .mgp-season-dialog{box-sizing:border-box;position:fixed;inset:0;margin:auto;width:min(820px,calc(100vw - 28px));max-width:calc(100vw - 28px);max-height:calc(100dvh - 28px);padding:0;border-radius:15px;border:1px solid var(--divider-color,#ddd);color:var(--primary-text-color);background:var(--ha-card-background,var(--card-background-color,#fff));box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden}
+    .mgp-season-dialog{box-sizing:border-box;position:fixed;inset:auto;top:50%;left:50%;transform:translate(-50%,-50%);margin:0;width:min(820px,calc(100vw - 28px));max-width:calc(100vw - 28px);max-height:calc(100dvh - 28px);padding:0;border-radius:15px;border:1px solid var(--divider-color,#ddd);color:var(--primary-text-color);background:var(--ha-card-background,var(--card-background-color,#fff));box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden}
     .mgp-season-dialog[open]{display:flex;flex-direction:column}
     .mgp-season-dialog::backdrop{background:rgba(0,0,0,.55)}
-    .mgp-season-dialog-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--divider-color,#ddd)}
+    .mgp-season-dialog-head{display:flex;flex:0 0 auto;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--divider-color,#ddd)}
     .mgp-season-dialog-head strong{font-size:14px}
     .mgp-season-dialog-head button{font:inherit;color:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--divider-color,#ddd);background:transparent;padding:7px 13px}
-    .mgp-season-dialog-body{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:14px}
+    .mgp-season-dialog-body{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:14px}
     .mgp-season-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
     .mgp-season-detail-grid>span{border:1px solid var(--divider-color,#ddd);padding:9px;border-radius:8px;font-size:12px}
     .mgp-season-detail-grid b{display:block;margin-top:4px}
@@ -142,16 +146,31 @@
     @container (max-width:850px){.mgp-season-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @container (max-width:470px){.mgp-season-list{grid-template-columns:1fr}.mgp-season-head strong{font-size:17px}.mgp-season-next-layout{grid-template-columns:minmax(0,1fr)}.mgp-season-track--next{height:130px}}
   `;
+  // The UI exposes only seasons we can identify; new Pulselive seasons
+  // appear automatically rather than freezing the buttons at 2026/2027.
+  // Historical calendars remain unavailable unless a real source provides them.
+  const yearsFor=(now,backendYear)=>{
+    const latest=Math.max(2027,now.getFullYear(),Number.isInteger(backendYear)?backendYear:2026);
+    return Array.from({length:latest-2026+1},(_,i)=>2026+i);
+  };
+  const selectedSeason=(card,now,backendYear)=>{
+    const years=yearsFor(now,backendYear);
+    const desired=Number(card._mgpCalendarYear);
+    return Number.isInteger(desired)&&years.includes(desired)?
+      desired:Math.min(Math.max(2026,now.getFullYear()),years[years.length-1]);
+  };
+  const yearButtons=(years,selectedYear)=>years.map(y=>
+    '<button type="button" data-mgp-season-year="'+y+
+    '" role="tab" aria-selected="'+(y===selectedYear)+'">'+y+'</button>').join('');
   function calendar(card,now,useStandardHeader=false){
     const states=card._hass?.states||{};
     const race=states[card._ids?.race];
     const liveCalendar=race?.attributes?.season_calendar;
-    const todayYear=now.getFullYear();
-    const selectedYear=['2026','2027'].includes(String(card._mgpCalendarYear))?
-      Number(card._mgpCalendarYear):(todayYear>=2027?2027:2026);
-    // Prefer live official API events when the backend season matches.
-    // Until then, offer the FIM-published 2027 provisional calendar offline.
     const backendYear=Number(states['sensor.motogp_current_season']?.state);
+    const selectedYear=selectedSeason(card,now,backendYear);
+    const years=yearsFor(now,backendYear);
+    // Prefer real Pulselive events for the current backend season only.
+    // The provisional 2027 list is used only before Pulselive reaches 2027.
     const raw=selectedYear===2027&&backendYear!==2027?
       PUBLISHED_2027:selectedYear===backendYear&&Array.isArray(liveCalendar)?
         liveCalendar:[];
@@ -159,8 +178,7 @@
       if(selectedYear!==backendYear){
         return '<section class="mgp-season"><header class="mgp-season-head"><strong>🗓️ Säsong '+selectedYear+'</strong>'+
           '<div class="mgp-season-years" role="tablist" aria-label="Säsong">'+
-          [2026,2027].map(y=>'<button type="button" data-mgp-season-year="'+y+
-            '" role="tab" aria-selected="'+(y===selectedYear)+'">'+y+'</button>').join('')+'</div></header>'+
+          yearButtons(years,selectedYear)+'</div></header>'+
           '<p class="mgp-season-empty">Historisk kalender för '+selectedYear+
           ' är inte tillgänglig från Pulselive just nu. Inga lopp från en annan säsong visas.</p></section>';
       }
@@ -231,7 +249,10 @@
         (clickable?'</button>':'</div>');
     };
     // The highlighted GP is already represented in the hero: never repeat it.
-    const upcoming=future.filter(e=>e!==next).map(e=>cardHtml(e,false)).join('');
+    // A future-season preview is a calendar, not the currently active GP.
+    // Show every round including R1 as an ordinary clickable tile.
+    const futurePreview=selectedYear>now.getFullYear()||selectedYear>backendYear;
+    const upcoming=future.filter(e=>futurePreview||e!==next).map(e=>cardHtml(e,false)).join('');
     const previous=past.map(e=>cardHtml(e,true)).join('');
     const nextHtml=next?'<div class="mgp-season-next"><div class="mgp-season-next-layout"><div class="mgp-season-next-copy"><span class="mgp-season-mark">'+labels[1]+' · R'+(index+1)+'</span>'+
       '<h3>'+flagFor(next.country)+' '+eventName(next)+'</h3><b>'+dates(next)+'</b>'+
@@ -294,18 +315,17 @@
         '<div class="mgp-season-dialog-head"><strong>🏁 '+eventName(selected)+'</strong>'+
         '<button type="button" data-mgp-season-close>Stäng</button></div>'+
         '<div class="mgp-season-dialog-body"><p>'+dates(selected)+' · '+circuit(selected)+'</p>'+
-        trackHtml(selected,true)+referenceHtml+factsHtml+
+        '<div class="mgp-season-detail-map">'+trackHtml(selected,true)+'</div>'+referenceHtml+factsHtml+
         '<p class="mgp-season-detail-note">Rekord kopplas till verifierad banvariant och officiell källa. Saknas uppgift visas inget påhittat värde.</p>'+
         resultsHtml+'</div></dialog>';
     })():'';
     return '<section class="mgp-season" aria-label="'+labels[0]+'">'+
       '<header class="mgp-season-head"><strong>🗓️ '+labels[0]+' '+esc(year)+'</strong>'+
       '<div class="mgp-season-years" role="tablist" aria-label="Säsong">'+
-      [2026,2027].map(y=>'<button type="button" data-mgp-season-year="'+y+
-        '" role="tab" aria-selected="'+(y===selectedYear)+'">'+y+'</button>').join('')+
+      yearButtons(years,selectedYear)+
       '<small>'+entries.length+' GP</small></div></header>'+
       (isProvisional?'<div class="mgp-season-provisional">Preliminär FIM-kalender 2027, publicerad 25 september 2026. Tider och datum kan ändras.</div>':'')+
-      (useStandardHeader?'':nextHtml)+(upcoming?'<div class="mgp-season-section">'+labels[2]+'</div>'+
+      (useStandardHeader||futurePreview?'':nextHtml)+(upcoming?'<div class="mgp-season-section">'+labels[2]+'</div>'+
       '<div class="mgp-season-list">'+upcoming+'</div>':'')+
       (previous?'<details class="mgp-season-past"><summary>✓ '+labels[3]+' ('+past.length+')</summary>'+
        '<div class="mgp-season-list">'+previous+'</div></details>':'')+'</section>'+detail;
@@ -323,8 +343,7 @@
       // championship tabs, circuit panel, records and interaction handlers.
       const originalHeader=view.querySelector?.('section.panel.header');
       const backendYear=Number(this._hass?.states?.['sensor.motogp_current_season']?.state);
-      const selectedYear=['2026','2027'].includes(String(this._mgpCalendarYear))?
-        Number(this._mgpCalendarYear):(new Date().getFullYear()>=2027?2027:2026);
+      const selectedYear=selectedSeason(this,new Date(),backendYear);
       const useStandardHeader=Boolean(
         originalHeader?.outerHTML?.includes('data-mgp-hero-grid')&&selectedYear===backendYear
       );
@@ -346,8 +365,8 @@
       // Live timing stays in its separate card, unchanged and spoiler-protected.
       const footer=(view.innerHTML.match(/<div class="foot">[\s\S]*?<\/div>/)||[])[0]||'';
       view.innerHTML='<div class="root">'+headerHtml+standingsHtml+value+footer+'</div>';
-      // Any modal opened by the header renderer must survive the calendar
-      // replacement; restore it in the top layer (with its own scroll).
+      // Only the calendar detail popup participates here; native circuit
+      // dialogs remain owned by the GP header.
       for(const [selector,active] of [
         ['.mgp-season-dialog',Boolean(this._mgpSelectedEventId)],
         ['.mgp-circuit-dialog',this._circuitOpen===true&&useStandardHeader]
@@ -379,7 +398,8 @@
       const year=target?.closest?.('[data-mgp-season-year]');
       if(year){
         const value=Number(year.getAttribute('data-mgp-season-year'));
-        if(value===2026||value===2027){
+        const backendYear=Number(this._hass?.states?.['sensor.motogp_current_season']?.state);
+        if(yearsFor(new Date(),backendYear).includes(value)){
           this._mgpCalendarYear=value;
           this._mgpSelectedEventId=null;
           this._mgpEventResultsPending=null;
