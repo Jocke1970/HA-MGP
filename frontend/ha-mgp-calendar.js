@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const TAG='ha-motogp-next-overview-card';
-  const BUILD='calendar-20261109-07';
+  const BUILD='calendar-20261109-08';
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const parseDate=raw=>{
     const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(raw||''));
@@ -333,6 +333,9 @@
         (view.querySelector?.('.mgp-weekend-dialog')?.outerHTML||''):'';
       const standingsHtml=useStandardHeader&&this._standingOpen===true?
         (view.querySelector?.('.np-card[aria-label="VM-ställning"]')?.outerHTML||''):'';
+      // The real GP's existing modal owns the UI while its schedule, circuit
+      // facts or championship panel is open. Do not replace it with calendar HTML.
+      if(this._scheduleOpen===true||this._circuitOpen===true||this._standingOpen===true)return result;
       const value=calendar(this,new Date(),useStandardHeader);
       if(!value)return result;
       if(!this.shadowRoot.querySelector?.('[data-mgp-calendar-style]')){
