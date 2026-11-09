@@ -74,6 +74,15 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   assert.match(h,/▲ \+5/);assert.match(h,/RUNNING/);
   assert.match(h,/Nation: ITA[^>]*>🇮🇹/,'live timing uses supplied nationality');
   assert.match(h,/mgp-timing-records/,'records belong inside timing header');
+  const headerStart=h.indexOf('<div class="mgp-timing-header">');
+  const headerEnd=h.indexOf('</div><div class="nt-session-record"',headerStart);
+  assert.ok(headerStart>=0&&headerEnd>headerStart,'one unified record header before timing table');
+  const headerHtml=h.slice(headerStart,headerEnd);
+  assert.ok(headerHtml.indexOf('</button>')>=0,'toggle remains a separate button');
+  assert.ok(headerHtml.indexOf('nt-session-observed-best')>headerHtml.indexOf('</button>')&&
+    headerHtml.indexOf('mgp-timing-records')>headerHtml.indexOf('</button>'),
+    'session best and record chips are within header, not inside the toggle button');
+  assert.equal((h.match(/class="mgp-timing-header"/g)||[]).length,1,'only one unified timing header');
   assert.match(h,/nt-session-observed-best[\s\S]*Sessionens snabbaste observerade/,'session best stays in timing header');
   assert.equal((h.match(/class="mgp-timing-record-chip"/g)||[]).length,3);
   assert.match(h,/01:50\.028/);assert.match(h,/01:52\.561/);
@@ -120,6 +129,10 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   assert.match(overview.view.innerHTML,/Ducati Lenovo/);
   assert.match(overview.view.innerHTML,/Nation: SPA[^>]*>🇪🇸/,'VM standings country flag');
   assert.match(overview.view.innerHTML,/mgp-class-mark/,'graphical class buttons');
+  assert.match(overview.view.innerHTML,/MotoGP_logo_%282024%29\.svg/,'real MotoGP SVG must be loaded');
+  assert.match(overview.view.innerHTML,/Moto2_logo_%282024%29\.svg/,'real Moto2 SVG must be loaded');
+  assert.match(overview.view.innerHTML,/Moto3_logo_%282024%29\.svg/,'real Moto3 SVG must be loaded');
+  assert.doesNotMatch(overview.view.innerHTML,/<svg class="mgp-class-mark"/,'no fake italic text SVGs');
   const classTabs=['Moto3','Moto2','MotoGP'];
   const classTabsHtml=overview.view.innerHTML;
   for(const label of classTabs) {
