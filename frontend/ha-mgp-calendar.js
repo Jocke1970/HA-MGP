@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const TAG='ha-motogp-next-overview-card';
-  const BUILD='calendar-20261109-05';
+  const BUILD='calendar-20261109-06';
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const parseDate=raw=>{
     const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(raw||''));
@@ -123,8 +123,19 @@
     // Until then, offer the FIM-published 2027 provisional calendar offline.
     const backendYear=Number(states['sensor.motogp_current_season']?.state);
     const raw=selectedYear===2027&&backendYear!==2027?
-      PUBLISHED_2027:Array.isArray(liveCalendar)?liveCalendar:[];
-    if(!Array.isArray(raw)||!raw.length)return null;
+      PUBLISHED_2027:selectedYear===backendYear&&Array.isArray(liveCalendar)?
+        liveCalendar:[];
+    if(!Array.isArray(raw)||!raw.length){
+      if(selectedYear!==backendYear){
+        return '<section class="mgp-season"><header class="mgp-season-head"><strong>🗓️ Säsong '+selectedYear+'</strong>'+
+          '<div class="mgp-season-years" role="tablist" aria-label="Säsong">'+
+          [2026,2027].map(y=>'<button type="button" data-mgp-season-year="'+y+
+            '" role="tab" aria-selected="'+(y===selectedYear)+'">'+y+'</button>').join('')+'</div></header>'+
+          '<p class="mgp-season-empty">Historisk kalender för '+selectedYear+
+          ' är inte tillgänglig från Pulselive just nu. Inga lopp från en annan säsong visas.</p></section>';
+      }
+      return null;
+    }
     const entries=raw.map((e,i)=>{
       if(!e||typeof e!=='object')return null;
       const start=parseDate(e.date_start),end=parseDate(e.date_end);
