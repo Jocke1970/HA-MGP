@@ -122,7 +122,7 @@
       const circuitName=String(e.circuit||'').trim();
       const track=typeof card._mgpCalendarTrack==='function'?card._mgpCalendarTrack(circuitName):null;
       if(!track||!/^[a-z][a-z0-9]*$/.test(String(track.id||''))||
-          !/^M[\\d., LZz-]+$/.test(String(track.d||''))){
+          !/^M[\d., LZz-]+$/.test(String(track.d||''))){
         return '<div class="mgp-season-track mgp-season-track--'+(large?'next':'tile')+
           '"><span class="mgp-season-track-missing">Banlayout saknas</span></div>';
       }
@@ -130,7 +130,7 @@
       // Pre-existing geometry is schematic, not an asserted MotoGP race variant.
       const vector='<svg viewBox="0 0 280 160" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Schematisk banlayout för '+
         esc(circuitName)+'"><path d="'+path+'"></path></svg>';
-      const local=track.localPath&&/^\\/local\\/ha-mgp\\/circuits\\/[a-z0-9]+\\.svg$/.test(track.localPath)?
+      const local=track.localPath&&/^\/local\/ha-mgp\/circuits\/[a-z0-9]+\.svg$/.test(track.localPath)?
         '<img src="'+esc(track.localPath)+'" alt="" loading="lazy" decoding="async">':'';
       return '<div class="mgp-season-track mgp-season-track--'+(large?'next':'tile')+'">'+
         local+vector+'</div>';
