@@ -64,3 +64,12 @@ T2A–T2B chicane); only use verified local SVG variants for such details.
 
 The overview and calendar both use local SVGs from the directory above when
 present and loadable, falling back to their existing schematic shape otherwise.
+
+## Clickable season archive and 2027 calendar (dev)
+
+The existing standard GP header remains the highlight for the backend's current season. The remaining upcoming races and the muted completed races open a detail dialog with the known circuit layout and shared circuit facts. For finished events, the dialog requests race classification, Sprint and Q2 pole from the authenticated, read-only `motogp_sensor/event_results` WebSocket command. Requests happen only after a click, are restricted to event UUIDs from the coordinator's active season, respect no-spoiler mode and are held in a short-lived in-memory cache. They do not create a second lap archive or claim Q1 is pole.
+
+A 2026 / 2027 season selector also offers FIM's **provisional 22-round 2027 calendar** (published 25 September 2026) as a clearly identified snapshot, even when Pulselive still has only 2026 as its current season. Published snapshot identifiers are UI-only and must **never** be used as Pulselive event/session identifiers. The provisional calendar includes new Buenos Aires and Adelaide Street Circuit events; there is no asserted track outline for either until the MotoGP layout is verified. Once Pulselive exposes 2027 as the active backend season, the live event list takes precedence. Event dates remain subject to FIM changes, so compare them with the current official calendar before release.
+
+- FIM: https://www.fim-moto.com/en/news/news-detail/article/2027-provisional-fim-motogptm-world-championship-calendar
+- MotoGP: https://www.motogp.com/en/calendar/2027
