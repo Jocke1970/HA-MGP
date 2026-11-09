@@ -73,3 +73,14 @@ A 2026 / 2027 season selector also offers FIM's **provisional 22-round 2027 cale
 
 - FIM: https://www.fim-moto.com/en/news/news-detail/article/2027-provisional-fim-motogptm-world-championship-calendar
 - MotoGP: https://www.motogp.com/en/calendar/2027
+
+## 2027 circuit reference artwork and attribution
+
+The 2027 preview uses Creative Commons credits **in the visible detail dialog** and does not treat an artist's drawing as proof of the official race configuration:
+
+| Venue | Wikimedia artwork | Artist | License | Validation |
+|---|---|---|---|---|
+| Adelaide Street Circuit | [Adelaide MotoGP Proposal.svg](https://commons.wikimedia.org/w/index.php?curid=198168198) | Houseofsloth | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | Proposed MotoGP route; preview only until official 2027 course is verified |
+| Buenos Aires | [Autódromo Oscar y Juan Gálvez reference](https://commons.wikimedia.org/w/index.php?curid=38920822) | Gustavo Girardelli | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | Historical map reference; exact 2027 configuration not validated |
+
+The Buenos Aires work contains information derived from OpenStreetMap and carries the ODbL provenance notice. Its share-alike condition applies to adaptations. Both files require visible attribution (artist, source, license, indication of modifications). We currently **link** the Buenos Aires reference, without treating its unknown historical variant as MotoGP 2027. Adelaide's proposed layout is linked as an external preview, explicitly labeled as unverified. No third-party SVG file is bundled or transformed by HA-MGP.
