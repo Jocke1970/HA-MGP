@@ -12,10 +12,10 @@ class Overview{
     this.shadowRoot=this.root;
     this._hass={language:'sv-SE',states:{'sensor.motogp_next_race':{attributes:{
       season_calendar:[
-        {short_name:'Thai GP',date_start:'2026-03-01',date_end:'2026-03-03',country:'Thailand',circuit:'Buriram'},
-        {short_name:'Argentine GP',date_start:'2026-10-31',date_end:'2026-11-02',country:'Argentina',circuit:'Termas'},
-        {short_name:'Valencia GP',date_start:'2026-11-13',date_end:'2026-11-15',country:'Spain',circuit:'Ricardo Tormo'},
-        {short_name:'Second race',date_start:'2026-11-20',date_end:'2026-11-22',country:'Italy',circuit:'Misano'}
+        {id:'thai-id',short_name:'Thai GP',date_start:'2026-03-01',date_end:'2026-03-03',country:'Thailand',circuit:'Buriram'},
+        {id:'arg-id',short_name:'Argentine GP',date_start:'2026-10-31',date_end:'2026-11-02',country:'Argentina',circuit:'Termas'},
+        {id:'valencia-id',short_name:'Valencia GP',date_start:'2026-11-13',date_end:'2026-11-15',country:'Spain',circuit:'Ricardo Tormo'},
+        {id:'second-id',short_name:'Second race',date_start:'2026-11-20',date_end:'2026-11-22',country:'Italy',circuit:'Misano'}
       ]}},'sensor.motogp_current_season':{state:'2026'},
       'binary_sensor.motogp_race_weekend_active':{state:'off'}}};
   }
@@ -24,6 +24,8 @@ class Overview{
     if(/ricardo tormo/i.test(circuit))return {id:'valencia',d:'M10,20 L130,30 L110,120 Z',localPath:null};
     return null;
   }
+  _spoiler(){return false;}
+  _click(){}
   _render(){this.root.innerHTML='<div class="root"><section class="panel header">LIVE OVERVIEW</section><div class="foot">Version</div></div>';}
 }
 const src=fs.readFileSync(process.argv[2]||'frontend/ha-mgp-calendar.js','utf8');
@@ -43,11 +45,42 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
  assert.match(c.root.innerHTML,/mgp-season-event is-past/,'completed races are visually muted');
  assert.equal((c.root.innerHTML.match(/mgp-season-event is-past/g)||[]).length,2,
    'both completed races use the muted card style');
- assert.equal((c.root.innerHTML.match(/<div class="mgp-season-event/g)||[]).length,3,
+ assert.equal((c.root.innerHTML.match(/class="mgp-season-event/g)||[]).length,3,
    'two completed events and one later upcoming event, with next GP in hero only');
  assert.equal((c.root.innerHTML.match(/Valencia GP/g)||[]).length,1,
    'the next event is in hero only, not repeated in upcoming list');
  assert.match(c.root.innerHTML,/Banlayout saknas/,'unknown track does not borrow a wrong circuit outline');
+ assert.match(c.root.innerHTML,/data-mgp-season-event="arg-id"/,'past events are clickable');
+ assert.match(c.root.innerHTML,/data-mgp-season-event="second-id"/,'future events are clickable');
+ assert.doesNotMatch(c.root.innerHTML,/data-mgp-season-event="valencia-id"/,
+   'next GP is only in top header, not a duplicate tile');
+ let calls=0;
+ c._hass.callWS=async payload=>{
+   calls++;
+   assert.equal(payload.type,'motogp_sensor/event_results');
+   assert.equal(payload.event_id,'arg-id');
+   return {event_id:'arg-id',source:'pulselive_results',categories:{
+     MotoGP:{pole:{rider:'Pole Rider',time:"1:35.010"},
+       race:[{position:1,rider:'Winner',time:'39:20.000'}],sprint:[]}}};
+ };
+ const clickTarget=(attribute,value)=>({
+   closest:selector=>selector==='['+attribute+']'?
+     {getAttribute:()=>value}:null
+ });
+ c._click({target:clickTarget('data-mgp-season-event','arg-id')});
+ await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();
+ assert.equal(calls,1,'historical results fetched only when opened');
+ assert.match(c.root.innerHTML,/mgp-season-dialog/);
+ assert.match(c.root.innerHTML,/Winner/,'correct event results displayed from Pulselive');
+ assert.match(c.root.innerHTML,/Pole Rider/,'verified Q2 pole row displayed');
+ c._click({target:clickTarget('data-mgp-season-category','Moto2')});
+ assert.match(c.root.innerHTML,/Inget verifierat raceresultat/,'missing category never borrows MotoGP');
+ c._click({target:clickTarget('data-mgp-season-close','')});
+ c._click({target:clickTarget('data-mgp-season-event','second-id')});
+ assert.equal(calls,1,'future GP does not fetch results');
+ assert.match(c.root.innerHTML,/Inga framtida värden uppskattas/);
+ c._click({target:clickTarget('data-mgp-season-close','')});
+
 
  assert.doesNotMatch(c.root.innerHTML,/LIVE OVERVIEW/);
  assert.ok(c.root.innerHTML.indexOf('Valencia GP')<c.root.innerHTML.indexOf('Second race'));
