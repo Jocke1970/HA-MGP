@@ -85,6 +85,17 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
  assert.match(c.root.innerHTML,/22 GP/,'FIM has 22 official 2027 rounds');
  assert.match(c.root.innerHTML,/Buenos Aires/,'Argentina 2027 location shown');
  assert.match(c.root.innerHTML,/Adelaide Street Circuit/,'Australia 2027 venue shown');
+ c._click({target:clickTarget('data-mgp-season-event','published-2027-21')});
+ assert.match(c.root.innerHTML,/Houseofsloth/,'Adelaide artwork credited');
+ assert.match(c.root.innerHTML,/CC BY 4\.0/,'Adelaide license linked');
+ assert.match(c.root.innerHTML,/Adelaide_MotoGP_Proposal\.svg/,'proposal preview separate from verified shape');
+ c._click({target:clickTarget('data-mgp-season-close','')});
+ c._click({target:clickTarget('data-mgp-season-event','published-2027-04')});
+ assert.match(c.root.innerHTML,/Gustavo Girardelli/,'Buenos Aires artwork credited');
+ assert.match(c.root.innerHTML,/CC BY-SA 4\.0/,'Buenos Aires license linked');
+ assert.match(c.root.innerHTML,/OpenStreetMap-data/,'OSM provenance visible');
+ c._click({target:clickTarget('data-mgp-season-close','')});
+
  assert.match(c.root.innerHTML,/Preliminär FIM-kalender 2027/,'provisional calendar is labeled');
  c._click({target:clickTarget('data-mgp-season-event','published-2027-04')});
  assert.match(c.root.innerHTML,/mgp-season-dialog/,'provisional race has clickable circuit detail');
