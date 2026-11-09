@@ -58,7 +58,7 @@ def check_bundle_integrity() -> None:
     next_js = (ASSETS / "ha-mgp.js").read_text(encoding="utf-8")
     assert "ha-motogp-next-overview-card" in next_js
     assert "ha-motogp-next-timing-card" in next_js
-    assert "0.3.0-dev.55" in next_js
+    assert "0.3.0-dev.56" in next_js
     assert "mgp-timing-header" in next_js, "records must render inside unified timing header"
     assert "header-track-weather-20261109-02" in next_js
     assert "mgp-country-flag" in next_js
@@ -104,7 +104,7 @@ def check_bundle_integrity() -> None:
     assert "ha-motogp-next-overview-card" in next_js
     assert "Championship standings" in next_js
     assert "mgp-season" in next_js
-    assert "calendar-20261109-04" in next_js
+    assert "calendar-20261109-05" in next_js
     assert "api-status-20261108-01" in next_js
     assert "binary_sensor.motogp_live_timing_online" in next_js
     assert "session-dots-20261108-01" in next_js
