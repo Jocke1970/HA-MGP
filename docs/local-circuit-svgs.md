@@ -88,3 +88,13 @@ The Buenos Aires work contains information derived from OpenStreetMap and carrie
 ## Weekend agenda layout (dev.60)
 
 The weekend agenda now expands as a normal full-width section directly **below** the existing GP header, following the championship-standings interaction pattern instead of covering the hero in a modal. Its Moto3 / Moto2 / MotoGP / ALL filter controls, event order, collapsible days and close button are unchanged. The circuit information dialog remains separate; no changes to MotoGP class buttons. This UI experiment belongs to `dev` only until visually reviewed for a later beta.
+
+## Calendar and circuit popup review (dev.61)
+
+- The year selector begins with 2026/2027 and adds later years as they arrive. It defaults to the current calendar year, while only real API-backed years receive live session/results identifiers. Earlier years remain selectable but are explicitly marked unavailable unless season-specific history exists. Never reuse another season's event identifiers.
+- The FIM provisional 2027 future-season calendar shows all 22 rounds as ordinary clickable tiles; it has **no separate Next Grand Prix hero**. The current API season alone owns the regular GP hero.
+- The calendar's event detail map is larger, with a viewport-centered modal, a persistent title/close row and scrollable content.
+- The circuit facts modal uses a viewport-centered flex dialog with scrollable body and a close row that remains accessible even on shorter displays.
+- The weekend schedule remains an inline section; its MotoGP/Moto2/Moto3/ALL controls were **not changed** in this pass.
+
+These changes are for dev review; beta b26 and main remain untouched until visual validation.
