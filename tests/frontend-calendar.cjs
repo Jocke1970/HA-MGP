@@ -41,6 +41,10 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
  assert.match(c.root.innerHTML,/mgp-season-track--next/,'hero has a circuit picture');
  assert.match(c.root.innerHTML,/mgp-season-track--tile/,'upcoming and past races have circuit pictures');
  assert.match(c.root.innerHTML,/mgp-season-event is-past/,'completed races are visually muted');
+ assert.equal((c.root.innerHTML.match(/mgp-season-event is-past/g)||[]).length,2,
+   'both completed races use the muted card style');
+ assert.equal((c.root.innerHTML.match(/<div class="mgp-season-event/g)||[]).length,3,
+   'two completed events and one later upcoming event, with next GP in hero only');
  assert.equal((c.root.innerHTML.match(/Valencia GP/g)||[]).length,1,
    'the next event is in hero only, not repeated in upcoming list');
  assert.match(c.root.innerHTML,/Banlayout saknas/,'unknown track does not borrow a wrong circuit outline');
