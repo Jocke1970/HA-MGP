@@ -80,8 +80,19 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
  assert.equal(calls,1,'future GP does not fetch results');
  assert.match(c.root.innerHTML,/Inga framtida värden uppskattas/);
  c._click({target:clickTarget('data-mgp-season-close','')});
-
-
+ c._click({target:clickTarget('data-mgp-season-year','2027')});
+ assert.match(c.root.innerHTML,/Tävlingskalender 2027/,'2027 is selectable');
+ assert.match(c.root.innerHTML,/22 GP/,'FIM has 22 official 2027 rounds');
+ assert.match(c.root.innerHTML,/Buenos Aires/,'Argentina 2027 location shown');
+ assert.match(c.root.innerHTML,/Adelaide Street Circuit/,'Australia 2027 venue shown');
+ assert.match(c.root.innerHTML,/Preliminär FIM-kalender 2027/,'provisional calendar is labeled');
+ c._click({target:clickTarget('data-mgp-season-event','published-2027-04')});
+ assert.match(c.root.innerHTML,/mgp-season-dialog/,'provisional race has clickable circuit detail');
+ assert.equal(calls,1,'provisional IDs never sent to result API');
+ c._click({target:clickTarget('data-mgp-season-close','')});
+ c._click({target:clickTarget('data-mgp-season-year','2026')});
+ assert.match(c.root.innerHTML,/Tävlingskalender 2026/,'switching back restores 2026');
+ 
  assert.doesNotMatch(c.root.innerHTML,/LIVE OVERVIEW/);
  assert.ok(c.root.innerHTML.indexOf('Valencia GP')<c.root.innerHTML.indexOf('Second race'));
  c._hass.states['binary_sensor.motogp_race_weekend_active'].state='on';c._render();
