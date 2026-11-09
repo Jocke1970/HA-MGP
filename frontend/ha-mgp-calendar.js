@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const TAG='ha-motogp-next-overview-card';
-  const BUILD='calendar-20261109-04';
+  const BUILD='calendar-20261109-05';
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const parseDate=raw=>{
     const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(raw||''));
@@ -11,6 +11,16 @@
     return d.getFullYear()===+m[1]&&d.getMonth()===+m[2]-1&&d.getDate()===+m[3]?d:null;
   };
   const dateKey=d=>d?''+[d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-'):'';
+  // FIM/MotoGP's provisional 2027 season, published 25 September 2026.
+  // Explicitly an offline calendar snapshot, NOT a Pulselive event UUID.
+  // Do not request historical classifications for a published-only ID.
+  // https://www.fim-moto.com/en/news/news-detail/article/2027-provisional-fim-motogptm-world-championship-calendar
+  const PUBLISHED_2027=Object.freeze([["2027-03-05","2027-03-07","Thailand","Thailand","Buriram"],["2027-03-12","2027-03-14","Qatar","Qatar","Lusail"],["2027-04-02","2027-04-04","Brazil","Brazil","Goiania"],["2027-04-09","2027-04-11","Argentina","Argentina","Buenos Aires"],["2027-04-23","2027-04-25","USA","USA","Austin"],["2027-05-07","2027-05-09","Spain","Spain","Jerez"],["2027-05-14","2027-05-16","France","France","Le Mans"],["2027-05-28","2027-05-30","Italy","Italy","Mugello"],["2027-06-11","2027-06-13","Catalonia","Spain","Barcelona"],["2027-06-25","2027-06-27","Netherlands","Netherlands","Assen"],["2027-07-09","2027-07-11","Germany","Germany","Sachsenring"],["2027-07-16","2027-07-18","Czechia","Czechia","Brno"],["2027-08-13","2027-08-15","Great Britain","Great Britain","Silverstone"],["2027-08-27","2027-08-29","Austria","Austria","Red Bull Ring"],["2027-09-10","2027-09-12","San Marino","San Marino","Misano"],["2027-09-17","2027-09-19","Aragon","Spain","MotorLand Aragón"],["2027-10-01","2027-10-03","Portugal","Portugal","Portimao"],["2027-10-15","2027-10-17","Japan","Japan","Motegi"],["2027-10-22","2027-10-24","Malaysia","Malaysia","Sepang"],["2027-10-29","2027-10-31","Indonesia","Indonesia","Mandalika"],["2027-11-12","2027-11-14","Australia","Australia","Adelaide Street Circuit"],["2027-11-26","2027-11-28","Valencia","Spain","Ricardo Tormo"]].map(
+    ([date_start,date_end,short_name,country,circuit],i)=>({
+      id:'published-2027-'+String(i+1).padStart(2,'0'),
+      date_start,date_end,short_name:short_name+' GP',country,circuit,provisional:true
+    })
+  ));
   const flagCountry={
     thailand:'🇹🇭',argentina:'🇦🇷',brazil:'🇧🇷',brasil:'🇧🇷',usa:'🇺🇸',qatar:'🇶🇦',
     spain:'🇪🇸',france:'🇫🇷',italy:'🇮🇹',netherlands:'🇳🇱',germany:'🇩🇪',
@@ -44,6 +54,10 @@
     .mgp-season-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:13px 16px;border-bottom:1px solid var(--divider-color,#ddd)}
     .mgp-season-head strong{font-size:20px;font-weight:900}
     .mgp-season-head small{font-size:11px;color:var(--secondary-text-color)}
+    .mgp-season-years{display:flex;align-items:center;gap:6px}
+    .mgp-season-years button{cursor:pointer;font:inherit;border:1px solid var(--divider-color,#ddd);border-radius:8px;padding:5px 10px;background:transparent;color:inherit;font-size:12px;font-weight:800}
+    .mgp-season-years button[aria-selected=true]{border-color:var(--primary-color,#039be5);background:rgba(0,153,220,.12)}
+    .mgp-season-provisional{padding:2px 14px 10px;color:var(--secondary-text-color);font-size:11px}
     .mgp-season-next{margin:13px;border:1px solid rgba(225,6,0,.4);border-left:4px solid #e10600;border-radius:12px;padding:15px;display:grid;gap:5px;background:rgba(225,6,0,.045)}
     .mgp-season-next-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(140px,34%);align-items:center;gap:15px}
     .mgp-season-next-copy{display:grid;align-content:center;gap:5px;min-width:0}
@@ -101,7 +115,15 @@
   function calendar(card,now,useStandardHeader=false){
     const states=card._hass?.states||{};
     const race=states[card._ids?.race];
-    const raw=race?.attributes?.season_calendar;
+    const liveCalendar=race?.attributes?.season_calendar;
+    const todayYear=now.getFullYear();
+    const selectedYear=['2026','2027'].includes(String(card._mgpCalendarYear))?
+      Number(card._mgpCalendarYear):(todayYear>=2027?2027:2026);
+    // Prefer live official API events when the backend season matches.
+    // Until then, offer the FIM-published 2027 provisional calendar offline.
+    const backendYear=Number(states['sensor.motogp_current_season']?.state);
+    const raw=selectedYear===2027&&backendYear!==2027?
+      PUBLISHED_2027:Array.isArray(liveCalendar)?liveCalendar:[];
     if(!Array.isArray(raw)||!raw.length)return null;
     const entries=raw.map((e,i)=>{
       if(!e||typeof e!=='object')return null;
@@ -113,8 +135,8 @@
     if(raceWeekend(card,now,entries))return null;
     const lang=String(card._hass?.language||'en').split(/[-_]/)[0].toLowerCase();
     const locale=['en','sv','es','it','fr'].includes(lang)?lang:'en';
-    const season=states['sensor.motogp_current_season']?.state||entries[0].start.getFullYear();
-    const year=/^\d{4}$/.test(String(season))?season:entries[0].start.getFullYear();
+    const year=selectedYear;
+    const isProvisional=selectedYear===2027&&backendYear!==2027;
     const today=dateKey(now);
     const next=entries.find(e=>dateKey(e.end)>=today);
     const index=next?entries.indexOf(next):-1;
@@ -230,7 +252,12 @@
         resultsHtml+'</div></dialog>';
     })():'';
     return '<section class="mgp-season" aria-label="'+labels[0]+'">'+
-      '<header class="mgp-season-head"><strong>🗓️ '+labels[0]+' '+esc(year)+'</strong><small>'+entries.length+' GP</small></header>'+
+      '<header class="mgp-season-head"><strong>🗓️ '+labels[0]+' '+esc(year)+'</strong>'+
+      '<div class="mgp-season-years" role="tablist" aria-label="Säsong">'+
+      [2026,2027].map(y=>'<button type="button" data-mgp-season-year="'+y+
+        '" role="tab" aria-selected="'+(y===selectedYear)+'">'+y+'</button>').join('')+
+      '<small>'+entries.length+' GP</small></div></header>'+
+      (isProvisional?'<div class="mgp-season-provisional">Preliminär FIM-kalender 2027, publicerad 25 september 2026. Tider och datum kan ändras.</div>':'')+
       (useStandardHeader?'':nextHtml)+(upcoming?'<div class="mgp-season-section">'+labels[2]+'</div>'+
       '<div class="mgp-season-list">'+upcoming+'</div>':'')+
       (previous?'<details class="mgp-season-past"><summary>✓ '+labels[3]+' ('+past.length+')</summary>'+
@@ -248,7 +275,12 @@
       // Preserve the genuine event header with its existing schedule,
       // championship tabs, circuit panel, records and interaction handlers.
       const originalHeader=view.querySelector?.('section.panel.header');
-      const useStandardHeader=Boolean(originalHeader?.outerHTML?.includes('data-mgp-hero-grid'));
+      const backendYear=Number(this._hass?.states?.['sensor.motogp_current_season']?.state);
+      const selectedYear=['2026','2027'].includes(String(this._mgpCalendarYear))?
+        Number(this._mgpCalendarYear):(new Date().getFullYear()>=2027?2027:2026);
+      const useStandardHeader=Boolean(
+        originalHeader?.outerHTML?.includes('data-mgp-hero-grid')&&selectedYear===backendYear
+      );
       const headerHtml=useStandardHeader?originalHeader.outerHTML:'';
       const scheduleHtml=useStandardHeader&&this._scheduleOpen===true?
         (view.querySelector?.('.mgp-weekend-dialog')?.outerHTML||''):'';
@@ -298,6 +330,19 @@
     const previousClick=Card.prototype._click;
     Card.prototype._click=function(e){
       const target=e?.target;
+      const year=target?.closest?.('[data-mgp-season-year]');
+      if(year){
+        const value=Number(year.getAttribute('data-mgp-season-year'));
+        if(value===2026||value===2027){
+          this._mgpCalendarYear=value;
+          this._mgpSelectedEventId=null;
+          this._mgpEventResultsPending=null;
+          this._scheduleOpen=false;
+          this._circuitOpen=false;
+          this._render();
+        }
+        return;
+      }
       if(target?.closest?.('[data-mgp-season-close]')){
         this._mgpSelectedEventId=null;this._render();return;
       }
@@ -309,7 +354,10 @@
       const event=target?.closest?.('[data-mgp-season-event]');
       if(event){
         const id=String(event.getAttribute('data-mgp-season-event')||'');
-        const entries=this._hass?.states?.[this._ids?.race]?.attributes?.season_calendar;
+        const backendYear=Number(this._hass?.states?.['sensor.motogp_current_season']?.state);
+        const selectedYear=Number(this._mgpCalendarYear||2026);
+        const entries=selectedYear===2027&&backendYear!==2027?
+          PUBLISHED_2027:this._hass?.states?.[this._ids?.race]?.attributes?.season_calendar;
         const record=Array.isArray(entries)?entries.find(x=>String(x.id||'')===id):null;
         if(!record||!id)return;
         this._mgpSelectedEventId=id;
@@ -319,7 +367,8 @@
         this._render();
         const end=parseDate(record.date_end);
         const past=end&&dateKey(end)<dateKey(new Date());
-        if(!past||typeof this._spoiler==='function'&&this._spoiler())return;
+        if(!past||record.provisional||id.startsWith('published-')||
+          typeof this._spoiler==='function'&&this._spoiler())return;
         if(this._mgpEventResultsCache?.[id]||this._mgpEventResultsPending===id)return;
         if(typeof this._hass?.callWS!=='function')return;
         this._mgpEventResultsPending=id;
