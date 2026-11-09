@@ -220,7 +220,7 @@
         (raceRows?'<h4>Raceresultat · '+selectedClass+'</h4><table class="mgp-season-results"><thead><tr><th>Plac.</th><th>Förare</th><th>Tid / status</th></tr></thead><tbody>'+
           raceRows+'</tbody></table>':
           '<p class="mgp-season-detail-note">Inget verifierat raceresultat för denna klass.</p>')+
-        '<p class="mgp-season-detail-note">Källa: MotoGP Pulselive Results API · ingen egen varvtidsdatabas.</p>'));
+        '<p class="mgp-season-detail-note">Källa: MotoGP Pulselive Results API · ingen egen varvtidsdatabas.</p>');
       return '<dialog class="mgp-season-dialog" aria-label="GP-detaljer för '+eventName(selected)+'">'+
         '<div class="mgp-season-dialog-head"><strong>🏁 '+eventName(selected)+'</strong>'+
         '<button type="button" data-mgp-season-close>Stäng</button></div>'+
