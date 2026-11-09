@@ -1,4 +1,4 @@
-/* MotoGP Next SINGLE Lovelace resource | build next-one-20261109-03 | read only. */
+/* MotoGP Next SINGLE Lovelace resource | build next-one-20261109-04 | read only. */
 /* MotoGP Next: isolated frontend for motogp-test. No HA writes or service calls. */
 (() => {
   'use strict';
@@ -303,9 +303,9 @@
       this._track(now,race);
       const event=valid(race?.state)?race.state:'Inget evenemang tillgängligt';
       const meta=[a.circuit,a.country,a.date_start&&a.date_end?dateRange(a.date_start,a.date_end):''].filter(valid);
-      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.56</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
+      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.57</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
         this._schedule(race,now)+`<div class="root">${this._weather()}${this._timing()}</div>`+
-        `<div class="foot">HA-MGP UI · 0.3.0-dev.56 · UI-preview</div></div>`;
+        `<div class="foot">HA-MGP UI · 0.3.0-dev.57 · UI-preview</div></div>`;
     }
     getCardSize(){return 8;}
     getGridOptions(){return {columns:12,rows:'auto',min_columns:6};}
@@ -2316,7 +2316,7 @@ customElements.whenDefined(OVERVIEW).then(install);
 (() => {
   'use strict';
   const TAG='ha-motogp-next-overview-card';
-  const BUILD='calendar-20261109-05';
+  const BUILD='calendar-20261109-06';
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const parseDate=raw=>{
     const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(raw||''));
@@ -2437,8 +2437,19 @@ customElements.whenDefined(OVERVIEW).then(install);
     // Until then, offer the FIM-published 2027 provisional calendar offline.
     const backendYear=Number(states['sensor.motogp_current_season']?.state);
     const raw=selectedYear===2027&&backendYear!==2027?
-      PUBLISHED_2027:Array.isArray(liveCalendar)?liveCalendar:[];
-    if(!Array.isArray(raw)||!raw.length)return null;
+      PUBLISHED_2027:selectedYear===backendYear&&Array.isArray(liveCalendar)?
+        liveCalendar:[];
+    if(!Array.isArray(raw)||!raw.length){
+      if(selectedYear!==backendYear){
+        return '<section class="mgp-season"><header class="mgp-season-head"><strong>🗓️ Säsong '+selectedYear+'</strong>'+
+          '<div class="mgp-season-years" role="tablist" aria-label="Säsong">'+
+          [2026,2027].map(y=>'<button type="button" data-mgp-season-year="'+y+
+            '" role="tab" aria-selected="'+(y===selectedYear)+'">'+y+'</button>').join('')+'</div></header>'+
+          '<p class="mgp-season-empty">Historisk kalender för '+selectedYear+
+          ' är inte tillgänglig från Pulselive just nu. Inga lopp från en annan säsong visas.</p></section>';
+      }
+      return null;
+    }
     const entries=raw.map((e,i)=>{
       if(!e||typeof e!=='object')return null;
       const start=parseDate(e.date_start),end=parseDate(e.date_end);
