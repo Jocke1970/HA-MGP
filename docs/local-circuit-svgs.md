@@ -50,3 +50,17 @@ by the user as Sachsenring despite containing an NLD element ID.
 
 Third-party track artwork remains in the user's own Home Assistant directory.
 The open-source project includes the optional loading functionality only.
+
+## Season calendar (off-weekend)
+
+The next Grand Prix appears once in the highlighted calendar hero with a track
+thumbnail. Remaining upcoming races and completed races show compact track
+thumbnails when a matching circuit is known. Completed races use muted,
+greyscale cards with a checkmark. The existing circuit registry is shared with
+the race header; unknown layouts display a missing-layout label rather than
+borrowing another circuit's outline. The built-in shapes are schematic and do
+not guarantee variant-specific MotoGP geometry (notably the Red Bull Ring
+T2A–T2B chicane); only use verified local SVG variants for such details.
+
+The overview and calendar both use local SVGs from the directory above when
+present and loadable, falling back to their existing schematic shape otherwise.
