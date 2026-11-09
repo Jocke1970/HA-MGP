@@ -27,6 +27,7 @@ from .coordinator import MotogpCoordinator
 from .web_assets import async_register_frontend_paths
 from .lap_history_ws import async_register_rider_laps
 from .session_history_ws import async_register_session_history
+from .event_results_ws import async_register_event_results
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -36,6 +37,7 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
     await async_register_frontend_paths(hass)
     async_register_rider_laps(hass)
     async_register_session_history(hass)
+    async_register_event_results(hass)
     return True
 
 
