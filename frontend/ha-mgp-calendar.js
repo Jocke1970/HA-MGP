@@ -187,7 +187,7 @@
       ].filter(([_,value])=>value).map(([label,value])=>
         '<span>'+esc(label)+'<b>'+esc(value)+'</b></span>').join(''):'';
       const factsHtml=dimensions?'<div class="mgp-season-detail-grid">'+dimensions+'</div>'+
-        (facts.source&&/^https:\\/\\//.test(String(facts.source))?
+        (String(facts.source||'').startsWith('https://')?
           '<p><a href="'+esc(facts.source)+'" target="_blank" rel="noopener noreferrer">Källa för banfakta</a></p>':''):
         '<p class="mgp-season-detail-note">Verifierade banmått saknas.</p>';
       const selectedId=String(selected.id||'');
