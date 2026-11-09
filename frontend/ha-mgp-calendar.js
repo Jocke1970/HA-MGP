@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const TAG='ha-motogp-next-overview-card';
-  const BUILD='calendar-20261109-06';
+  const BUILD='calendar-20261109-07';
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const parseDate=raw=>{
     const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(raw||''));
@@ -21,6 +21,34 @@
       date_start,date_end,short_name:short_name+' GP',country,circuit,provisional:true
     })
   ));
+  // Image credits are displayed with any preview; an artwork licence does
+  // not establish that a historical/proposed geometry matches MotoGP 2027.
+  const REFERENCE_ARTWORK=Object.freeze({
+    'Adelaide Street Circuit':{
+      author:'Houseofsloth',
+      license:'CC BY 4.0',
+      licenseUrl:'https://creativecommons.org/licenses/by/4.0/',
+      source:'https://commons.wikimedia.org/w/index.php?curid=198168198',
+      preview:'https://commons.wikimedia.org/wiki/Special:Redirect/file/Adelaide_MotoGP_Proposal.svg',
+      label:'Föreslagen MotoGP-sträckning · ej verifierad för 2027'
+    },
+    'Buenos Aires':{
+      author:'Gustavo Girardelli',
+      license:'CC BY-SA 4.0',
+      licenseUrl:'https://creativecommons.org/licenses/by-sa/4.0/',
+      source:'https://commons.wikimedia.org/w/index.php?curid=38920822',
+      preview:null,
+      label:'Historisk banreferens · 2027 års MotoGP-variant ej verifierad',
+      dataCredit:'Innehåller OpenStreetMap-data (ODbL)'
+    }
+  });
+  const referenceArtwork=circuit=>REFERENCE_ARTWORK[String(circuit||'').trim()]||null;
+  const artworkCredit=ref=>ref?
+    '<div class="mgp-season-art-credit">'+
+    '<span>'+esc(ref.label)+'</span>'+
+    '<span>Bild: <a href="'+esc(ref.source)+'" target="_blank" rel="noopener noreferrer">'+esc(ref.author)+'</a>'+
+    ' · <a href="'+esc(ref.licenseUrl)+'" target="_blank" rel="noopener noreferrer">'+esc(ref.license)+'</a>'+
+    (ref.dataCredit?' · '+esc(ref.dataCredit):'')+'</span></div>':'';
   const flagCountry={
     thailand:'🇹🇭',argentina:'🇦🇷',brazil:'🇧🇷',brasil:'🇧🇷',usa:'🇺🇸',qatar:'🇶🇦',
     spain:'🇪🇸',france:'🇫🇷',italy:'🇮🇹',netherlands:'🇳🇱',germany:'🇩🇪',
@@ -70,6 +98,8 @@
     .mgp-season-track--next{height:155px}
     .mgp-season-track--tile{height:73px;margin:2px 0}
     .mgp-season-track-note{display:block;font-size:10px;color:var(--secondary-text-color);text-align:center}
+    .mgp-season-art-credit{display:grid;gap:3px;margin-top:5px;font-size:10px;color:var(--secondary-text-color)}
+    .mgp-season-art-credit a{color:var(--primary-color,#039be5)}
     .mgp-season-track-missing{font-size:11px;color:var(--secondary-text-color);text-align:center}
     .mgp-season-next h3{font-size:20px;line-height:1.2;margin:2px 0;font-weight:900}
     .mgp-season-next small{color:var(--secondary-text-color)}
@@ -219,6 +249,12 @@
         ['Vänsterkurvor',facts.left]
       ].filter(([_,value])=>value).map(([label,value])=>
         '<span>'+esc(label)+'<b>'+esc(value)+'</b></span>').join(''):'';
+      const ref=selected.provisional?referenceArtwork(selected.circuit):null;
+      const proposed=ref?.preview?
+        '<div class="mgp-season-track mgp-season-track--next"><img src="'+esc(ref.preview)+
+        '" alt="Föreslagen banprofil, ej verifierad" loading="lazy" style="opacity:1;position:relative;max-height:170px"></div>':'';
+      const referenceHtml=ref?'<h3>Banreferens (ej verifierad MotoGP-layout)</h3>'+
+        proposed+artworkCredit(ref):'';
       const factsHtml=dimensions?'<div class="mgp-season-detail-grid">'+dimensions+'</div>'+
         (String(facts.source||'').startsWith('https://')?
           '<p><a href="'+esc(facts.source)+'" target="_blank" rel="noopener noreferrer">Källa för banfakta</a></p>':''):
@@ -258,7 +294,7 @@
         '<div class="mgp-season-dialog-head"><strong>🏁 '+eventName(selected)+'</strong>'+
         '<button type="button" data-mgp-season-close>Stäng</button></div>'+
         '<div class="mgp-season-dialog-body"><p>'+dates(selected)+' · '+circuit(selected)+'</p>'+
-        trackHtml(selected,true)+factsHtml+
+        trackHtml(selected,true)+referenceHtml+factsHtml+
         '<p class="mgp-season-detail-note">Rekord kopplas till verifierad banvariant och officiell källa. Saknas uppgift visas inget påhittat värde.</p>'+
         resultsHtml+'</div></dialog>';
     })():'';
