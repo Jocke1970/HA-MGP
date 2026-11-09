@@ -64,6 +64,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_api_event_archive.py' -v
           python3 -m unittest discover -s tests -p 'test_weather_conditions.py' -v
           python3 -m unittest discover -s tests -p 'test_broadcast_schedule.py' -v
+          python3 -m unittest discover -s tests -p 'test_event_results_ws.py' -v
           python3 -m compileall -q custom_components/motogp_sensor
 
       - name: Reproduce and regress live-feed badge refresh
