@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const TAG='ha-motogp-next-overview-card';
-  const BUILD='calendar-20261109-03';
+  const BUILD='calendar-20261109-04';
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const parseDate=raw=>{
     const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(raw||''));
@@ -62,9 +62,30 @@
     .mgp-season-mark{font-size:11px;font-weight:800;color:#e10600}
     .mgp-season-title{display:flex;align-items:center;gap:8px;min-width:0}
     .mgp-season-list{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:11px}
-    .mgp-season-event{padding:12px;min-width:0;display:flex;flex-direction:column;gap:8px;border:1px solid var(--divider-color,#ddd);border-radius:11px}
+    .mgp-season-event{padding:12px;min-width:0;display:flex;flex-direction:column;gap:8px;border:1px solid var(--divider-color,#ddd);border-radius:11px;color:inherit;text-align:left;background:transparent;font:inherit}
+    button.mgp-season-event{cursor:pointer;width:100%}
+    button.mgp-season-event:hover{border-color:var(--primary-color,#039be5)}
+    button.mgp-season-event:focus-visible{outline:2px solid var(--primary-color,#039be5);outline-offset:2px}
+    .mgp-season-event .mgp-open-label{font-size:10px;color:var(--primary-color,#039be5);margin-top:auto}
+    .mgp-season-dialog{box-sizing:border-box;position:fixed;inset:0;margin:auto;width:min(820px,calc(100vw - 28px));max-width:calc(100vw - 28px);max-height:calc(100dvh - 28px);padding:0;border-radius:15px;border:1px solid var(--divider-color,#ddd);color:var(--primary-text-color);background:var(--ha-card-background,var(--card-background-color,#fff));box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden}
+    .mgp-season-dialog[open]{display:flex;flex-direction:column}
+    .mgp-season-dialog::backdrop{background:rgba(0,0,0,.55)}
+    .mgp-season-dialog-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--divider-color,#ddd)}
+    .mgp-season-dialog-head strong{font-size:14px}
+    .mgp-season-dialog-head button{font:inherit;color:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--divider-color,#ddd);background:transparent;padding:7px 13px}
+    .mgp-season-dialog-body{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:14px}
+    .mgp-season-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .mgp-season-detail-grid>span{border:1px solid var(--divider-color,#ddd);padding:9px;border-radius:8px;font-size:12px}
+    .mgp-season-detail-grid b{display:block;margin-top:4px}
+    .mgp-season-results-tabs{display:flex;gap:6px;margin:12px 0;flex-wrap:wrap}
+    .mgp-season-results-tabs button{border:1px solid var(--divider-color,#ddd);border-radius:9px;background:transparent;color:inherit;padding:8px 12px;cursor:pointer;font:inherit}
+    .mgp-season-results-tabs button[aria-selected=true]{border-color:var(--primary-color,#039be5);background:rgba(0,153,220,.12)}
+    .mgp-season-results{width:100%;border-collapse:collapse;font-size:12px}
+    .mgp-season-results td,.mgp-season-results th{padding:7px 5px;text-align:left;border-bottom:1px solid var(--divider-color,#ddd)}
+    .mgp-season-detail-note{font-size:12px;color:var(--secondary-text-color);margin:12px 0}
     .mgp-season-event.is-next{border-color:#e10600}
     .mgp-season-event.is-past{background:var(--secondary-background-color,rgba(127,127,127,.065));opacity:.65;filter:grayscale(1)}
+    .mgp-season-dialog .mgp-season-track{opacity:1;filter:none}
     .mgp-season-event.is-past .mgp-round::before{content:'✓ ';font-weight:900}
     .mgp-season-event.is-past:hover{opacity:.85}
     .mgp-season-event b{font-size:13px;overflow-wrap:anywhere}
@@ -77,7 +98,7 @@
     @container (max-width:850px){.mgp-season-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @container (max-width:470px){.mgp-season-list{grid-template-columns:1fr}.mgp-season-head strong{font-size:17px}.mgp-season-next-layout{grid-template-columns:minmax(0,1fr)}.mgp-season-track--next{height:130px}}
   `;
-  function calendar(card,now){
+  function calendar(card,now,useStandardHeader=false){
     const states=card._hass?.states||{};
     const race=states[card._ids?.race];
     const raw=race?.attributes?.season_calendar;
@@ -137,10 +158,14 @@
     };
     const cardHtml=(e,isPast=false)=>{
       const i=entries.indexOf(e)+1;
-      return '<div class="mgp-season-event'+(isPast?' is-past':'')+'">'+
+      const clickable=String(e.id||'').length>0&&String(e.id||'').length<=128;
+      return (clickable?'<button type="button" data-mgp-season-event="'+esc(e.id)+'"':'<div')+
+        ' class="mgp-season-event'+(isPast?' is-past':'')+'">'+
         '<span class="mgp-round">R'+i+'</span>'+
         '<div class="mgp-season-title"><span>'+flagFor(e.country)+'</span><b>'+eventName(e)+'</b></div>'+
-        '<small>'+dates(e)+'</small>'+trackHtml(e)+'<small>'+circuit(e)+'</small><small>'+country(e)+'</small></div>';
+        '<small>'+dates(e)+'</small>'+trackHtml(e)+'<small>'+circuit(e)+'</small><small>'+country(e)+'</small>'+
+        (clickable?'<span class="mgp-open-label">Visa baninformation ⤢</span>':'')+
+        (clickable?'</button>':'</div>');
     };
     // The highlighted GP is already represented in the hero: never repeat it.
     const upcoming=future.filter(e=>e!==next).map(e=>cardHtml(e,false)).join('');
@@ -150,12 +175,66 @@
       '<small>'+circuit(next)+(next.country?' · '+country(next):'')+'</small>'+ (countdown(next)?'<strong class="mgp-season-mark">'+esc(countdown(next))+'</strong>':'')+
       '</div><div>'+trackHtml(next,true)+'<span class="mgp-season-track-note">Schematisk banlayout</span></div></div></div>':
       '<div class="mgp-season-empty">'+labels[4]+'</div>';
+
+    const selected=entries.find(e=>String(e.id||'')&&String(e.id)===String(card._mgpSelectedEventId||''));
+    const detail=selected?(()=>{
+      const isPast=dateKey(selected.end)<today;
+      const facts=typeof card._mgpCalendarFacts==='function'?card._mgpCalendarFacts(selected.circuit):null;
+      const dimensions=facts?[
+        ['Banlängd',facts.length],['Bredd',facts.width],
+        ['Längsta raka',facts.straight],['Högerkurvor',facts.right],
+        ['Vänsterkurvor',facts.left]
+      ].filter(([_,value])=>value).map(([label,value])=>
+        '<span>'+esc(label)+'<b>'+esc(value)+'</b></span>').join(''):'';
+      const factsHtml=dimensions?'<div class="mgp-season-detail-grid">'+dimensions+'</div>'+
+        (facts.source&&/^https:\\/\\//.test(String(facts.source))?
+          '<p><a href="'+esc(facts.source)+'" target="_blank" rel="noopener noreferrer">Källa för banfakta</a></p>':''):
+        '<p class="mgp-season-detail-note">Verifierade banmått saknas.</p>';
+      const selectedId=String(selected.id||'');
+      const server=card._mgpEventResultsCache?.[selectedId];
+      const pending=card._mgpEventResultsPending===selectedId;
+      const error=card._mgpEventResultsError?.[selectedId];
+      const selectedClass=['MotoGP','Moto2','Moto3'].includes(card._mgpEventResultsClass)?card._mgpEventResultsClass:'MotoGP';
+      const classes=server?.categories||{};
+      const source=server?.event_id===selectedId&&server?.source==='pulselive_results';
+      const group=source?classes[selectedClass]:null;
+      const pole=group?.pole;
+      const results=Array.isArray(group?.race)?group.race:[];
+      const sprint=Array.isArray(group?.sprint)?group.sprint:[];
+      const raceRows=results.slice(0,40).map(r=>
+        '<tr><td>'+esc(r.position??'—')+'</td><td>'+esc(r.rider||'—')+'</td><td>'+esc(r.time||r.gap||r.status||'—')+'</td></tr>').join('');
+      const resultsHtml=!isPast?
+        '<p class="mgp-season-detail-note">Pole-tider och raceresultat visas efter att tävlingen avgjorts. Inga framtida värden uppskattas.</p>':
+        (typeof card._spoiler==='function'&&card._spoiler())?
+        '<p class="mgp-season-detail-note">Resultat är dolda när spoilerläget är aktivt.</p>':
+        '<h3>Officiella sessionsresultat</h3>'+
+        '<div class="mgp-season-results-tabs" role="tablist" aria-label="Tävlingsklass">'+
+          ['MotoGP','Moto2','Moto3'].map(c=>'<button type="button" data-mgp-season-category="'+c+
+            '" role="tab" aria-selected="'+(c===selectedClass)+'">'+c+'</button>').join('')+'</div>'+
+        (pending?'<p class="mgp-season-detail-note">Hämtar Pulselive-resultat …</p>':
+        error?'<p class="mgp-season-detail-note">Resultat kunde inte hämtas från Pulselive.</p>':
+        !source?'<p class="mgp-season-detail-note">Välj ett avslutat GP för att hämta resultaten.</p>':
+        '<div class="mgp-season-detail-grid"><span>Pole (Q2)<b>'+
+          (pole?esc((pole.rider||'')+' · '+(pole.time||'')):'Ej tillgängligt')+'</b></span>'+
+          '<span>Sprint<b>'+ (sprint.length?esc(sprint[0].rider||'—'):'Ej tillgängligt')+'</b></span></div>'+
+        (raceRows?'<h4>Raceresultat · '+selectedClass+'</h4><table class="mgp-season-results"><thead><tr><th>Plac.</th><th>Förare</th><th>Tid / status</th></tr></thead><tbody>'+
+          raceRows+'</tbody></table>':
+          '<p class="mgp-season-detail-note">Inget verifierat raceresultat för denna klass.</p>')+
+        '<p class="mgp-season-detail-note">Källa: MotoGP Pulselive Results API · ingen egen varvtidsdatabas.</p>'));
+      return '<dialog class="mgp-season-dialog" aria-label="GP-detaljer för '+eventName(selected)+'">'+
+        '<div class="mgp-season-dialog-head"><strong>🏁 '+eventName(selected)+'</strong>'+
+        '<button type="button" data-mgp-season-close>Stäng</button></div>'+
+        '<div class="mgp-season-dialog-body"><p>'+dates(selected)+' · '+circuit(selected)+'</p>'+
+        trackHtml(selected,true)+factsHtml+
+        '<p class="mgp-season-detail-note">Rekord kopplas till verifierad banvariant och officiell källa. Saknas uppgift visas inget påhittat värde.</p>'+
+        resultsHtml+'</div></dialog>';
+    })():'';
     return '<section class="mgp-season" aria-label="'+labels[0]+'">'+
       '<header class="mgp-season-head"><strong>🗓️ '+labels[0]+' '+esc(year)+'</strong><small>'+entries.length+' GP</small></header>'+
-      nextHtml+(upcoming?'<div class="mgp-season-section">'+labels[2]+'</div>'+
+      (useStandardHeader?'':nextHtml)+(upcoming?'<div class="mgp-season-section">'+labels[2]+'</div>'+
       '<div class="mgp-season-list">'+upcoming+'</div>':'')+
       (previous?'<details class="mgp-season-past"><summary>✓ '+labels[3]+' ('+past.length+')</summary>'+
-       '<div class="mgp-season-list">'+previous+'</div></details>':'')+'</section>';
+       '<div class="mgp-season-list">'+previous+'</div></details>':'')+'</section>'+detail;
   }
   function install(){
     const Card=customElements.get(TAG);
@@ -166,7 +245,16 @@
       if(!this._hass||!this.shadowRoot)return result;
       const view=this.shadowRoot.getElementById?.('app');
       if(!view)return result;
-      const value=calendar(this,new Date());
+      // Preserve the genuine event header with its existing schedule,
+      // championship tabs, circuit panel, records and interaction handlers.
+      const originalHeader=view.querySelector?.('section.panel.header');
+      const useStandardHeader=Boolean(originalHeader?.outerHTML?.includes('data-mgp-hero-grid'));
+      const headerHtml=useStandardHeader?originalHeader.outerHTML:'';
+      const scheduleHtml=useStandardHeader&&this._scheduleOpen===true?
+        (view.querySelector?.('.mgp-weekend-dialog')?.outerHTML||''):'';
+      const standingsHtml=useStandardHeader&&this._standingOpen===true?
+        (view.querySelector?.('.np-card[aria-label="VM-ställning"]')?.outerHTML||''):'';
+      const value=calendar(this,new Date(),useStandardHeader);
       if(!value)return result;
       if(!this.shadowRoot.querySelector?.('[data-mgp-calendar-style]')){
         const style=document.createElement('style');
@@ -177,7 +265,26 @@
       // During non-race weeks the calendar replaces the live overview content.
       // Live timing stays in its separate card, unchanged and spoiler-protected.
       const footer=(view.innerHTML.match(/<div class="foot">[\s\S]*?<\/div>/)||[])[0]||'';
-      view.innerHTML='<div class="root">'+value+footer+'</div>';
+      view.innerHTML='<div class="root">'+headerHtml+scheduleHtml+standingsHtml+value+footer+'</div>';
+      // Any modal opened by the header renderer must survive the calendar
+      // replacement; restore it in the top layer (with its own scroll).
+      for(const [selector,active] of [
+        ['.mgp-season-dialog',Boolean(this._mgpSelectedEventId)],
+        ['.mgp-weekend-dialog',this._scheduleOpen===true&&useStandardHeader],
+        ['.mgp-circuit-dialog',this._circuitOpen===true&&useStandardHeader]
+      ]){
+        const dialog=view.querySelector?.(selector);
+        if(dialog&&active&&typeof dialog.showModal==='function'&&!dialog.open){
+          dialog.addEventListener('cancel',event=>{
+            event.preventDefault();
+            if(selector==='.mgp-season-dialog')this._mgpSelectedEventId=null;
+            if(selector==='.mgp-weekend-dialog')this._scheduleOpen=false;
+            if(selector==='.mgp-circuit-dialog')this._circuitOpen=false;
+            this._render();
+          },{once:true});
+          dialog.showModal();
+        }
+      }
       // Use locally supplied SVG only after a successful load. Until then
       // the built-in vector outline remains visible, even if the local file 404s.
       for(const img of view.querySelectorAll?.('.mgp-season-track img')||[]){
@@ -186,6 +293,50 @@
         if(img.complete&&img.naturalWidth>0)img.classList.add('is-ready');
       }
       return result;
+    };
+
+    const previousClick=Card.prototype._click;
+    Card.prototype._click=function(e){
+      const target=e?.target;
+      if(target?.closest?.('[data-mgp-season-close]')){
+        this._mgpSelectedEventId=null;this._render();return;
+      }
+      const category=target?.closest?.('[data-mgp-season-category]');
+      if(category){
+        this._mgpEventResultsClass=category.getAttribute('data-mgp-season-category');
+        this._render();return;
+      }
+      const event=target?.closest?.('[data-mgp-season-event]');
+      if(event){
+        const id=String(event.getAttribute('data-mgp-season-event')||'');
+        const entries=this._hass?.states?.[this._ids?.race]?.attributes?.season_calendar;
+        const record=Array.isArray(entries)?entries.find(x=>String(x.id||'')===id):null;
+        if(!record||!id)return;
+        this._mgpSelectedEventId=id;
+        this._mgpEventResultsClass='MotoGP';
+        this._scheduleOpen=false;
+        this._circuitOpen=false;
+        this._render();
+        const end=parseDate(record.date_end);
+        const past=end&&dateKey(end)<dateKey(new Date());
+        if(!past||typeof this._spoiler==='function'&&this._spoiler())return;
+        if(this._mgpEventResultsCache?.[id]||this._mgpEventResultsPending===id)return;
+        if(typeof this._hass?.callWS!=='function')return;
+        this._mgpEventResultsPending=id;
+        this._render();
+        this._hass.callWS({type:'motogp_sensor/event_results',event_id:id}).then(data=>{
+          if(!data||String(data.event_id)!==id||data.source!=='pulselive_results')throw Error('Unexpected Pulselive event identity');
+          this._mgpEventResultsCache={...(this._mgpEventResultsCache||{}),[id]:data};
+          this._mgpEventResultsError={...(this._mgpEventResultsError||{}),[id]:false};
+        }).catch(()=>{
+          this._mgpEventResultsError={...(this._mgpEventResultsError||{}),[id]:true};
+        }).finally(()=>{
+          if(this._mgpEventResultsPending===id)this._mgpEventResultsPending=null;
+          if(this._mgpSelectedEventId===id)this._render();
+        });
+        return;
+      }
+      return previousClick.call(this,e);
     };
     Card.prototype._mgpSeasonCalendar=BUILD;
   }
