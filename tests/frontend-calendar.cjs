@@ -19,6 +19,11 @@ class Overview{
       ]}},'sensor.motogp_current_season':{state:'2026'},
       'binary_sensor.motogp_race_weekend_active':{state:'off'}}};
   }
+  _mgpCalendarTrack(circuit){
+    if(/buriram|chang/i.test(circuit))return {id:'buriram',d:'M10,20 L130,30 L110,120 Z',localPath:'/local/ha-mgp/circuits/buriram.svg'};
+    if(/ricardo tormo/i.test(circuit))return {id:'valencia',d:'M10,20 L130,30 L110,120 Z',localPath:null};
+    return null;
+  }
   _render(){this.root.innerHTML='<div class="root"><section class="panel header">LIVE OVERVIEW</section><div class="foot">Version</div></div>';}
 }
 const src=fs.readFileSync(process.argv[2]||'frontend/ha-mgp-calendar.js','utf8');
@@ -33,6 +38,13 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
  assert.match(c.root.innerHTML,/Kommande tävlingar/);
  assert.match(c.root.innerHTML,/Avverkade tävlingar \(2\)/);
  assert.match(c.root.innerHTML,/dagar kvar/);
+ assert.match(c.root.innerHTML,/mgp-season-track--next/,'hero has a circuit picture');
+ assert.match(c.root.innerHTML,/mgp-season-track--tile/,'upcoming and past races have circuit pictures');
+ assert.match(c.root.innerHTML,/mgp-season-event is-past/,'completed races are visually muted');
+ assert.equal((c.root.innerHTML.match(/Valencia GP/g)||[]).length,1,
+   'the next event is in hero only, not repeated in upcoming list');
+ assert.match(c.root.innerHTML,/Banlayout saknas/,'unknown track does not borrow a wrong circuit outline');
+
  assert.doesNotMatch(c.root.innerHTML,/LIVE OVERVIEW/);
  assert.ok(c.root.innerHTML.indexOf('Valencia GP')<c.root.innerHTML.indexOf('Second race'));
  c._hass.states['binary_sensor.motogp_race_weekend_active'].state='on';c._render();
