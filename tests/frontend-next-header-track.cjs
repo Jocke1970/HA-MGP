@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const file=process.argv[2]||'frontend/ha-mgp-header-track.js';
 const src=fs.readFileSync(file,'utf8');
-assert.match(src,/header-track-weather-20261109-02/);
+assert.match(src,/header-track-weather-20261109-03/);
 const docs=[];
 class Overview {
   static buildInfo={version:'0.2.0-split.2'};
@@ -147,9 +147,10 @@ const context={customElements:{
   card._scheduleOpen=true;
   assert.match(card._schedule(),/Filters/,'schedule filters remain');
   assert.match(card._schedule(),/Days/,'schedule day list remains');
-  assert.match(card._schedule(),/<dialog class="mgp-weekend-dialog"/,'open schedule uses native modal');
-  assert.match(card._schedule(),/data-mgp-schedule-dismiss/,'dialog has a close button');
-  assert.match(card._schedule(),/Helgens schema/,'dialog has accessible schedule title');
+  assert.match(card._schedule(),/<section class="mgp-weekend-inline"/,'open schedule uses an inline section');
+  assert.doesNotMatch(card._schedule(),/<dialog/,'inline schedule never opens a top-layer dialog');
+  assert.match(card._schedule(),/data-mgp-schedule-dismiss/,'inline schedule has a close button');
+  assert.match(card._schedule(),/Helgens schema/,'inline schedule has accessible schedule title');
   assert.match(card._schedule(),/Detaljerat helgschema är ännu inte tillgängligt/);
   assert.match(card._schedule(),/Visa MotoGP:s officiella schema/);
   card._scheduleOpen=false;
