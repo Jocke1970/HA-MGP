@@ -1,4 +1,4 @@
-name: HA-MGP b24 release candidate gate
+name: HA-MGP b25 release candidate gate
 
 on:
   push:
@@ -34,11 +34,12 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_api_event_archive.py' -v
           python3 -m unittest discover -s tests -p 'test_weather_conditions.py' -v
           python3 -m unittest discover -s tests -p 'test_broadcast_schedule.py' -v
+          python3 -m unittest discover -s tests -p 'test_event_results_ws.py' -v
           python3 - <<'PY'
           import json
           from pathlib import Path
           m=json.loads(Path('custom_components/motogp_sensor/manifest.json').read_text())
-          assert m['version']=='2026.11.0b24'
+          assert m['version']=='2026.11.0b25'
           code=Path('custom_components/motogp_sensor/coordinator.py').read_text()
           assert 'async_get_entry_list(' not in code, 'Unsupported entry endpoint must not be called in b22'
           assert 'PulseliveDiagnostics' in code, 'Passive diagnostics missing'
@@ -71,8 +72,8 @@ jobs:
           ]
           index=[src.index(marker) for _,marker in parts]
           assert index==sorted(index) and len(set(index))==len(index)
-          assert '0.3.0-dev.52' in src
-          assert 'header-track-weather-20261108-06' in src
+          assert '0.3.0-dev.59' in src
+          assert 'header-track-weather-20261109-02' in src
           assert 'mgp-pre-grid-scroll' in src
           assert '/local/ha-mgp/circuits/' in src
           assert 'data-mgp-weather-diagnostics' in src
