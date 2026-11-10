@@ -98,7 +98,7 @@ jobs:
           assert "MELLAN PASSEN" in source
           assert "leaderboard=shown.map" in source
           assert "ui-preview-20261108-06" in source
-          assert "header-track-weather-20261109-03" in source
+          assert "header-track-weather-20261109-04" in source
           assert "mgp-brand-logo" in source
           assert "mgp-rider-flag" in source
           assert "mgp-class-mark" in source
@@ -109,9 +109,9 @@ jobs:
           assert "mgp-timing-record-chip" in source
           assert "Championship standings" in source
           assert '"es":{' in source
-          assert "calendar-20261109-09" in source
+          assert "calendar-20261109-10" in source
           assert "mgp-season" in source
-          assert 'HA-MGP UI · 0.3.0-dev.60' in source
+          assert 'HA-MGP UI · 0.3.0-dev.61' in source
           assert source == Path('custom_components/motogp_sensor/www/ha-motogp-next.js').read_text(encoding='utf-8')
           assert "mgp-ui-footer" in source
           assert "data-mgp-schedule-jump" in source
@@ -160,7 +160,7 @@ jobs:
           manifest = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
           assert manifest['domain'] == 'motogp_sensor'
           assert manifest['name'] == 'HA-MGP'
-          assert manifest['version'] == '2026.11.0b26'
+          assert manifest['version'] == '2026.11.0b27'
           assert all((root / 'translations' / (lang + '.json')).is_file() for lang in ('en','sv','es','it','fr'))
           assert manifest.get('codeowners') == ['@Jocke1970']
           assert {'http', 'frontend'}.issubset(manifest['dependencies'])
@@ -180,7 +180,7 @@ jobs:
           assert hacs.get('name')
           assert not hacs.get('content_in_root')
           assert not hacs.get('zip_release')
-          print('Verified HA-MGP beta: 2026.11.0b26 with season calendar, five locales and timing records')
+          print('Verified HA-MGP beta: 2026.11.0b27 with season calendar, five locales and timing records')
           PY
       - name: Publish tagged GitHub prerelease
         if: github.event_name != 'pull_request'
@@ -188,13 +188,13 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          TAG=2026.11.0b26
+          TAG=2026.11.0b27
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "$TAG already exists; leaving the immutable prerelease untouched."
             gh release view "$TAG" --json tagName,isPrerelease,url,targetCommitish
             exit 0
           fi
           gh release create "$TAG" --target "$(git rev-parse HEAD)" --prerelease \
-            --title 'HA-MGP 2026.11.0b26 — interactive circuit, event-bound weather and Broadcast schedule' \
+            --title 'HA-MGP 2026.11.0b27 — interactive circuit, event-bound weather and Broadcast schedule' \
             --notes-file docs/hacs-beta-release-notes.md
           gh release view "$TAG" --json tagName,isPrerelease,url,targetCommitish
