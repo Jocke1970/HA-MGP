@@ -159,6 +159,12 @@ def main(frontend, target):
         raise SystemExit('STOP: missing or duplicate MGP logo placeholder')
     header_source = header_source.replace('__MGP_APPROVED_BRAND_DATA_URI__', logo_uri)
     result = (text + '\n;\n' + ui.decode('utf-8') + '\n;\n' + mobile_bytes.decode('utf-8') + '\n;\n' + qual_bytes.decode('utf-8') + '\n;\n' + header_source + '\n;\n' + history_bytes.decode('utf-8') + '\n;\n' + i18n_source + '\n;\n' + calendar_bytes.decode('utf-8') + '\n;\n' + api_status_bytes.decode('utf-8') + '\n;\n' + session_dots_bytes.decode('utf-8') + '\n;\n' + timing_icons_bytes.decode('utf-8') + '\n;\n' + active_chip_bytes.decode('utf-8') + '\n;\n' + finish_settling_bytes.decode('utf-8') + '\n;\n' + pre_session_bytes.decode('utf-8')).encode('utf-8')
+    # Render day-aware countdowns in preview, keeping frozen baseline source blobs unchanged.
+    output = result.decode('utf-8')
+    output = replace_one(output, "const h = Math.floor(seconds/3600), m = Math.floor(seconds%3600/60), s = seconds%60;\n    return `${h ? `${h}:${pad(m)}` : String(m)}:${pad(s)} till start`;", "const d = Math.floor(seconds/86400), h = Math.floor(seconds%86400/3600), m = Math.floor(seconds%3600/60), s = seconds%60;\n    return `${d ? `${d}d ${pad(h)}:${pad(m)}` : h ? `${h}:${pad(m)}` : String(m)}:${pad(s)} till start`;")
+    output = replace_one(output, "const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;\n    return `${h?`${h}:${pad(m)}`:m}:${pad(s)} till start`;", "const d=Math.floor(sec/86400),h=Math.floor(sec%86400/3600),m=Math.floor(sec%3600/60),s=sec%60;\n    return `${d?`${d}d ${pad(h)}:${pad(m)}`:h?`${h}:${pad(m)}`:m}:${pad(s)} till start`;")
+    output = replace_one(output, "Math.floor(s/60)+':'+String(s%60).padStart(2,'0')+' till start';", "(s>=86400?Math.floor(s/86400)+'d '+String(Math.floor(s%86400/3600)).padStart(2,'0')+':'+String(Math.floor(s%3600/60)).padStart(2,'0'):\n   s>=3600?Math.floor(s/3600)+':'+String(Math.floor(s%3600/60)).padStart(2,'0'):\n   String(Math.floor(s/60)))+':'+String(s%60).padStart(2,'0')+' till start';")
+    result = output.encode('utf-8')
     pathlib.Path(target).write_bytes(result)
     print(f'UI preview built: {target} ({len(result)} bytes, git blob {blob(result)})')
 
