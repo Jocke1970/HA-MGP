@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const file=process.argv[2]||'frontend/ha-mgp-header-track.js';
 const src=fs.readFileSync(file,'utf8');
-assert.match(src,/header-track-weather-20261109-04/);
+assert.match(src,/header-track-weather-20261110-01/);
 const docs=[];
 class Overview {
   static buildInfo={version:'0.2.0-split.2'};
@@ -70,6 +70,10 @@ const context={customElements:{
   assert.match(card.root.innerHTML,/data-mgp-circuit-open/,'circuit map clickable');
   assert.match(card.root.innerHTML,/mgp-circuit-dialog/,'detail modal exists');
   assert.match(card.root.innerHTML,/data-mgp-circuit-dismiss/,'detail dialog has close control');
+  assert.match(card.root.innerHTML,/mgp-circuit-dialog-head/,'circuit dialog has its own styled header');
+  assert.match(src,/\.mgp-circuit-dialog-head\{display:flex/,'header aligns title and close button');
+  assert.match(src,/\.mgp-circuit-dialog-head button\{flex:0 0 auto/,'close button keeps native themed styling');
+
   assert.match(src,/mgp-circuit-detail-grid/,'responsive circuit facts present');
   assert.match(src,/top:50%;left:50%;transform:translate\(-50%,-50%\)/,
     'circuit popup centers within viewport rather than clipping above it');
