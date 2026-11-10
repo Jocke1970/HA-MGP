@@ -98,3 +98,9 @@ The weekend agenda now expands as a normal full-width section directly **below**
 - The weekend schedule remains an inline section; its MotoGP/Moto2/Moto3/ALL controls were **not changed** in this pass.
 
 These changes are for dev review; beta b26 and main remain untouched until visual validation.
+
+## Circuit popup header polish (dev.62)
+
+The current circuit detail dialog has its own `mgp-circuit-dialog-head` with flex-aligned title and styled close button, rather than reusing the deleted weekend-dialog header styles. The body remains scrollable and the close control accessible on short screens. This is isolated frontend polish, **not** a release to beta.
+
+The verified `CIRCUIT_FACTS` registry currently holds only Portimão and Lusail. Other layouts may render via the schematic or local SVG registry while official dimensions/records are unavailable. Do not infer facts from a sketch; add sourced facts and verify the exact track variant separately.
