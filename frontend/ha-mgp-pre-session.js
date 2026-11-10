@@ -91,9 +91,7 @@ function before(card,next,attrs){
 function countdown(at){
  const s=Math.max(0,Math.ceil((at-Date.now())/1000));
  return at<=Date.now()?'Starttid passerad · inväntar data':
-  (s>=86400?Math.floor(s/86400)+'d '+String(Math.floor(s%86400/3600)).padStart(2,'0')+':'+String(Math.floor(s%3600/60)).padStart(2,'0'):
-   s>=3600?Math.floor(s/3600)+':'+String(Math.floor(s%3600/60)).padStart(2,'0'):
-   String(Math.floor(s/60)))+':'+String(s%60).padStart(2,'0')+' till start';
+  Math.floor(s/60)+':'+String(s%60).padStart(2,'0')+' till start';
 }
 function install(){
  const Card=customElements.get(TAG);
