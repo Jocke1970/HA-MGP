@@ -1,11 +1,13 @@
-# HA-MGP 2026.11.0b26 — helgschemat under GP-kortet
+# HA-MGP 2026.11.0b27 — banpopup, större layout och nästa säsong
 
-**Beta:** `2026.11.0b26` · **UI:** `0.3.0-dev.60`
+**Beta:** `2026.11.0b27` · **UI:** `0.3.0-dev.61`
 
-- Helgschemat visas som en **utfällbar sektion under GP-toppkortet**, likt VM-ställningen, i stället för en flytande popup.
-- Alla befintliga klassknappar (ALL, Moto3, Moto2, MotoGP), dagsektioner och sessionsuppgifter är oförändrade.
-- Stäng fäller ihop schemat; VM-ställningen och schemat förblir ömsesidigt exklusiva.
-- Kalender 2026/2027, klickbara Grand Prix, historiska Pulselive-resultat och banreferenser finns kvar från b25.
-- Återstår: banpopupens skärmplacering, vissa pole-tider, banfakta och vädret.
+- Banpopupen centreras mot skärmen och får en fast rubrik med stängknapp samt scrollbart innehåll.
+- Banlayouten i kalenderns GP-detaljer visas större.
+- 2027 är en förhandsvisning av kommande säsong: **ingen särskild nästa-GP-toppruta**; alla 22 tävlingar inklusive Thailand R1 visas som klickbara kalenderkort.
+- Säsongsväljaren får automatiskt nya år efter 2027 och väljer aktuellt kalenderår som standard.
+- Endast källverifierade historiska säsongsuppgifter visas; inga GP eller resultat från fel år kopieras.
+- Helgschemat ligger fortsatt under GP-kortet och klassknapparna **ALL/Moto3/Moto2/MotoGP har inte ändrats**.
+- Ofärdigt till senare: historisk säsongshämtning, Q2/pole-tider, saknade banfakta och verifiering av väderdata.
 
-Installera via HACS beta och uppdatera JS-cachen (Ctrl+Shift+R). Verifiera visuellt att schemat ligger under GP-kortet. Rollback: `2026.11.0b25`. `main` lämnas orörd.
+Testas visuellt i Home Assistant före nästa utvecklingsomgång. Återgång: `2026.11.0b26`. `main` orörd.
