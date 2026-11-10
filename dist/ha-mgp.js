@@ -377,8 +377,8 @@
     const seconds = Math.ceil((timestamp-now)/1000);
     if (seconds < 0) return 'Starttid passerad · inväntar status';
     if (seconds === 0) return 'Startar nu';
-    const d = Math.floor(seconds/86400), h = Math.floor(seconds%86400/3600), m = Math.floor(seconds%3600/60), s = seconds%60;
-    return `${d ? `${d}d ${pad(h)}:${pad(m)}` : h ? `${h}:${pad(m)}` : String(m)}:${pad(s)} till start`;
+    const h = Math.floor(seconds/3600), m = Math.floor(seconds%3600/60), s = seconds%60;
+    return `${h ? `${h}:${pad(m)}` : String(m)}:${pad(s)} till start`;
   }
   const countdownHtml = item => item ?
     `<span class="next-countdown" data-next-start="${item.date.getTime()}">${esc(countdown(item.date.getTime()))}</span>` : '';
@@ -626,8 +626,8 @@
   }
   function remaining(ms) {
     const sec=Math.max(0,Math.ceil(ms/1000));
-    const d=Math.floor(sec/86400),h=Math.floor(sec%86400/3600),m=Math.floor(sec%3600/60),s=sec%60;
-    return `${d?`${d}d ${pad(h)}:${pad(m)}`:h?`${h}:${pad(m)}`:m}:${pad(s)} till start`;
+    const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;
+    return `${h?`${h}:${pad(m)}`:m}:${pad(s)} till start`;
   }
   // Parse only valid positive lap times; never treat 0.000 or unknown as a record.
   function lapSeconds(raw) {
@@ -3229,9 +3229,7 @@ function before(card,next,attrs){
 function countdown(at){
  const s=Math.max(0,Math.ceil((at-Date.now())/1000));
  return at<=Date.now()?'Starttid passerad · inväntar data':
-  (s>=86400?Math.floor(s/86400)+'d '+String(Math.floor(s%86400/3600)).padStart(2,'0')+':'+String(Math.floor(s%3600/60)).padStart(2,'0'):
-   s>=3600?Math.floor(s/3600)+':'+String(Math.floor(s%3600/60)).padStart(2,'0'):
-   String(Math.floor(s/60)))+':'+String(s%60).padStart(2,'0')+' till start';
+  Math.floor(s/60)+':'+String(s%60).padStart(2,'0')+' till start';
 }
 function install(){
  const Card=customElements.get(TAG);
