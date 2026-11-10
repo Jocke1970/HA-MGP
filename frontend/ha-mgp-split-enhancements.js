@@ -35,8 +35,8 @@
   }
   function remaining(ms) {
     const sec=Math.max(0,Math.ceil(ms/1000));
-    const d=Math.floor(sec/86400),h=Math.floor(sec%86400/3600),m=Math.floor(sec%3600/60),s=sec%60;
-    return `${d?`${d}d ${pad(h)}:${pad(m)}`:h?`${h}:${pad(m)}`:m}:${pad(s)} till start`;
+    const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;
+    return `${h?`${h}:${pad(m)}`:m}:${pad(s)} till start`;
   }
   // Parse only valid positive lap times; never treat 0.000 or unknown as a record.
   function lapSeconds(raw) {
