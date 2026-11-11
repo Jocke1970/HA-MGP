@@ -12,6 +12,7 @@ on:
       - 'frontend/ha-mgp-i18n.js'
       - 'frontend/ha-mgp-calendar.js'
       - 'frontend/ha-mgp-api-status.js'
+      - 'frontend/ha-mgp-next-weekend-status.js'
       - 'frontend/ha-mgp-session-dots.js'
       - 'frontend/ha-mgp-timing-icons.js'
       - 'frontend/ha-mgp-active-chip.js'
@@ -30,6 +31,7 @@ on:
       - 'tests/frontend-i18n.cjs'
       - 'tests/frontend-calendar.cjs'
       - 'tests/frontend-api-status.cjs'
+      - 'tests/frontend-next-weekend-status.cjs'
       - 'tests/frontend-session-dots.cjs'
       - 'tests/frontend-timing-icons.cjs'
       - 'tests/frontend-active-chip.cjs'
@@ -71,10 +73,12 @@ jobs:
           mkdir -p dist
           node --check frontend/ha-mgp-ui.js
           node --check frontend/ha-mgp-api-status.js
+          node --check frontend/ha-mgp-next-weekend-status.js
           node tests/frontend-next-ui-preview.cjs frontend/ha-mgp-ui.js
           node tests/frontend-i18n.cjs
           node tests/frontend-calendar.cjs
           node tests/frontend-api-status.cjs
+          node tests/frontend-next-weekend-status.cjs
           node tests/frontend-session-dots.cjs
           node tests/frontend-timing-icons.cjs
           node tests/frontend-active-chip.cjs

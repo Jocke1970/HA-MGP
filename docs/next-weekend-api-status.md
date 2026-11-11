@@ -12,7 +12,7 @@ The existing `SENSOR_NEXT_RACE` attributes expose `next_weekend_api_status` keye
 
 Color does **not** mean mere HTTP success. The entry API returned HTTP 400 in past probes, so no new request is made; do not substitute a roster or infer the grid. Broadcast fallback timetable rows without a Results session UUID remain yellow. No runtime write to `circuit_data` occurs.
 
-**UI:** The API state is available as a sensor attribute for colored dots, but the visual dot component is not added in this commit. Multiple HA-MGP frontend entrypoints share bundled outputs and must be built/tested together. Existing beta/main stay untouched.
+**UI:** Frontend addon `frontend/ha-mgp-next-weekend-status.js` renders three compact red/yellow/green status dots alongside the existing live-timing API badge. The addon only reads `SENSOR_NEXT_RACE` event-scoped attributes and refuses a stale event ID. The single-resource build workflow bundles and tests it before auto-publishing dev output. Existing beta/main stay untouched.
 
 **Caution:** The general monthly circuit audit and 48-hour preflight still require a safe scheduling/approval adapter; only the existing event transition is integrated here.
 

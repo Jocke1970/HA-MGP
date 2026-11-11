@@ -32,6 +32,7 @@ jobs:
           node --check frontend/ha-mgp-i18n.js
           node --check frontend/ha-mgp-calendar.js
           node --check frontend/ha-mgp-api-status.js
+          node --check frontend/ha-mgp-next-weekend-status.js
           node --check frontend/ha-mgp-session-dots.js
           node --check frontend/ha-mgp-timing-icons.js
           node --check frontend/ha-mgp-active-chip.js
@@ -48,6 +49,7 @@ jobs:
           node tests/frontend-i18n.cjs
           node tests/frontend-calendar.cjs
           node tests/frontend-api-status.cjs
+          node tests/frontend-next-weekend-status.cjs
           node tests/frontend-session-dots.cjs
           node tests/frontend-timing-icons.cjs
           node tests/frontend-active-chip.cjs

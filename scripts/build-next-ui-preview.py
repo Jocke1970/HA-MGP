@@ -108,6 +108,10 @@ def main(frontend, target):
     api_status_bytes = api_status_path.read_bytes()
     if blob(api_status_bytes) != API_STATUS_BLOB:
         raise SystemExit('STOP: unexpected API status indicator source revision')
+    weekend_dots_path = frontend / 'ha-mgp-next-weekend-status.js'
+    if not weekend_dots_path.is_file() or weekend_dots_path.is_symlink():
+        raise SystemExit('STOP: missing/unsafe next-weekend verification addon')
+    weekend_dots_bytes = weekend_dots_path.read_bytes()
     session_dots_path = frontend / 'ha-mgp-session-dots.js'
     timing_icons_path = frontend / 'ha-mgp-timing-icons.js'
     for name, path, expected in (
@@ -158,7 +162,7 @@ def main(frontend, target):
     if header_source.count('__MGP_APPROVED_BRAND_DATA_URI__') != 1:
         raise SystemExit('STOP: missing or duplicate MGP logo placeholder')
     header_source = header_source.replace('__MGP_APPROVED_BRAND_DATA_URI__', logo_uri)
-    result = (text + '\n;\n' + ui.decode('utf-8') + '\n;\n' + mobile_bytes.decode('utf-8') + '\n;\n' + qual_bytes.decode('utf-8') + '\n;\n' + header_source + '\n;\n' + history_bytes.decode('utf-8') + '\n;\n' + i18n_source + '\n;\n' + calendar_bytes.decode('utf-8') + '\n;\n' + api_status_bytes.decode('utf-8') + '\n;\n' + session_dots_bytes.decode('utf-8') + '\n;\n' + timing_icons_bytes.decode('utf-8') + '\n;\n' + active_chip_bytes.decode('utf-8') + '\n;\n' + finish_settling_bytes.decode('utf-8') + '\n;\n' + pre_session_bytes.decode('utf-8')).encode('utf-8')
+    result = (text + '\n;\n' + ui.decode('utf-8') + '\n;\n' + mobile_bytes.decode('utf-8') + '\n;\n' + qual_bytes.decode('utf-8') + '\n;\n' + header_source + '\n;\n' + history_bytes.decode('utf-8') + '\n;\n' + i18n_source + '\n;\n' + calendar_bytes.decode('utf-8') + '\n;\n' + api_status_bytes.decode('utf-8') + '\n;\n' + weekend_dots_bytes.decode('utf-8') + '\n;\n' + session_dots_bytes.decode('utf-8') + '\n;\n' + timing_icons_bytes.decode('utf-8') + '\n;\n' + active_chip_bytes.decode('utf-8') + '\n;\n' + finish_settling_bytes.decode('utf-8') + '\n;\n' + pre_session_bytes.decode('utf-8')).encode('utf-8')
     # Render day-aware countdowns in preview, keeping frozen baseline source blobs unchanged.
     output = result.decode('utf-8')
     output = replace_one(output, "const h = Math.floor(seconds/3600), m = Math.floor(seconds%3600/60), s = seconds%60;\n    return `${h ? `${h}:${pad(m)}` : String(m)}:${pad(s)} till start`;", "const d = Math.floor(seconds/86400), h = Math.floor(seconds%86400/3600), m = Math.floor(seconds%3600/60), s = seconds%60;\n    return `${d ? `${d}d ${pad(h)}:${pad(m)}` : h ? `${h}:${pad(m)}` : String(m)}:${pad(s)} till start`;")
