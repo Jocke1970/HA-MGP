@@ -1,0 +1,200 @@
+{
+  "schema_version": 1,
+  "source_2026": "User screenshots of Sporting Maps with rounded circuit lengths",
+  "source_2027": "User-provided Pulselive GP event JSON exact track length",
+  "shared_circuits": 20,
+  "same_length": 7,
+  "different_length": 13,
+  "missing_2026_pulselive_track_ids": true,
+  "no_conclusive_layout_changes": true,
+  "not_in_2027": [
+    "balatonpark",
+    "phillip"
+  ],
+  "new_in_2027": [
+    "buenosaires",
+    "adelaide"
+  ],
+  "results": [
+    {
+      "id": "buriram",
+      "length_2026_screenshot_m": 4554,
+      "length_2027_pulselive_m": 4554,
+      "delta_m": 0,
+      "track_uuid_2026": null,
+      "track_uuid_2027": "5eb8c6ce-f16b-4be5-8aea-39ebaa3b18ba",
+      "variant_status": "not_verifiable_without_2026_pulselive_snapshot"
+    },
+    {
+      "id": "goiania",
+      "length_2026_screenshot_m": 3820,
+      "length_2027_pulselive_m": 3835,
+      "delta_m": 15,
+      "track_uuid_2026": null,
+      "track_uuid_2027": "50941f7f-e112-4404-8dcf-5fb2c47e9617",
+      "variant_status": "not_verifiable_without_2026_pulselive_snapshot"
+    },
+    {
+      "id": "austin",
+      "length_2026_screenshot_m": 5510,
+      "length_2027_pulselive_m": 5513,
+      "delta_m": 3,
+      "track_uuid_2026": null,
+      "track_uuid_2027": "c7c0782e-67f2-4351-af96-6dd5835e8d42",
+      "variant_status": "not_verifiable_without_2026_pulselive_snapshot"
+    },
+    {
+      "id": "lusail",
+      "length_2026_screenshot_m": 5380,
+      "length_2027_pulselive_m": 5380,
+      "delta_m": 0,
+      "track_uuid_2026": null,
+      "track_uuid_2027": "b1cd25b2-1658-4c3b-bd3f-1a7796f7cd27",
+      "variant_status": "not_verifiable_without_2026_pulselive_snapshot"
+    },
+    {
+      "id": "jerez",
+      "length_2026_screenshot_m": 4420,
+      "length_2027_pulselive_m": 4423,
+      "delta_m": 3,
+      "track_uuid_2026": null,
+      "track_uuid_2027": "42621ff3-ef5d-4c7c-8abf-eb54c16181bc",
+      "variant_status": "not_verifiable_without_2026_pulselive_snapshot"
+    },
+    {
+      "id": "lemans",
+      "length_2026_screenshot_m": 4190,
+      "length_2027_pulselive_m": 4185,
+      "delta_m": -5,
+      "track_uuid_2026": null,
+      "track_uuid_2027": "45f698f6-883b-4379-bac3-3253ee6e32e0",
+      "variant_status": "not_verifiable_without_2026_pulselive_snapshot"
+    },
+    {
+      "id": "barcelona",
+      "length_2026_screenshot_m": 4660,
+      "length_2027_pulselive_m": 4657,
+      "delta_m": -3,
+      "track_uuid_2026": null,
+      "track_uuid_2027": "eea725c5-432a-483b-bf46-f9769b8e5ddf",
+      "variant_status": "not_verifiable_without_2026_pulselive_snapshot"
+    },
+    {
+      "id": "mugello",
+      "length_2026_screenshot_m": 5245,
+      "length_2027_pulselive_m": 5245,
+      "delta_m": 0,
+      "track_uuid_2026": null,
+      "track_uuid_2027": "af57cc25-cf15-4f68-b775-ddaea8fec828",
+      "variant_status": "not_verifiable_without_2026_pulselive_snapshot"
+    },
+    {
+      "id": "brno",
+      "length_2026_screenshot_m": 5400,
+      "length_2027_pulselive_m": 5403,
+      "delta_m": 3,
+      "track_uuid_2026": null,
+      "track_uuid_2027": "811bb92b-cf2c-44ec-a188-b9681ba9fc12",
+      "variant_status": "not_verifiable_without_2026_pulselive_snapshot"
+    },
+    {
+      "id": "assen",
+      "length_2026_screenshot_m": 4542,
+      "length_2027_pulselive_m": 4542,
+      "delta_m": 0,
+      "track_uuid_2026": null,
+      "track_uuid_2027": "2c30ee0c-d85b-48e1-b6d4-303a2ba22ae1",
+      "variant_status": "not_verifiable_without_2026_pulselive_snapshot"
+    },
+    {
+      "id": "sachsenring",
+      "length_2026_screenshot_m": 3671,
+      "length_2027_pulselive_m": 3671,
+      "delta_m": 0,
+      "track_uuid_2026": null,
+      "track_uuid_2027": "5cab1166-44c1-45ad-bc30-96d910170097",
+      "variant_status": "not_verifiable_without_2026_pulselive_snapshot"
+    },
+    {
+      "id": "silverstone",
+      "length_2026_screenshot_m": 5900,
+      "length_2027_pulselive_m": 5900,
+      "delta_m": 0,
+      "track_uuid_2026": null,
+      "track_uuid_2027": "2f84e93c-dca6-4ca4-9319-c29eba5bbabb",
+      "variant_status": "not_verifiable_without_2026_pulselive_snapshot"
+    },
+    {
+      "id": "aragon",
+      "length_2026_screenshot_m": 5077,
+      "length_2027_pulselive_m": 5077,
+      "delta_m": 0,
+      "track_uuid_2026": null,
+      "track_uuid_2027": "99cf40f3-6ed4-4cd9-9c1c-22379f6d929b",
+      "variant_status": "not_verifiable_without_2026_pulselive_snapshot"
+    },
+    {
+      "id": "misano",
+      "length_2026_screenshot_m": 4230,
+      "length_2027_pulselive_m": 4226,
+      "delta_m": -4,
+      "track_uuid_2026": null,
+      "track_uuid_2027": "0c4b819d-6014-4920-877b-ab0a1f3415a3",
+      "variant_status": "not_verifiable_without_2026_pulselive_snapshot"
+    },
+    {
+      "id": "redbullring",
+      "length_2026_screenshot_m": 4350,
+      "length_2027_pulselive_m": 4348,
+      "delta_m": -2,
+      "track_uuid_2026": null,
+      "track_uuid_2027": "53e027a4-908f-4253-9805-7321bd212fae",
+      "variant_status": "not_verifiable_without_2026_pulselive_snapshot"
+    },
+    {
+      "id": "motegi",
+      "length_2026_screenshot_m": 4800,
+      "length_2027_pulselive_m": 4801,
+      "delta_m": 1,
+      "track_uuid_2026": null,
+      "track_uuid_2027": "9fbd0109-0b0b-4bbb-a671-d7840036babe",
+      "variant_status": "not_verifiable_without_2026_pulselive_snapshot"
+    },
+    {
+      "id": "mandalika",
+      "length_2026_screenshot_m": 4300,
+      "length_2027_pulselive_m": 4301,
+      "delta_m": 1,
+      "track_uuid_2026": null,
+      "track_uuid_2027": "0db4e87a-920f-4699-a688-63e22b924f1b",
+      "variant_status": "not_verifiable_without_2026_pulselive_snapshot"
+    },
+    {
+      "id": "sepang",
+      "length_2026_screenshot_m": 5540,
+      "length_2027_pulselive_m": 5543,
+      "delta_m": 3,
+      "track_uuid_2026": null,
+      "track_uuid_2027": "07f44869-813e-46e6-97ba-aa405e134d87",
+      "variant_status": "not_verifiable_without_2026_pulselive_snapshot"
+    },
+    {
+      "id": "portimao",
+      "length_2026_screenshot_m": 4590,
+      "length_2027_pulselive_m": 4592,
+      "delta_m": 2,
+      "track_uuid_2026": null,
+      "track_uuid_2027": "0b5cf829-21cf-48dd-a324-1465fc504c24",
+      "variant_status": "not_verifiable_without_2026_pulselive_snapshot"
+    },
+    {
+      "id": "valencia",
+      "length_2026_screenshot_m": 4010,
+      "length_2027_pulselive_m": 4005,
+      "delta_m": -5,
+      "track_uuid_2026": null,
+      "track_uuid_2027": "795839a0-8faa-4f4e-a574-8dce32cfc560",
+      "variant_status": "not_verifiable_without_2026_pulselive_snapshot"
+    }
+  ]
+}
