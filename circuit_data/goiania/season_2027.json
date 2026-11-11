@@ -22,5 +22,11 @@
     "The selected GP track is marked inactive in source snapshot; confirm layout."
   ],
   "race_laps": null,
-  "race_distance_km": null
+  "race_distance_km": null,
+  "verification": {
+    "technical_facts": "confirmed_against_user_screenshot_of_motogp_circuit_specs",
+    "checked_on": "2026-11-11",
+    "details": "MotoGP site displays rounded length 3.84 km; structured Pulselive specifies 3835 m. Width 12 m, straight 994 m, right corners 9, left corners 5 exactly match screenshot.",
+    "track_variant": "unverified_without_2026_selected_track_id"
+  }
 }
