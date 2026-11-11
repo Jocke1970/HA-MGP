@@ -4,7 +4,7 @@ on:
   push:
     branches: [dev, beta]
   pull_request:
-    branches: [beta, main]
+    branches: [dev, beta, main]
 
 permissions:
   contents: read

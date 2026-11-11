@@ -1,0 +1,202 @@
+name: Package HA-MGP HACS beta
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [beta]
+  push:
+    branches: [beta]
+    paths:
+      - '.github/workflows/hacs-beta-package.yml'
+      - 'custom_components/motogp_sensor/**'
+      - 'tests/test_weekend_regressions.py'
+      - 'tests/test_standings_enrichment.py'
+      - 'tests/test_session_lap_archive.py'
+      - 'tests/test_frontend_package.py'
+      - 'tests/frontend-live-freshness.cjs'
+      - 'tests/frontend-mobile-laps.cjs'
+      - 'tests/frontend-next-ui-preview.cjs'
+      - 'tests/frontend-i18n.cjs'
+      - 'tests/frontend-calendar.cjs'
+      - 'frontend/locales/**'
+      - 'custom_components/motogp_sensor/translations/**'
+      - 'tests/frontend-next-one.cjs'
+      - 'tests/frontend-next-qual-grid.cjs'
+      - 'tests/frontend-next-header-track.cjs'
+      - 'tests/frontend-session-history.cjs'
+      - 'tests/frontend-next-lap-pair.cjs'
+      - 'tests/test_qualifying_grid.py'
+      - 'tests/test_lap_history_ws.py'
+      - 'tests/test_lap_history_response.py'
+      - 'docs/hacs-beta-release-notes.md'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: motogp-hacs-beta-package
+  cancel-in-progress: false
+
+jobs:
+  verify-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Enforce release ancestry and protect published UI bundle
+        run: python3 scripts/verify_beta_lineage.py
+      - name: Compile integration
+        run: python -m compileall -q custom_components/motogp_sensor
+      - name: Run backend and archive regression tests
+        run: |
+          python -m unittest discover -s tests -p 'test_api_diagnostics.py' -v
+          python -m unittest discover -s tests -p 'test_api_event_archive.py' -v
+          python tests/test_weekend_regressions.py
+          python -m unittest discover -s tests -p 'test_session_lap_archive.py' -v
+          python -m unittest discover -s tests -p 'test_lap_history_*.py' -v
+          python -m unittest discover -s tests -p 'test_standings_enrichment.py' -v
+          python -m unittest discover -s tests -p 'test_qualifying_grid.py' -v
+          python -m unittest discover -s tests -p 'test_session_history_ws.py' -v
+          python tests/test_local_imports.py
+          python -m unittest discover -s tests -p 'test_weather_conditions.py' -v
+          python -m unittest discover -s tests -p 'test_broadcast_schedule.py' -v
+          python -m unittest discover -s tests -p 'test_event_results_ws.py' -v
+      - name: Verify bundled frontend and safe static registration
+        run: |
+          python tests/test_frontend_package.py
+          python tests/test_local_imports.py
+          node --check custom_components/motogp_sensor/www/ha-mgp.js
+          node --check custom_components/motogp_sensor/www/ha-motogp-next.js
+          node --check custom_components/motogp_sensor/www/ha-motogp-card.js
+          TZ=Europe/Stockholm node tests/frontend-live-freshness.cjs custom_components/motogp_sensor/www/ha-mgp.js
+          TZ=Europe/Stockholm node tests/frontend-mobile-laps.cjs custom_components/motogp_sensor/www/ha-mgp.js
+      - name: Run Next, standings, Q1-grid and circuit tests against shipped HACS JavaScript
+        env:
+          TZ: Europe/Stockholm
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          source = Path("custom_components/motogp_sensor/www/ha-mgp.js").read_text(encoding="utf-8")
+          markers = [
+              "/* MotoGP Next UI preview: bundled after lap-stats.",
+              "/* MotoGP Next responsive timing and authenticated lap-history dialog.",
+              "/* MotoGP Next qualifying grid: echelon",
+              "/* MotoGP Next circuit layout & track weather",
+              "/* MotoGP Next: observed historical lap summaries",
+              "/* HA-MGP UI localization.",
+              "/* HA-MGP season calendar:",
+          ]
+          positions = [source.index(marker) for marker in markers]
+          assert positions == sorted(positions) and len(set(positions)) == 7
+          assert "STATUS OKÄND:" not in source
+          assert "qualifying_q1_eliminated" in source
+          assert "MELLAN PASSEN" in source
+          assert "leaderboard=shown.map" in source
+          assert "ui-preview-20261108-06" in source
+          assert "header-track-weather-20261109-04" in source
+          assert "mgp-brand-logo" in source
+          assert "mgp-rider-flag" in source
+          assert "mgp-class-mark" in source
+          assert "mgp-weekend-inline" in source
+          assert "nt-session-observed-best" in source
+          assert "nt-session-best" in source
+          assert "mgp-all-mark" in source
+          assert "mgp-timing-record-chip" in source
+          assert "Championship standings" in source
+          assert '"es":{' in source
+          assert "calendar-20261109-10" in source
+          assert "mgp-season" in source
+          assert 'HA-MGP UI · 0.3.0-dev.61' in source
+          assert source == Path('custom_components/motogp_sensor/www/ha-motogp-next.js').read_text(encoding='utf-8')
+          assert "mgp-ui-footer" in source
+          assert "data-mgp-schedule-jump" in source
+          assert "data-motogp-schedule-toggle" not in source
+          assert "timingWindow(card)" in source
+          assert "this._scheduleOpen!==true" in source
+          assert "mgp-next-chip" in source
+          assert "history-20261107-01" in source
+          assert "nt-lap-pair" in source
+          assert "data-mgp-hero-grid" in source
+          assert "Snabbaste: " in source
+          parts = {
+              "base": source[:positions[0]],
+              "ui": source[positions[0]:positions[1]],
+              "mobile": source[positions[1]:positions[2]],
+              "qual": source[positions[2]:positions[3]],
+              "header": source[positions[3]:positions[4]],
+              "history": source[positions[4]:positions[5]],
+              "i18n": source[positions[5]:positions[6]],
+              "calendar": source[positions[6]:],
+          }
+          for name, content in parts.items():
+              assert len(content) > 1000, f"Unexpectedly short {name} source"
+              Path(f"/tmp/ha-mgp-b13-{name}.js").write_text(content, encoding="utf-8")
+          PY
+          for name in base ui mobile qual header history i18n calendar; do
+            node --check "/tmp/ha-mgp-b13-$name.js"
+          done
+          node tests/frontend-next-one.cjs /tmp/ha-mgp-b13-base.js
+          node tests/frontend-next-ui-preview.cjs /tmp/ha-mgp-b13-ui.js
+          node tests/frontend-i18n.cjs
+          node tests/frontend-calendar.cjs
+          node tests/frontend-next-lap-pair.cjs /tmp/ha-mgp-b13-ui.js /tmp/ha-mgp-b13-mobile.js
+          node tests/frontend-active-chip.cjs
+          node tests/frontend-next-qual-grid.cjs /tmp/ha-mgp-b13-qual.js
+          node tests/frontend-next-header-track.cjs /tmp/ha-mgp-b13-header.js
+          node tests/frontend-pre-session.cjs
+          node tests/frontend-session-history.cjs /tmp/ha-mgp-b13-history.js
+      - name: Verify HACS package metadata and runtime files
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path('custom_components/motogp_sensor')
+          manifest = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
+          assert manifest['domain'] == 'motogp_sensor'
+          assert manifest['name'] == 'HA-MGP'
+          assert manifest['version'] == '2026.11.0b27'
+          assert all((root / 'translations' / (lang + '.json')).is_file() for lang in ('en','sv','es','it','fr'))
+          assert manifest.get('codeowners') == ['@Jocke1970']
+          assert {'http', 'frontend'}.issubset(manifest['dependencies'])
+          required = {
+              '__init__.py', 'api.py', 'const.py', 'coordinator.py',
+              'helpers.py', 'schedule_time.py', 'sensor.py',
+              'session_lap_archive.py', 'session_history_response.py', 'session_history_ws.py', 'broadcast_schedule.py', 'web_assets.py',
+              'lap_history_ws.py', 'lap_history_response.py',
+              'qualifying_grid.py',
+              'api_diagnostics.py',
+              'api_event_archive.py', 'event_results_ws.py',
+              'www/ha-mgp.js', 'www/ha-motogp-next.js', 'www/ha-motogp-card.js',
+          }
+          missing = sorted(name for name in required if not (root / name).is_file())
+          assert not missing, f'Missing runtime files: {missing}'
+          hacs = json.loads(Path('hacs.json').read_text(encoding='utf-8'))
+          assert hacs.get('name')
+          assert not hacs.get('content_in_root')
+          assert not hacs.get('zip_release')
+          print('Verified HA-MGP beta: 2026.11.0b27 with season calendar, five locales and timing records')
+          PY
+      - name: Publish tagged GitHub prerelease
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG=2026.11.0b27
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "$TAG already exists; leaving the immutable prerelease untouched."
+            gh release view "$TAG" --json tagName,isPrerelease,url,targetCommitish
+            exit 0
+          fi
+          gh release create "$TAG" --target "$(git rev-parse HEAD)" --prerelease \
+            --title 'HA-MGP 2026.11.0b27 — interactive circuit, event-bound weather and Broadcast schedule' \
+            --notes-file docs/hacs-beta-release-notes.md
+          gh release view "$TAG" --json tagName,isPrerelease,url,targetCommitish
