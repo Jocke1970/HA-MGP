@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "id": "buriram",
+  "name": "Chang International Circuit",
+  "country": "Thailand",
+  "location": "Buriram",
+  "aliases": [
+    "chang international",
+    "buriram"
+  ],
+  "layout_variant": null,
+  "length_m": 4554,
+  "width_m": null,
+  "longest_straight_m": null,
+  "corners": {
+    "left": null,
+    "right": null
+  },
+  "source": {
+    "name": "Sporting Maps",
+    "url": "https://www.sportingmaps.com/motorsports/motogp",
+    "captured_date": "2026-11-11",
+    "method": "user-provided screenshots",
+    "verification": "transcribed_not_independently_verified",
+    "field": "length_m"
+  },
+  "verification_status": "partial",
+  "notes": "Length is the value displayed on Sporting Maps for 2026; confirm exact MotoGP layout/version and dimensions before treating as official."
+}

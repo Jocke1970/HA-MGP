@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "circuit_id": "brno",
+  "category": "MotoGP",
+  "qualifying_lap_record": null,
+  "qualifying_lap_holder": null,
+  "race_lap_record": null,
+  "race_lap_holder": null,
+  "verified_at": null,
+  "source": null,
+  "notes": "No verified MotoGP qualifying or race lap records imported yet. Do not fill from race result estimates."
+}
