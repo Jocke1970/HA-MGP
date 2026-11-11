@@ -1,54 +1,62 @@
 {
   "schema_version": 1,
-  "description": "Local HA-MGP circuit data registry, independently of runtime event IDs",
+  "description": "HA-MGP per-circuit registry: 2026 user screenshots and provisional 2027 Pulselive technical snapshots",
   "circuits": [
     {
       "id": "buriram",
       "path": "buriram/facts.json",
       "season_2026": "buriram/season_2026.json",
-      "records": "buriram/records.json"
+      "records": "buriram/records.json",
+      "season_2027": "buriram/season_2027.json"
     },
     {
       "id": "goiania",
       "path": "goiania/facts.json",
       "season_2026": "goiania/season_2026.json",
-      "records": "goiania/records.json"
+      "records": "goiania/records.json",
+      "season_2027": "goiania/season_2027.json"
     },
     {
       "id": "austin",
       "path": "austin/facts.json",
       "season_2026": "austin/season_2026.json",
-      "records": "austin/records.json"
+      "records": "austin/records.json",
+      "season_2027": "austin/season_2027.json"
     },
     {
       "id": "lusail",
       "path": "lusail/facts.json",
       "season_2026": "lusail/season_2026.json",
-      "records": "lusail/records.json"
+      "records": "lusail/records.json",
+      "season_2027": "lusail/season_2027.json"
     },
     {
       "id": "jerez",
       "path": "jerez/facts.json",
       "season_2026": "jerez/season_2026.json",
-      "records": "jerez/records.json"
+      "records": "jerez/records.json",
+      "season_2027": "jerez/season_2027.json"
     },
     {
       "id": "lemans",
       "path": "lemans/facts.json",
       "season_2026": "lemans/season_2026.json",
-      "records": "lemans/records.json"
+      "records": "lemans/records.json",
+      "season_2027": "lemans/season_2027.json"
     },
     {
       "id": "barcelona",
       "path": "barcelona/facts.json",
       "season_2026": "barcelona/season_2026.json",
-      "records": "barcelona/records.json"
+      "records": "barcelona/records.json",
+      "season_2027": "barcelona/season_2027.json"
     },
     {
       "id": "mugello",
       "path": "mugello/facts.json",
       "season_2026": "mugello/season_2026.json",
-      "records": "mugello/records.json"
+      "records": "mugello/records.json",
+      "season_2027": "mugello/season_2027.json"
     },
     {
       "id": "balatonpark",
@@ -60,55 +68,64 @@
       "id": "brno",
       "path": "brno/facts.json",
       "season_2026": "brno/season_2026.json",
-      "records": "brno/records.json"
+      "records": "brno/records.json",
+      "season_2027": "brno/season_2027.json"
     },
     {
       "id": "assen",
       "path": "assen/facts.json",
       "season_2026": "assen/season_2026.json",
-      "records": "assen/records.json"
+      "records": "assen/records.json",
+      "season_2027": "assen/season_2027.json"
     },
     {
       "id": "sachsenring",
       "path": "sachsenring/facts.json",
       "season_2026": "sachsenring/season_2026.json",
-      "records": "sachsenring/records.json"
+      "records": "sachsenring/records.json",
+      "season_2027": "sachsenring/season_2027.json"
     },
     {
       "id": "silverstone",
       "path": "silverstone/facts.json",
       "season_2026": "silverstone/season_2026.json",
-      "records": "silverstone/records.json"
+      "records": "silverstone/records.json",
+      "season_2027": "silverstone/season_2027.json"
     },
     {
       "id": "aragon",
       "path": "aragon/facts.json",
       "season_2026": "aragon/season_2026.json",
-      "records": "aragon/records.json"
+      "records": "aragon/records.json",
+      "season_2027": "aragon/season_2027.json"
     },
     {
       "id": "misano",
       "path": "misano/facts.json",
       "season_2026": "misano/season_2026.json",
-      "records": "misano/records.json"
+      "records": "misano/records.json",
+      "season_2027": "misano/season_2027.json"
     },
     {
       "id": "redbullring",
       "path": "redbullring/facts.json",
       "season_2026": "redbullring/season_2026.json",
-      "records": "redbullring/records.json"
+      "records": "redbullring/records.json",
+      "season_2027": "redbullring/season_2027.json"
     },
     {
       "id": "motegi",
       "path": "motegi/facts.json",
       "season_2026": "motegi/season_2026.json",
-      "records": "motegi/records.json"
+      "records": "motegi/records.json",
+      "season_2027": "motegi/season_2027.json"
     },
     {
       "id": "mandalika",
       "path": "mandalika/facts.json",
       "season_2026": "mandalika/season_2026.json",
-      "records": "mandalika/records.json"
+      "records": "mandalika/records.json",
+      "season_2027": "mandalika/season_2027.json"
     },
     {
       "id": "phillip",
@@ -120,19 +137,36 @@
       "id": "sepang",
       "path": "sepang/facts.json",
       "season_2026": "sepang/season_2026.json",
-      "records": "sepang/records.json"
+      "records": "sepang/records.json",
+      "season_2027": "sepang/season_2027.json"
     },
     {
       "id": "portimao",
       "path": "portimao/facts.json",
       "season_2026": "portimao/season_2026.json",
-      "records": "portimao/records.json"
+      "records": "portimao/records.json",
+      "season_2027": "portimao/season_2027.json"
     },
     {
       "id": "valencia",
       "path": "valencia/facts.json",
       "season_2026": "valencia/season_2026.json",
-      "records": "valencia/records.json"
+      "records": "valencia/records.json",
+      "season_2027": "valencia/season_2027.json"
+    },
+    {
+      "id": "buenosaires",
+      "path": "buenosaires/facts.json",
+      "season_2026": null,
+      "season_2027": "buenosaires/season_2027.json",
+      "records": "buenosaires/records.json"
+    },
+    {
+      "id": "adelaide",
+      "path": "adelaide/facts.json",
+      "season_2026": null,
+      "season_2027": "adelaide/season_2027.json",
+      "records": "adelaide/records.json"
     }
   ]
 }

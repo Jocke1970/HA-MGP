@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "circuit_id": "lemans",
+  "season": 2027,
+  "round": 7,
+  "technical_facts": {
+    "length_m": 4185,
+    "width_m": 13,
+    "longest_straight_m": 674,
+    "corners": {
+      "left": 5,
+      "right": 9
+    }
+  },
+  "source": {
+    "source": "MotoGP Pulselive 2027 event API",
+    "origin": "user-supplied JSON",
+    "captured_on": "2026-11-11",
+    "status": "API snapshot; provisional, not independently reverified"
+  },
+  "review_notes": [],
+  "race_laps": null,
+  "race_distance_km": null
+}

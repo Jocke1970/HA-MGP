@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "circuit_id": "adelaide",
+  "category": "MotoGP",
+  "qualifying_lap_record": null,
+  "qualifying_lap_holder": null,
+  "race_lap_record": null,
+  "race_lap_holder": null,
+  "verified_at": null,
+  "source": null
+}

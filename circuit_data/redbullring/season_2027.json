@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "circuit_id": "redbullring",
+  "season": 2027,
+  "round": 14,
+  "technical_facts": {
+    "length_m": 4348,
+    "width_m": 12,
+    "longest_straight_m": 810,
+    "corners": {
+      "left": 3,
+      "right": 8
+    }
+  },
+  "source": {
+    "source": "MotoGP Pulselive 2027 event API",
+    "origin": "user-supplied JSON",
+    "captured_on": "2026-11-11",
+    "status": "API snapshot; provisional, not independently reverified"
+  },
+  "review_notes": [],
+  "race_laps": null,
+  "race_distance_km": null
+}
