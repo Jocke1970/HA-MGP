@@ -1,21 +1,20 @@
-# HA-MGP — HACS beta
+# HA-MGP — Home Assistant MotoGP beta
 
-MotoGP, Moto2 och Moto3 i Home Assistant. Inofficiell, fristående integration.
+Inofficiell integration för MotoGP, Moto2 och Moto3.
 
-**HACS beta `2026.11.0b18` · Frontend `0.3.0-dev.40`**
+**Kandidat för HACS beta: `2026.11.0b28` · UI `0.3.0-dev.62`.**
 
-## Nytt sedan b17
+Denna kandidat är ännu inte publicerad som prerelease förrän tester och release-gate är godkända. Fungerande beta b27 är rollback.
 
-- **Helgschema** öppnas i en dialog ovanpå vyn. Översiktskort och livetiming förblir placerade bredvid varandra i Lovelace-layouten utan extra schema mellan dem.
-- **Moto3, Moto2 och MotoGP** behåller sina klickbara, grafiska kategorifilter. Nu med tydliga regressionstester. Markörerna är egna text-SVG, inte officiella logotyper.
-- Förarens giltiga bästa varv är **rött** i timingtabellen. Sessionens snabbaste **observerade** varv ligger kvar på avslutat sessionssnapshot efter målflagga.
-- Ny **Pulselive API debug**-diagnostiksensor: avstängd som standard. Registrerar först observerad session, statusändringar, förarlista och första varv utan extra anrop och utan att kringgå TV-fördröjning eller spoilerskydd.
-- Behåller b17:s T−30-startgrid och säkra väntläge när öppen deltagar-endpoint inte fungerar.
+## Nytt i b28
+- Övergången från avslutad MotoGP-helg till nästa GP förbereder sessionsschema i den befintliga uppdateringscykeln.
+- Visuella statuspluttar för **Schema/Bana/Startlista** med strikt eventkoppling.
+- Underlag för 2027-banorna och verifiering av banvarianter (offline referensdata, ännu inte runtime).
+- Korrigerad banpopup-header och uppdatering efter målgång.
+
+Begränsningar: event-specifik preliminär startlista är ännu inte verifierad; månatlig/48h automatisk kontroll är inte aktiv. Se [release notes](docs/hacs-beta-release-notes.md).
 
 ## Installation
+Via **HACS beta**, aldrig direkt från dev. En JS-resurs: `/motogp_sensor/ha-mgp.js`. Behåll `/config/motogp_data/`. Läs [instruktionerna](docs/hacs-beta-installation.md).
 
-Använd endast **HACS beta**, aldrig direktinstallation från dev. Endast en Lovelace JS module: `/motogp_sensor/ha-mgp.js` (äldre `/motogp_sensor/ha-motogp-next.js` är identiskt alias). Behåll integrationsdomän och entiteter samt `/config/motogp_data/`. Se [installation och rollback](docs/hacs-beta-installation.md), [release notes](docs/hacs-beta-release-notes.md) och [status](docs/project-status.md).
-
-**SOP:** dev → beta → main. Main orörd. Rollback: `2026.11.0b17`.
-
-**Utvecklingsgren:** dev kan innehålla ytterligare experiment som inte ingår i publicerad b18. Installera därför aldrig dev direkt i HA.
+**Releaseflöde:** dev → granskad kandidat → beta → main. Main orörd.
