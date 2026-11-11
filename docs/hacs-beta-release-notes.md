@@ -1,20 +1,22 @@
-# HA-MGP 2026.11.0b18 – helgschema, snabbaste varv och API-debug
+# HA-MGP 2026.11.0b28 – nästa GP, API-status och banregistret
 
-**HACS beta:** `2026.11.0b18` · **Frontend:** `0.3.0-dev.40`.
+**HACS beta:** `2026.11.0b28` · **UI:** `0.3.0-dev.62`.
 
-## Nytt
-- Helgschema öppnas som modal så det inte skjuter ned live-timingen mellan översiktskortet och timingkortet.
-- Moto3, Moto2 och MotoGP grafiska/typografiska klassfilter, med förstärkta klick- och klassisoleringsregressioner.
-- Förarens giltiga snabbaste varv markeras rött.
-- Sessionens snabbaste **observerade** varv ligger kvar med det frysta resultatet efter målgång; ska inte ersättas av nästa pass.
-- Valfri **Pulselive API debug**-sensor, avstängd som standard. Loggar förändringstidpunkter för session, status, första förarlista, första varvet och högsta observerade varv från samma godkända TV-fördröjda feed; ingen extra polling.
-- Alla b17-funktioner (T−30 grid, avflaggningsfönster, spoilerskydd, säsongskalender och fem språk) behålls.
+## Nyheter
+- Efter att sista MotoGP-racet fått bekräftad avslutningsstatus växlar nästa-GP-vyn och den **befintliga** statiska uppdateringen förbereder nästa helgs schema vid nästa uppdateringscykel. Gamla eventbundna scheman/startgrids rensas.
+- Tre kompakta källstatusar för nästa GP: **Schema, Bana, Startlista** med grönt/gult/rött. Gult betyder bl.a. preliminär eller saknad verifierad källa – inte automatiskt ett API-fel. Ingen startlista gissas från `/riders` eller `/teams`.
+- Banregistret får 2026/2027-underlag, Pulselive-identiteter och verifieringsanteckningar. Dessa data är för närvarande **offline referensfiler** och används **inte automatiskt** i Home Assistants runtime.
+- Banpopupens rubrik och stängknapp har justerats i dev; målgångens frysta snapshot tillåter nu både `F` och `C` och upp till fyra minuters justering.
 
-## Begränsningar
-- `/event/{eventId}/entry` returnerade HTTP 400 i verifierade tester. Detta anrop är inte aktiverat i b18. Den säsongsbaserade `/riders`-katalogen är inte en bekräftad deltagarlista för en viss session.
-- Sessionens snabbaste tid är den snabbaste **observerade** bland verifierade förarposter i just detta frontend-snapshot, inte ett påstående om slutligt officiellt varv.
-- Diagnostikens första observation kan ske efter officiell start, särskilt efter HA-omstart. Inga tidsstämplar skapas på nytt per poll utan verklig ändring.
-- En kall frontendstart utan ett föregående sessionssnapshot ger ännu inte garanterad återläsning av senaste resultatet. PB-arkivavvikelser måste följas upp under beta.
+## Fortfarande inte aktivt
+- Månadsvis automatisk bankontroll och 48-timmarskontrollen är **inte installerade som ett aktivt schemalagt jobb**.
+- `/event/.../entry` är inte tillförlitligt verifierat och anropas **inte** automatiskt. Startlistan kan därför stå som ej tillgänglig.
+- Grönt för Bana kräver faktisk layoutverifiering; API-svar ensamt räcker inte.
 
-## Säkerhet, installation och rollback
-Uppdatera via HACS-beta. Behåll endast JS-modulen `/motogp_sensor/ha-mgp.js`; det gamla aliaset är byte-identiskt. Omstart endast mellan pass. **Rollback:** `2026.11.0b17`. **Main oförändrad.**
+## Verifiering före HA-test
+- Kandidatens källbundna bygg- och backendtester, HACS-packagering, identiska JS-alias och versionskontroller måste vara gröna.
+- **Visuell HA-verifiering återstår efter beta:** kontrollera banpopup/stängknapp och mobil, klassfilter, helgschema, färgpluttar, raceavslut, spoilerskydd.
+- Endast `beta`. **Main orörd**.
+
+## Installation och rollback
+Installera via HACS beta, **inte dev**. Behåll `/config/motogp_data/`, befintliga entiteter och en enda Lovelace-modul: `/motogp_sensor/ha-mgp.js`. Uppdatera mellan racepass och gör hård omladdning vid behov. **Rollback:** `2026.11.0b27`, med orörd och verifierad JS-bunt.
