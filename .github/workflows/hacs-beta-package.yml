@@ -50,6 +50,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Enforce release ancestry and protect published UI bundle
+        run: python3 scripts/verify_beta_lineage.py
       - name: Compile integration
         run: python -m compileall -q custom_components/motogp_sensor
       - name: Run backend and archive regression tests
