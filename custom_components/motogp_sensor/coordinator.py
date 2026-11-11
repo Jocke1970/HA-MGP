@@ -129,6 +129,7 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "last_race_results": [],
             "start_grids": {},
             "entry_lists": {},
+            "next_weekend_api_status": {},
             "qualifying_q1_eliminated": {},
             "records_by_category": {},
             "records_session_by_category": {},
@@ -782,6 +783,7 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.static["next_event"] = find_next_event(events, now)
 
         # ── All-category weekend schedule ──
+        self.static["next_weekend_api_status"] = {}
         self.static["weekend_sessions_all"] = []
         self.static["schedule_categories"] = []
 
@@ -839,6 +841,14 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
         self.static["entry_lists"] = {}
         if schedule_event is not None:
+            event_uuid = str(schedule_event.get("id") or "")
+            self.static["next_weekend_api_status"] = {
+                "event_id": event_uuid,
+                "schedule": {"color": "yellow", "status": "preliminary", "reason": "schedule_pending"},
+                "circuit": {"color": "yellow", "status": "preliminary", "reason": "track_variant_not_cross_checked"},
+                "entry_list": {"color": "yellow", "status": "unavailable", "reason": "no_verified_event_entry_endpoint"},
+            }
+            schedule_errors = 0
             all_sessions: list[dict[str, Any]] = []
             seen_categories: list[str] = []
 
@@ -861,6 +871,7 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                         schedule_event["id"], schedule_category_uuid
                     )
                 except MotogpApiError as err:
+                    schedule_errors += 1
                     _LOGGER.debug(
                         "Weekend schedule failed for %s: %s",
                         schedule_category_name,
@@ -935,6 +946,29 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
             self.static["weekend_sessions_all"] = all_sessions
             self.static["schedule_categories"] = ordered_categories
+            status = self.static["next_weekend_api_status"]
+            valid = bool(all_sessions) and all(
+                item.get("date_utc") and item.get("category_id") and item.get("id")
+                for item in all_sessions
+            )
+            if valid and schedule_errors == 0:
+                status["schedule"] = {
+                    "color": "green", "status": "verified",
+                    "reason": "dated_sessions_with_event_and_category",
+                }
+            elif all_sessions:
+                status["schedule"] = {
+                    "color": "yellow", "status": "preliminary",
+                    "reason": "partial_schedule_or_missing_timestamp",
+                }
+            elif schedule_errors:
+                status["schedule"] = {
+                    "color": "red", "status": "failed",
+                    "reason": "session_api_failure",
+                }
+            # No verified entry API is currently available. Do not substitute
+            # riders/teams directories for event-specific entrants.
+            # Circuit remains provisional until a reviewed track UUID matches.
 
         # Keep every championship classification bound to the exact category
         # returned by the official seasons/categories API. Never relabel MotoGP
@@ -1238,6 +1272,27 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         )
 
         if old_id != new_id:
+            # Existing static refresh will run on the next coordinator cycle.
+            # Invalidate only event-scoped caches; do not add an API request
+            # from the live-timing/finish path or discard prior results.
+            self._last_static_refresh = None
+            self._last_grid_records_refresh = None
+            self.static["weekend_sessions"] = []
+            self.static["weekend_sessions_all"] = []
+            self.static["schedule_categories"] = []
+            self.static["schedule_time_zone"] = None
+            self.static["entry_lists"] = {}
+            self.static["start_grids"] = {}
+            self.static["records_by_category"] = {}
+            self.static["records_session_by_category"] = {}
+            self.static["next_weekend_api_status"] = (
+                {
+                    "event_id": str(new_id),
+                    "schedule": {"color": "yellow", "status": "preliminary", "reason": "refresh_queued"},
+                    "circuit": {"color": "yellow", "status": "preliminary", "reason": "track_variant_not_cross_checked"},
+                    "entry_list": {"color": "yellow", "status": "unavailable", "reason": "no_verified_event_entry_endpoint"},
+                } if new_id else {}
+            )
             _LOGGER.info(
                 "Final MotoGP race finished; advancing next event from %s to %s",
                 (
