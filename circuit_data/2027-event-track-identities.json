@@ -1,0 +1,165 @@
+{
+  "schema_version": 1,
+  "source": {
+    "season": 2027,
+    "source": "user-supplied Pulselive JSON",
+    "captured_on": "2026-11-11",
+    "event_kind": "GP"
+  },
+  "tracks": {
+    "buriram": {
+      "circuit_uuid": "3df492f2-b8e0-4c2b-b6e9-86a153127965",
+      "selected_event_track_uuid": "5eb8c6ce-f16b-4be5-8aea-39ebaa3b18ba",
+      "available_variants": 1,
+      "selected_track_is_active": true,
+      "selected_track_in_variants": true
+    },
+    "lusail": {
+      "circuit_uuid": "e203e31d-24d3-49e9-8163-d2b8d0355fea",
+      "selected_event_track_uuid": "b1cd25b2-1658-4c3b-bd3f-1a7796f7cd27",
+      "available_variants": 1,
+      "selected_track_is_active": true,
+      "selected_track_in_variants": true
+    },
+    "goiania": {
+      "circuit_uuid": "206ca7d6-e857-4a4d-be01-addd9090173d",
+      "selected_event_track_uuid": "50941f7f-e112-4404-8dcf-5fb2c47e9617",
+      "available_variants": 1,
+      "selected_track_is_active": false,
+      "selected_track_in_variants": true
+    },
+    "buenosaires": {
+      "circuit_uuid": "893d921c-5b92-4d01-9e10-5d4a63221ada",
+      "selected_event_track_uuid": "edda0930-4ea8-4f58-8796-105209bcc68b",
+      "available_variants": 2,
+      "selected_track_is_active": false,
+      "selected_track_in_variants": true
+    },
+    "austin": {
+      "circuit_uuid": "a39e1baa-2b1e-4818-95d0-b9b6b7acd881",
+      "selected_event_track_uuid": "c7c0782e-67f2-4351-af96-6dd5835e8d42",
+      "available_variants": 1,
+      "selected_track_is_active": true,
+      "selected_track_in_variants": true
+    },
+    "jerez": {
+      "circuit_uuid": "3e9b0470-2340-401f-9a0c-04293d85248f",
+      "selected_event_track_uuid": "42621ff3-ef5d-4c7c-8abf-eb54c16181bc",
+      "available_variants": 1,
+      "selected_track_is_active": true,
+      "selected_track_in_variants": true
+    },
+    "lemans": {
+      "circuit_uuid": "76811715-9014-461b-8eeb-687a7d585179",
+      "selected_event_track_uuid": "45f698f6-883b-4379-bac3-3253ee6e32e0",
+      "available_variants": 5,
+      "selected_track_is_active": true,
+      "selected_track_in_variants": true
+    },
+    "mugello": {
+      "circuit_uuid": "9580e398-61a6-4852-8020-adb5d4c0cb2b",
+      "selected_event_track_uuid": "af57cc25-cf15-4f68-b775-ddaea8fec828",
+      "available_variants": 1,
+      "selected_track_is_active": true,
+      "selected_track_in_variants": true
+    },
+    "barcelona": {
+      "circuit_uuid": "cbbe87ac-472a-405e-b0ed-5b9e0743c80a",
+      "selected_event_track_uuid": "eea725c5-432a-483b-bf46-f9769b8e5ddf",
+      "available_variants": 5,
+      "selected_track_is_active": true,
+      "selected_track_in_variants": true
+    },
+    "assen": {
+      "circuit_uuid": "82ac933f-bfc6-4a48-b0c4-b3b84313bdee",
+      "selected_event_track_uuid": "2c30ee0c-d85b-48e1-b6d4-303a2ba22ae1",
+      "available_variants": 6,
+      "selected_track_is_active": true,
+      "selected_track_in_variants": true
+    },
+    "sachsenring": {
+      "circuit_uuid": "29557159-9464-4c2c-81c7-40c2af39171d",
+      "selected_event_track_uuid": "5cab1166-44c1-45ad-bc30-96d910170097",
+      "available_variants": 3,
+      "selected_track_is_active": true,
+      "selected_track_in_variants": true
+    },
+    "brno": {
+      "circuit_uuid": "e48e53a2-cdd9-4fd2-b7a0-c8045dd55c18",
+      "selected_event_track_uuid": "811bb92b-cf2c-44ec-a188-b9681ba9fc12",
+      "available_variants": 1,
+      "selected_track_is_active": true,
+      "selected_track_in_variants": true
+    },
+    "silverstone": {
+      "circuit_uuid": "f718f757-19a9-44d0-979f-8e9381b15bf9",
+      "selected_event_track_uuid": "2f84e93c-dca6-4ca4-9319-c29eba5bbabb",
+      "available_variants": 3,
+      "selected_track_is_active": true,
+      "selected_track_in_variants": true
+    },
+    "redbullring": {
+      "circuit_uuid": "649d99cb-fbbd-4e16-b674-faaf1a4e47a1",
+      "selected_event_track_uuid": "53e027a4-908f-4253-9805-7321bd212fae",
+      "available_variants": 4,
+      "selected_track_is_active": true,
+      "selected_track_in_variants": true
+    },
+    "misano": {
+      "circuit_uuid": "1a6556bb-eec6-4fee-bd0b-337dfd098373",
+      "selected_event_track_uuid": "0c4b819d-6014-4920-877b-ab0a1f3415a3",
+      "available_variants": 3,
+      "selected_track_is_active": true,
+      "selected_track_in_variants": true
+    },
+    "aragon": {
+      "circuit_uuid": "1fe3401e-aad9-4b68-bfae-079caad4b9da",
+      "selected_event_track_uuid": "99cf40f3-6ed4-4cd9-9c1c-22379f6d929b",
+      "available_variants": 1,
+      "selected_track_is_active": true,
+      "selected_track_in_variants": true
+    },
+    "portimao": {
+      "circuit_uuid": "b980a310-9440-48ce-bd19-5f398c179726",
+      "selected_event_track_uuid": "0b5cf829-21cf-48dd-a324-1465fc504c24",
+      "available_variants": 1,
+      "selected_track_is_active": true,
+      "selected_track_in_variants": true
+    },
+    "motegi": {
+      "circuit_uuid": "8bf0e0e7-6eb6-43b6-bab3-2aa21abad3ae",
+      "selected_event_track_uuid": "9fbd0109-0b0b-4bbb-a671-d7840036babe",
+      "available_variants": 2,
+      "selected_track_is_active": true,
+      "selected_track_in_variants": true
+    },
+    "sepang": {
+      "circuit_uuid": "6c1390e6-d9dd-4a5b-bef1-eb6b33b4e3d6",
+      "selected_event_track_uuid": "07f44869-813e-46e6-97ba-aa405e134d87",
+      "available_variants": 1,
+      "selected_track_is_active": true,
+      "selected_track_in_variants": true
+    },
+    "mandalika": {
+      "circuit_uuid": "2622df05-51ed-4a5e-a350-7949694bd7cd",
+      "selected_event_track_uuid": "0db4e87a-920f-4699-a688-63e22b924f1b",
+      "available_variants": 2,
+      "selected_track_is_active": true,
+      "selected_track_in_variants": true
+    },
+    "adelaide": {
+      "circuit_uuid": "ec0e3087-eead-4067-a07a-feb409cf15c0",
+      "selected_event_track_uuid": "811bb92b-cf2c-44ec-a188-b9681ba9fc35",
+      "available_variants": 1,
+      "selected_track_is_active": false,
+      "selected_track_in_variants": true
+    },
+    "valencia": {
+      "circuit_uuid": "c5e48a7a-42d3-4e5d-8a40-2efc77eb36b6",
+      "selected_event_track_uuid": "795839a0-8faa-4f4e-a574-8dce32cfc560",
+      "available_variants": 1,
+      "selected_track_is_active": true,
+      "selected_track_in_variants": true
+    }
+  }
+}

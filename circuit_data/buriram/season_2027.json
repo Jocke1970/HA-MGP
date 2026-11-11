@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "circuit_id": "buriram",
+  "season": 2027,
+  "round": 1,
+  "technical_facts": {
+    "length_m": 4554,
+    "width_m": 12,
+    "longest_straight_m": 1000,
+    "corners": {
+      "left": 5,
+      "right": 7
+    }
+  },
+  "source": {
+    "source": "MotoGP Pulselive 2027 event API",
+    "origin": "user-supplied JSON",
+    "captured_on": "2026-11-11",
+    "status": "API snapshot; provisional, not independently reverified"
+  },
+  "review_notes": [],
+  "race_laps": null,
+  "race_distance_km": null
+}

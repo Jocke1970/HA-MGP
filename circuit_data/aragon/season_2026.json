@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "circuit_id": "aragon",
+  "season": 2026,
+  "round": 14,
+  "event_name": "Gran Premio de Aragón",
+  "race_date": "2026-08-30",
+  "race_laps": 23,
+  "race_distance_km": 116.77,
+  "source": {
+    "name": "Sporting Maps",
+    "url": "https://www.sportingmaps.com/motorsports/motogp",
+    "captured_date": "2026-11-11",
+    "method": "user-provided screenshots",
+    "verification": "transcribed_not_independently_verified"
+  },
+  "notes": "2026 sporting schedule snapshot. The rounded circuit length may differ from race distance divided by laps; do not derive one from the other."
+}

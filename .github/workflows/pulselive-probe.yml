@@ -1,0 +1,24 @@
+name: Pulselive public API diagnostics
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'scripts/probe-pulselive-api.py'
+      - '.github/workflows/pulselive-probe.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Probe public Pulselive responses (read-only)
+        run: python3 -u scripts/probe-pulselive-api.py

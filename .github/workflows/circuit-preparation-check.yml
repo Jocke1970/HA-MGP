@@ -1,0 +1,34 @@
+name: Circuit preparation offline checks
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'scripts/motogp_weekend_preparation.py'
+      - 'tests/test_weekend_preparation.py'
+      - 'docs/next-weekend-preparation.md'
+      - '.github/workflows/circuit-preparation-check.yml'
+  pull_request:
+    branches: [beta, main]
+    paths:
+      - 'scripts/motogp_weekend_preparation.py'
+      - 'tests/test_weekend_preparation.py'
+      - '.github/workflows/circuit-preparation-check.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-preparation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check Python syntax
+        run: python -m py_compile scripts/motogp_weekend_preparation.py tests/test_weekend_preparation.py
+      - name: Run pure scheduling and entry-list tests
+        run: python tests/test_weekend_preparation.py

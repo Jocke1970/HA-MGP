@@ -1,17 +1,20 @@
 # HA-MGP — Home Assistant MotoGP beta
 
-Unofficial Home Assistant integration for MotoGP, Moto2 and Moto3.
+Inofficiell integration för MotoGP, Moto2 och Moto3.
 
-**HACS beta: `2026.11.0b24` · UI `0.3.0-dev.52`.**
+**Kandidat för HACS beta: `2026.11.0b28` · UI `0.3.0-dev.62`.**
 
-## What's included
+Denna kandidat är ännu inte publicerad som prerelease förrän tester och release-gate är godkända. Fungerande beta b27 är rollback.
 
-- Read-only live timing, standings, current/next session and spoilers/TV-delay protections.
-- Staggered race/sprint start grid before the session when the official grid can be validated.
-- Session-bound track weather reports with polling and changed-value diagnostics (not claimed as true live measurements).
-- Local optional SVG circuit illustrations; schematic outlines used as fallback.
-- B21 persistent Pulselive diagnostic event journal, including the final-lap and bounded finish-settling behavior.
+## Nytt i b28
+- Övergången från avslutad MotoGP-helg till nästa GP förbereder sessionsschema i den befintliga uppdateringscykeln.
+- Visuella statuspluttar för **Schema/Bana/Startlista** med strikt eventkoppling.
+- Underlag för 2027-banorna och verifiering av banvarianter (offline referensdata, ännu inte runtime).
+- Korrigerad banpopup-header och uppdatering efter målgång.
 
-See [beta release notes](docs/hacs-beta-release-notes.md), [HACS installation](docs/hacs-beta-installation.md), and [local circuit SVG setup](docs/local-circuit-svgs.md).
+Begränsningar: event-specifik preliminär startlista är ännu inte verifierad; månatlig/48h automatisk kontroll är inte aktiv. Se [release notes](docs/hacs-beta-release-notes.md).
 
-**Release workflow:** dev → candidate → beta → main. Do not install a release candidate as a published beta until CI passes.
+## Installation
+Via **HACS beta**, aldrig direkt från dev. En JS-resurs: `/motogp_sensor/ha-mgp.js`. Behåll `/config/motogp_data/`. Läs [instruktionerna](docs/hacs-beta-installation.md).
+
+**Releaseflöde:** dev → granskad kandidat → beta → main. Main orörd.

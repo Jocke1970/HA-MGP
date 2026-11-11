@@ -130,6 +130,19 @@ class MotogpApiClient:
             raise MotogpApiError("Unexpected response shape from sessions endpoint")
         return data
 
+    async def async_get_entry_list(
+        self, event_uuid: str, category_uuid: str
+    ) -> list[dict[str, Any]]:
+        """Return registered entrants; no timing data or inferred race positions."""
+        url = (
+            f"{PULSELIVE_BASE_URL}/event/{event_uuid}/entry"
+            f"?categoryUuid={category_uuid}"
+        )
+        data = await self._request(url)
+        if not isinstance(data, dict) or not isinstance(data.get("entry"), list):
+            raise MotogpApiError("Unexpected entry list response")
+        return [row for row in data["entry"] if isinstance(row, dict)]
+
     async def async_get_grid(
         self,
         event_uuid: str,

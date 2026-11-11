@@ -1,0 +1,151 @@
+name: Frontend check
+
+on:
+  push:
+    branches: [dev, beta]
+  pull_request:
+    branches: [dev, beta, main]
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JavaScript syntax (mobile legacy, isolated next, and split cards)
+        run: |
+          node --check frontend/ha-mgp-legacy-card.js
+          node --check frontend/ha-mgp-core.js
+          node --check frontend/ha-mgp-split.js
+          node --check frontend/ha-mgp-split-enhancements.js
+          node --check frontend/ha-mgp-gap-trends.js
+          node --check frontend/ha-mgp-mobile-laps.js
+          node --check frontend/ha-mgp-qual-grid.js
+          node --check frontend/ha-mgp-header-track.js
+          node --check frontend/ha-mgp-i18n.js
+          node --check frontend/ha-mgp-calendar.js
+          node --check frontend/ha-mgp-api-status.js
+          node --check frontend/ha-mgp-next-weekend-status.js
+          node --check frontend/ha-mgp-session-dots.js
+          node --check frontend/ha-mgp-timing-icons.js
+          node --check frontend/ha-mgp-active-chip.js
+          node --check frontend/ha-mgp-finish-settling.js
+          node --check frontend/ha-mgp-pre-session.js
+          node --check frontend/ha-mgp-session-history.js
+      - name: Build ONE distributable Next resource (pinned source and syntax)
+        run: |
+          python3 scripts/build-next-one.py frontend /tmp/ha-mgp.js
+          node --check /tmp/ha-mgp.js
+      - name: Bundled HACS frontend package and static route checks
+        run: |
+          python3 tests/test_frontend_package.py
+          node tests/frontend-i18n.cjs
+          node tests/frontend-calendar.cjs
+          node tests/frontend-api-status.cjs
+          node tests/frontend-next-weekend-status.cjs
+          node tests/frontend-session-dots.cjs
+          node tests/frontend-timing-icons.cjs
+          node tests/frontend-active-chip.cjs
+          node tests/frontend-finish-settling.cjs
+          node tests/frontend-pre-session.cjs
+          node --check custom_components/motogp_sensor/www/ha-mgp.js
+          node --check custom_components/motogp_sensor/www/ha-motogp-next.js
+          node --check custom_components/motogp_sensor/www/ha-motogp-card.js
+          # Exact parity to the reviewed dev.18 dist is asserted by the Python package test.
+          # The historical frontend-next-one.cjs regression intentionally targets dev.3.
+      - name: Passive Pulselive diagnostic transition regressions
+        run: |
+          python3 -m unittest discover -s tests -p 'test_api_diagnostics.py' -v
+          python3 -m unittest discover -s tests -p 'test_api_event_archive.py' -v
+          python3 -m unittest discover -s tests -p 'test_weather_conditions.py' -v
+          python3 -m unittest discover -s tests -p 'test_broadcast_schedule.py' -v
+          python3 -m unittest discover -s tests -p 'test_event_results_ws.py' -v
+          python3 -m compileall -q custom_components/motogp_sensor
+
+      - name: Reproduce and regress live-feed badge refresh
+        env:
+          TZ: Europe/Stockholm
+        run: node tests/frontend-live-freshness.cjs custom_components/motogp_sensor/www/ha-mgp.js
+      - name: Responsive mobile timing and rider history popup regression
+        env:
+          TZ: Europe/Stockholm
+        run: |
+          node tests/frontend-mobile-laps.cjs custom_components/motogp_sensor/www/ha-mgp.js
+      - name: Live qualifying grid and no-spoiler regression
+        env:
+          TZ: Europe/Stockholm
+        run: node tests/frontend-next-qual-grid.cjs frontend/ha-mgp-qual-grid.js
+      - name: Revised overview UI and independent Moto2/3 standings
+        env:
+          TZ: Europe/Stockholm
+        run: node tests/frontend-next-ui-preview.cjs frontend/ha-mgp-ui.js
+      - name: Sprint/Race last-lap plus fastest-lap regression with clickable rows
+        env:
+          TZ: Europe/Stockholm
+        run: node tests/frontend-next-lap-pair.cjs frontend/ha-mgp-ui.js frontend/ha-mgp-mobile-laps.js
+      - name: Responsive event-header track map and historical weather data
+        env:
+          TZ: Europe/Stockholm
+        run: node tests/frontend-next-header-track.cjs frontend/ha-mgp-header-track.js
+      - name: Finished session archive viewer and spoiler fences
+        env:
+          TZ: Europe/Stockholm
+        run: node tests/frontend-session-history.cjs frontend/ha-mgp-session-history.js
+      - name: Original frontend smoke tests
+        env:
+          TZ: Europe/Stockholm
+        run: node tests/frontend-smoke.cjs
+      - name: Original spoiler and midnight regression
+        env:
+          TZ: Europe/Stockholm
+        run: node tests/frontend-spoiler.cjs
+      - name: Original version and duplicate-resource regression
+        env:
+          TZ: Europe/Stockholm
+        run: node tests/frontend-version.cjs
+      - name: New isolated MotoGP frontend regression
+        env:
+          TZ: Europe/Stockholm
+        run: node tests/frontend-next.cjs
+      - name: Standalone timing and overview regression
+        env:
+          TZ: Europe/Stockholm
+        run: node tests/frontend-next-split.cjs
+      - name: Reversible split enhancement regression
+        env:
+          TZ: Europe/Stockholm
+        run: node tests/frontend-next-split-enhancements.cjs
+      - name: Gap trend and fastest lap regression
+        env:
+          TZ: Europe/Stockholm
+        run: node tests/frontend-next-gap-trends.cjs
+      - name: 'Historical unified split installer: syntax, repeatability and tamper guard'
+        run: |
+          set -euo pipefail
+          bash -n scripts/install-next-split-unified.sh
+          staging="$(mktemp -d)"
+          trap 'rm -rf -- "$staging"' EXIT
+          # This installer is historical and hash-pinned. Feed it the historical
+          # source set it was designed for, not today's timezone-aware Next sources.
+          for file in ha-motogp-next-card.js ha-motogp-next-split.js ha-motogp-next-split-enhancements.js; do
+            git show 6cb79def28880310408b0354d24d711cafe08ab5:frontend/"$file" > "$staging/$file"
+          done
+          git show af1ac68f2f8dab9a7d85088773d0877e225c4996:frontend/ha-motogp-next-gap-trends.js \
+            > "$staging/ha-motogp-next-gap-trends.js"
+          MOTOGP_WWW_DIR="$staging" bash scripts/install-next-split-unified.sh
+          node --check "$staging/ha-motogp-next-split.js"
+          first_sha="$(git hash-object "$staging/ha-motogp-next-split.js")"
+          MOTOGP_WWW_DIR="$staging" bash scripts/install-next-split-unified.sh
+          test "$first_sha" = "$(git hash-object "$staging/ha-motogp-next-split.js")"
+          printf '\n/* unexpected modification */\n' >> "$staging/ha-motogp-next-split.js"
+          if MOTOGP_WWW_DIR="$staging" bash scripts/install-next-split-unified.sh; then
+            echo 'ERROR: the installer accepted a modified split file' >&2
+            exit 1
+          fi

@@ -2,7 +2,7 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),vm=require('node:vm');
 process.env.TZ='Europe/Stockholm';
-const bundle=fs.readFileSync(process.argv[2]||'/tmp/ha-motogp-next.js','utf8');
+const bundle=fs.readFileSync(process.argv[2]||'/tmp/ha-mgp.js','utf8');
 let now=Date.parse('2026-09-19T13:45:00+02:00');
 class Clock extends Date {constructor(...a){super(...(a.length?a:[now]));}static now(){return now;}}
 const timers=[];const registry=new Map([['ha-motogp-card',class Original{}]]);
@@ -152,9 +152,13 @@ const live=(category,name,riders)=>({
     'sensor.motogp_current_session':e('unknown'),
     'sensor.motogp_session_status':e('unknown'),
     'sensor.motogp_rider_positions':e('unknown')});
-  assert.match(timing.view.innerHTML,/Nästa: MotoGP · Sprint/);
-  assert.match(timing.view.innerHTML,/17:00/);
-  assert.match(timing.view.innerHTML,/MELLAN PASSEN/);
+  // In dev.37 the pre-session roster replaces the old next-pass placeholder at T-30.
+  // The frozen dev.3 baseline still correctly renders the legacy next-pass heading.
+  assert.match(timing.view.innerHTML,/Nästa: MotoGP · Sprint|MotoGP · Sprint.*STARTLISTA/s);
+  assert.match(timing.view.innerHTML,/17:00|13:00 till start/,
+    'legacy time or new T-30 countdown must match the fixture');
+  assert.match(timing.view.innerHTML,/MELLAN PASSEN|STARTLISTA/,
+    'no-live waiting remains explicit in both versions');
   assert.doesNotMatch(timing.view.innerHTML,/STATUS OKÄND|Moto2 · Q2|Moto2 Q2/,
     'previous Moto2 Q2 cannot be presented as the upcoming sprint status');
 

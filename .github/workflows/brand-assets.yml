@@ -1,0 +1,56 @@
+name: Build approved MotoGP MGP brand icons
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - assets/approved-mgp-racing-arc.webp
+      - scripts/build-approved-brand.py
+      - .github/workflows/brand-assets.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: brand-assets-dev
+  cancel-in-progress: false
+
+jobs:
+  build_brand:
+    name: Generate and commit HA local brand PNGs
+    if: github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+      - name: Prepare image tooling
+        run: python -m pip install --disable-pip-version-check Pillow==11.3.0
+      - name: Derive 256/512 brand icons from pinned approved artwork
+        run: python scripts/build-approved-brand.py
+      - name: Verify generated icons and branding location
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          root = Path("custom_components/motogp_sensor/brand")
+          for name, size in (("icon.png", 256), ("icon@2x.png", 512)):
+              path = root / name
+              assert path.exists() and not path.is_symlink()
+              with Image.open(path) as img:
+                  assert img.format == "PNG" and img.size == (size, size)
+          print("Local Home Assistant brand icon pair verified")
+          PY
+      - name: Commit brand files to dev without touching beta/main
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add custom_components/motogp_sensor/brand/icon.png             custom_components/motogp_sensor/brand/icon@2x.png
+          if ! git diff --cached --quiet; then
+            git commit -m 'assets(dev): install approved MGP icon PNGs 256 and 512'
+            git push origin HEAD:dev
+          else
+            echo 'Brand files already match the pinned approved artwork'
+          fi

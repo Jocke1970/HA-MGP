@@ -1,0 +1,112 @@
+name: Publish HA-MGP JS with compatibility alias
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/ha-mgp-core.js'
+      - 'frontend/ha-mgp-split.js'
+      - 'frontend/ha-mgp-split-enhancements.js'
+      - 'frontend/ha-mgp-gap-trends.js'
+      - 'frontend/ha-mgp-ui.js'
+      - 'frontend/ha-mgp-i18n.js'
+      - 'frontend/ha-mgp-calendar.js'
+      - 'frontend/ha-mgp-api-status.js'
+      - 'frontend/ha-mgp-next-weekend-status.js'
+      - 'frontend/ha-mgp-session-dots.js'
+      - 'frontend/ha-mgp-timing-icons.js'
+      - 'frontend/ha-mgp-active-chip.js'
+      - 'frontend/ha-mgp-finish-settling.js'
+      - 'frontend/ha-mgp-pre-session.js'
+      - 'frontend/locales/**'
+      - 'custom_components/motogp_sensor/translations/**'
+      - 'frontend/ha-mgp-mobile-laps.js'
+      - 'frontend/ha-mgp-qual-grid.js'
+      - 'frontend/ha-mgp-header-track.js'
+      - 'frontend/ha-mgp-session-history.js'
+      - 'scripts/build-next-one.py'
+      - 'scripts/build-next-ui-preview.py'
+      - 'tests/frontend-next-one.cjs'
+      - 'tests/frontend-next-ui-preview.cjs'
+      - 'tests/frontend-i18n.cjs'
+      - 'tests/frontend-calendar.cjs'
+      - 'tests/frontend-api-status.cjs'
+      - 'tests/frontend-next-weekend-status.cjs'
+      - 'tests/frontend-session-dots.cjs'
+      - 'tests/frontend-timing-icons.cjs'
+      - 'tests/frontend-active-chip.cjs'
+      - 'tests/frontend-finish-settling.cjs'
+      - 'tests/frontend-pre-session.cjs'
+      - 'tests/frontend-live-freshness.cjs'
+      - 'tests/test_frontend_package.py'
+      - 'tests/frontend-mobile-laps.cjs'
+      - 'tests/frontend-next-qual-grid.cjs'
+      - 'tests/frontend-next-header-track.cjs'
+      - 'tests/frontend-next-lap-pair.cjs'
+      - 'tests/frontend-session-history.cjs'
+      - '.github/workflows/next-one-distribute.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    env:
+      TZ: Europe/Stockholm
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build old pinned baseline and verify regressions
+        run: |
+          set -euo pipefail
+          python3 scripts/build-next-one.py frontend /tmp/ha-motogp-next-baseline.js
+          node tests/frontend-next-one.cjs /tmp/ha-motogp-next-baseline.js
+      - name: Build and validate UI preview
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          node --check frontend/ha-mgp-ui.js
+          node --check frontend/ha-mgp-api-status.js
+          node --check frontend/ha-mgp-next-weekend-status.js
+          node tests/frontend-next-ui-preview.cjs frontend/ha-mgp-ui.js
+          node tests/frontend-i18n.cjs
+          node tests/frontend-calendar.cjs
+          node tests/frontend-api-status.cjs
+          node tests/frontend-next-weekend-status.cjs
+          node tests/frontend-session-dots.cjs
+          node tests/frontend-timing-icons.cjs
+          node tests/frontend-active-chip.cjs
+          node tests/frontend-finish-settling.cjs
+          node tests/frontend-pre-session.cjs
+          node --check frontend/ha-mgp-pre-session.js
+          python3 scripts/build-next-ui-preview.py frontend dist/ha-mgp.js
+          node --check dist/ha-mgp.js
+          cp dist/ha-mgp.js custom_components/motogp_sensor/www/ha-mgp.js
+          cp dist/ha-mgp.js custom_components/motogp_sensor/www/ha-motogp-next.js
+          cp dist/ha-mgp.js dist/ha-motogp-next.js
+          node tests/frontend-mobile-laps.cjs dist/ha-mgp.js
+          node tests/frontend-next-qual-grid.cjs frontend/ha-mgp-qual-grid.js
+          node tests/frontend-next-header-track.cjs frontend/ha-mgp-header-track.js
+          node tests/frontend-next-lap-pair.cjs frontend/ha-mgp-ui.js frontend/ha-mgp-mobile-laps.js
+          node tests/frontend-session-history.cjs frontend/ha-mgp-session-history.js
+          python tests/test_frontend_package.py
+      - name: Publish only when the compiled JS differs
+        run: |
+          set -euo pipefail
+          git add -- dist/ha-mgp.js dist/ha-motogp-next.js custom_components/motogp_sensor/www/ha-mgp.js custom_components/motogp_sensor/www/ha-motogp-next.js
+          if git diff --cached --quiet; then
+            echo 'Distribution already current.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Publish verified single MotoGP Next JavaScript bundle'
+          git fetch origin dev
+          git rebase origin/dev
+          git push origin HEAD:dev

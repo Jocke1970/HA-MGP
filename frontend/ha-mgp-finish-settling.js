@@ -3,7 +3,7 @@
 'use strict';
 const TAG='ha-motogp-next-timing-card';
 const BUILD='finish-settling-20261108-01';
-const HOLD_MS=120000;
+const HOLD_MS=240000;
 const session=v=>({WUP:'WARMUP',RAC:'RACE',SPR:'SPRINT',PR:'PRACTICE'})[String(v||'').toUpperCase()]||v;
 const same=(a,b)=>String(a||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]/g,'')===String(b||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]/g,'');
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -13,7 +13,7 @@ function validFinishingFeed(card,hold){
  const se=states[card._ids.session],st=states[card._ids.status],riders=states[card._ids.riders];
  const sa=se?.attributes||{},ta=st?.attributes||{},pa=riders?.attributes||{};
  const status=String(st?.state||'').toLowerCase(),code=String(ta.session_status_id||'').toUpperCase();
- if(!((status==='finished'||code==='F')&&same(category(sa.category),hold.category)&&
+ if(!((status==='finished'||code==='F'||code==='C')&&same(category(sa.category),hold.category)&&
       same(category(ta.category),hold.category)&&same(category(pa.category),hold.category)&&
       same(se?.state,hold.name)&&same(session(ta.session_shortname),hold.name)&&same(session(pa.session_shortname),hold.name)))return false;
  const event=String(sa.event||''),statusEvent=String(ta.event||''),riderEvent=String(pa.event||'');
@@ -39,7 +39,7 @@ function install(){
   }
   const st=this._hass.states?.[this._ids.status];
   const isFinished=String(st?.state||'').toLowerCase()==='finished'||
-    String(st?.attributes?.session_status_id||'').toUpperCase()==='F';
+    ['F','C'].includes(String(st?.attributes?.session_status_id||'').toUpperCase());
   if(!isFinished){this._mgpFinishHold=null;return;}
   if(previous&&oldSnapshot&&same(previous.key,oldSnapshot.key)&&same(this._snapshot.key,previous.key)){
    this._mgpFinishHold={key:previous.key,category:previous.category,name:previous.name,started:Date.now()};

@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "circuit_id": "adelaide",
+  "season": 2027,
+  "round": 21,
+  "technical_facts": {
+    "length_m": 3219,
+    "width_m": 10,
+    "longest_straight_m": 640,
+    "corners": {
+      "left": 7,
+      "right": 9
+    }
+  },
+  "source": {
+    "source": "MotoGP Pulselive 2027 event API",
+    "origin": "user-supplied JSON",
+    "captured_on": "2026-11-11",
+    "status": "API snapshot; provisional, not independently reverified"
+  },
+  "review_notes": [
+    "The selected GP track is marked inactive in source snapshot; confirm layout."
+  ],
+  "race_laps": null,
+  "race_distance_km": null
+}

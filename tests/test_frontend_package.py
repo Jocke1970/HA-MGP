@@ -22,7 +22,7 @@ def git_blob_sha(data: bytes) -> str:
 
 def check_bundle_integrity() -> None:
     manifest = json.loads((PKG / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "2026.11.0b27"
+    assert manifest["version"] == "2026.11.0b28"
     assert {"http", "frontend"}.issubset(manifest["dependencies"])
 
     # Beta is intentionally a minimal HACS tree (without frontend/ or dist/).
@@ -58,9 +58,9 @@ def check_bundle_integrity() -> None:
     next_js = (ASSETS / "ha-mgp.js").read_text(encoding="utf-8")
     assert "ha-motogp-next-overview-card" in next_js
     assert "ha-motogp-next-timing-card" in next_js
-    assert "0.3.0-dev.61" in next_js
+    assert "0.3.0-dev.62" in next_js
     assert "mgp-timing-header" in next_js, "records must render inside unified timing header"
-    assert "header-track-weather-20261109-04" in next_js
+    assert "header-track-weather-20261110-01" in next_js
     assert "mgp-country-flag" in next_js
     assert "mgp-brand-logo" in next_js
     assert "data:image/webp;base64," in next_js
@@ -75,7 +75,7 @@ def check_bundle_integrity() -> None:
     assert "nt-lap-pair" in next_js
     assert "Snabbaste: " in next_js
     assert "riderStart=/<div" in next_js
-    assert "header-track-weather-20261109-04" in next_js
+    assert "header-track-weather-20261110-01" in next_js
     assert "data-mgp-hero-grid" in next_js
     assert "mgp-venue-strip" in next_js
     assert "MELLAN PASSEN" in next_js
@@ -83,7 +83,7 @@ def check_bundle_integrity() -> None:
     assert "qual-grid-20261107-02" in next_js
     assert "nt-qual-slot-3" in next_js
     assert "qualifying_q1_eliminated" in next_js
-    assert "header-track-weather-20261109-04" in next_js
+    assert "header-track-weather-20261110-01" in next_js
     assert "mgp-venue-strip" in next_js
     assert "mgp-track-svg" in next_js
     assert "Senast rapporterat" in next_js
@@ -130,8 +130,6 @@ def check_bundle_integrity() -> None:
     assert "await async_register_frontend_paths(hass)" in setup
     assert "async_register_rider_laps(hass)" in setup
     assert "async_register_session_history(hass)" in setup
-    assert "async_register_event_results(hass)" in setup
-    assert "motogp_sensor/event_results" in next_js
     # Custom HA 2026.3+ local brands: only the exact approved pair may ship.
     expected_icons = (
         ("icon.png", (256, 256), "18f8fb9a4ff64e079d726a33f2b5176295a2bb2f8ab43fc9688301245e8730f7"),

@@ -575,6 +575,7 @@ def _static_attributes(key: str, coordinator: MotogpCoordinator) -> dict[str, An
             attrs["time_zone"] = static.get("schedule_time_zone")
             attrs["start_grids"] = static.get("start_grids", {})
             attrs["entry_lists"] = static.get("entry_lists", {})
+            attrs["next_weekend_api_status"] = static.get("next_weekend_api_status", {})
             attrs["qualifying_q1_eliminated"] = (
                 {} if coordinator.no_spoiler
                 else static.get("qualifying_q1_eliminated", {})

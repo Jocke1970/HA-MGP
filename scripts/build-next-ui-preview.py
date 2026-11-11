@@ -10,19 +10,19 @@ import tempfile
 
 UI_BLOB = '3c31bf57cd7851dbb052a51d4b3c0e8d7dd404aa'
 QUAL_BLOB = '3cd24780166dcc578624221769a8a459c7b62819'
-HEADER_BLOB = '338d13251daf71ef40406802ba725390df4cdfce'
+HEADER_BLOB = '9c982780b93999f470da83ee0ecc6c5e4be49914'
 HISTORY_BLOB = '8b7038e64df05cb7ffbc1e6059a966c867733fac'
 MOBILE_BLOB = '9fad86bfd7fdc2e461371efb458b17f6029df794'
 I18N_BLOB = '3a5bd509a76c8667ade302d84b191b81d3ca8e4e'
-CALENDAR_BLOB = 'd550335151db4253b2bebc0a7a26abe8d2aa399c'
+CALENDAR_BLOB = '191cf38a7eafc6576968a91054c0de07dc2e0c5d'
 API_STATUS_BLOB = '32490df85fde2a651ef9b69ee7f515b57e6c267c'
 SESSION_DOTS_BLOB = '717aa859c7a096a439d36d408f5dfbdd3b30f9d9'
 TIMING_ICONS_BLOB = 'd44d19a911051d4ab67513d4191942f03eeb09b0'
 ACTIVE_CHIP_BLOB = '09d394c4847767f43f9f17de0ff41d32ec78915b'
 FINISH_SETTLING_BLOB = 'ca8386c031a720878b6bb1b982185b3390750ba8'
 PRE_SESSION_BLOB = '309a68417e5bb6227e5ca843a529662be3e24918'
-BUILD = 'next-one-20261109-06'
-VERSION = '0.3.0-dev.59'
+BUILD = 'next-one-20261110-01'
+VERSION = '0.3.0-dev.62'
 
 
 def blob(data):
@@ -108,6 +108,10 @@ def main(frontend, target):
     api_status_bytes = api_status_path.read_bytes()
     if blob(api_status_bytes) != API_STATUS_BLOB:
         raise SystemExit('STOP: unexpected API status indicator source revision')
+    weekend_dots_path = frontend / 'ha-mgp-next-weekend-status.js'
+    if not weekend_dots_path.is_file() or weekend_dots_path.is_symlink():
+        raise SystemExit('STOP: missing/unsafe next-weekend verification addon')
+    weekend_dots_bytes = weekend_dots_path.read_bytes()
     session_dots_path = frontend / 'ha-mgp-session-dots.js'
     timing_icons_path = frontend / 'ha-mgp-timing-icons.js'
     for name, path, expected in (
@@ -158,7 +162,13 @@ def main(frontend, target):
     if header_source.count('__MGP_APPROVED_BRAND_DATA_URI__') != 1:
         raise SystemExit('STOP: missing or duplicate MGP logo placeholder')
     header_source = header_source.replace('__MGP_APPROVED_BRAND_DATA_URI__', logo_uri)
-    result = (text + '\n;\n' + ui.decode('utf-8') + '\n;\n' + mobile_bytes.decode('utf-8') + '\n;\n' + qual_bytes.decode('utf-8') + '\n;\n' + header_source + '\n;\n' + history_bytes.decode('utf-8') + '\n;\n' + i18n_source + '\n;\n' + calendar_bytes.decode('utf-8') + '\n;\n' + api_status_bytes.decode('utf-8') + '\n;\n' + session_dots_bytes.decode('utf-8') + '\n;\n' + timing_icons_bytes.decode('utf-8') + '\n;\n' + active_chip_bytes.decode('utf-8') + '\n;\n' + finish_settling_bytes.decode('utf-8') + '\n;\n' + pre_session_bytes.decode('utf-8')).encode('utf-8')
+    result = (text + '\n;\n' + ui.decode('utf-8') + '\n;\n' + mobile_bytes.decode('utf-8') + '\n;\n' + qual_bytes.decode('utf-8') + '\n;\n' + header_source + '\n;\n' + history_bytes.decode('utf-8') + '\n;\n' + i18n_source + '\n;\n' + calendar_bytes.decode('utf-8') + '\n;\n' + api_status_bytes.decode('utf-8') + '\n;\n' + weekend_dots_bytes.decode('utf-8') + '\n;\n' + session_dots_bytes.decode('utf-8') + '\n;\n' + timing_icons_bytes.decode('utf-8') + '\n;\n' + active_chip_bytes.decode('utf-8') + '\n;\n' + finish_settling_bytes.decode('utf-8') + '\n;\n' + pre_session_bytes.decode('utf-8')).encode('utf-8')
+    # Render day-aware countdowns in preview, keeping frozen baseline source blobs unchanged.
+    output = result.decode('utf-8')
+    output = replace_one(output, "const h = Math.floor(seconds/3600), m = Math.floor(seconds%3600/60), s = seconds%60;\n    return `${h ? `${h}:${pad(m)}` : String(m)}:${pad(s)} till start`;", "const d = Math.floor(seconds/86400), h = Math.floor(seconds%86400/3600), m = Math.floor(seconds%3600/60), s = seconds%60;\n    return `${d ? `${d}d ${pad(h)}:${pad(m)}` : h ? `${h}:${pad(m)}` : String(m)}:${pad(s)} till start`;")
+    output = replace_one(output, "const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;\n    return `${h?`${h}:${pad(m)}`:m}:${pad(s)} till start`;", "const d=Math.floor(sec/86400),h=Math.floor(sec%86400/3600),m=Math.floor(sec%3600/60),s=sec%60;\n    return `${d?`${d}d ${pad(h)}:${pad(m)}`:h?`${h}:${pad(m)}`:m}:${pad(s)} till start`;")
+    output = replace_one(output, "Math.floor(s/60)+':'+String(s%60).padStart(2,'0')+' till start';", "(s>=86400?Math.floor(s/86400)+'d '+String(Math.floor(s%86400/3600)).padStart(2,'0')+':'+String(Math.floor(s%3600/60)).padStart(2,'0'):\n   s>=3600?Math.floor(s/3600)+':'+String(Math.floor(s%3600/60)).padStart(2,'0'):\n   String(Math.floor(s/60)))+':'+String(s%60).padStart(2,'0')+' till start';")
+    result = output.encode('utf-8')
     pathlib.Path(target).write_bytes(result)
     print(f'UI preview built: {target} ({len(result)} bytes, git blob {blob(result)})')
 

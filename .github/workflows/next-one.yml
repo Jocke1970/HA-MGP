@@ -1,0 +1,95 @@
+name: MotoGP Next single-resource regression
+
+on:
+  push:
+    branches: [dev]
+  pull_request:
+    branches: [dev, main, beta]
+
+permissions:
+  contents: read
+
+jobs:
+  next-one:
+    runs-on: ubuntu-latest
+    env:
+      TZ: Europe/Stockholm
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check frozen dev.3 baseline and old regressions
+        run: |
+          set -euo pipefail
+          python3 scripts/build-next-one.py frontend /tmp/ha-motogp-next-baseline.js
+          node --check /tmp/ha-motogp-next-baseline.js
+          node tests/frontend-next-one.cjs /tmp/ha-motogp-next-baseline.js
+      - name: Build pinned UI preview and exercise full bundle
+        run: |
+          set -euo pipefail
+          python3 scripts/build-next-ui-preview.py frontend /tmp/ha-mgp.js
+          node --check /tmp/ha-mgp.js
+          # The dev publisher runs asynchronously and commits the generated bundle.
+          # Do not compare against the old checked-in dist on the source commit:
+          # that creates a false-negative race with the publisher workflow.
+          # After publishing, the separate frontend/package checks verify aliases.
+          echo 'PASS: source bundle generated and syntax checked; publish checks follow.'
+          node tests/frontend-mobile-laps.cjs /tmp/ha-mgp.js
+          node tests/frontend-next-qual-grid.cjs frontend/ha-mgp-qual-grid.js
+          node tests/frontend-next-ui-preview.cjs frontend/ha-mgp-ui.js
+          node tests/frontend-i18n.cjs
+          node tests/frontend-calendar.cjs
+          node tests/frontend-api-status.cjs
+          node tests/frontend-session-dots.cjs
+          node tests/frontend-timing-icons.cjs
+          node tests/frontend-active-chip.cjs
+          node tests/frontend-finish-settling.cjs
+          node tests/frontend-next-lap-pair.cjs frontend/ha-mgp-ui.js frontend/ha-mgp-mobile-laps.js
+          node tests/frontend-next-header-track.cjs frontend/ha-mgp-header-track.js
+          node tests/frontend-session-history.cjs frontend/ha-mgp-session-history.js
+          sed -e 's/samlad testversion/UI-preview/g' \
+            -e 's/overview.setConfig({type:\x27custom:ha-motogp-next-overview-card\x27});/overview.setConfig({type:\x27custom:ha-motogp-next-overview-card\x27});overview._scheduleOpen=true;/' \
+            -e 's/const push=x=>{states=/const push=x=>{overview._scheduleOpen=true;states=/' \
+            -e 's@/Nästa: Moto3 Race/@/Nästa Moto3 Race/@g' \
+            tests/frontend-next-one.cjs > /tmp/frontend-next-preview.cjs
+          node /tmp/frontend-next-preview.cjs /tmp/ha-mgp.js
+      - name: Installer syntax, verified dev.5 upgrade, repeatability and tamper rejection
+        run: |
+          set -euo pipefail
+          bash -n scripts/install-next-one.sh
+          staging="$(mktemp -d)"
+          trap 'rm -rf -- "$staging"' EXIT
+          mkdir -p "$staging/www"
+          export MOTOGP_WWW_DIR="$staging/www"
+          # Historical standalone installer targets frozen dev.6, not HACS dev.7.
+          git show acd520a12390877ef5e18a70044f0ac029004f08:dist/ha-motogp-next.js > "$staging/frozen-dev6.js"
+          export MOTOGP_BUNDLE_FILE="$staging/frozen-dev6.js"
+          target="$staging/www/ha-motogp-next.js"
+          git show 246b455e3d0aa2baf2e373a35993b864369cda3d:dist/ha-motogp-next.js > "$target"
+          test "$(git hash-object "$target")" = 4c73aa7f22ec8876b77beede369d565e86e08e0d
+          bash scripts/install-next-one.sh
+          node --check "$target"
+          sha="$(git hash-object "$target")"
+          test "$sha" = 4d4d45762b23d77df749a5ca20a676d5fda3c2b7
+          bash scripts/install-next-one.sh
+          test "$sha" = "$(git hash-object "$target")"
+          printf '\n/* modified */\n' >> "$target"
+          if bash scripts/install-next-one.sh; then
+            echo 'ERROR: installer overwrote an unknown destination' >&2
+            exit 1
+          fi
+          test "$(git hash-object "$target")" != "$sha"
+          rm -- "$target"
+          printf 'tampered\n' > "$staging/tampered.js"
+          export MOTOGP_BUNDLE_FILE="$staging/tampered.js"
+          if bash scripts/install-next-one.sh; then
+            echo 'ERROR: installer accepted modified source' >&2
+            exit 1
+          fi
+          test ! -e "$target"
+          export MOTOGP_BUNDLE_FILE="$staging/frozen-dev6.js"
+          bash scripts/install-next-one.sh
+          test "$(git hash-object "$target")" = "$sha"

@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "circuit_id": "goiania",
+  "season": 2027,
+  "round": 3,
+  "technical_facts": {
+    "length_m": 3835,
+    "width_m": 12,
+    "longest_straight_m": 994,
+    "corners": {
+      "left": 5,
+      "right": 9
+    }
+  },
+  "source": {
+    "source": "MotoGP Pulselive 2027 event API",
+    "origin": "user-supplied JSON",
+    "captured_on": "2026-11-11",
+    "status": "API snapshot; provisional, not independently reverified"
+  },
+  "review_notes": [
+    "The selected GP track is marked inactive in source snapshot; confirm layout."
+  ],
+  "race_laps": null,
+  "race_distance_km": null,
+  "verification": {
+    "technical_facts": "confirmed_against_user_screenshot_of_motogp_circuit_specs",
+    "checked_on": "2026-11-11",
+    "details": "MotoGP site displays rounded length 3.84 km; structured Pulselive specifies 3835 m. Width 12 m, straight 994 m, right corners 9, left corners 5 exactly match screenshot.",
+    "track_variant": "unverified_without_2026_selected_track_id"
+  }
+}

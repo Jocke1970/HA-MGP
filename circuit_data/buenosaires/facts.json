@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "id": "buenosaires",
+  "name": "Autódromo Oscar y Juan Gálvez",
+  "country": "Argentina",
+  "location": "Buenos Aires",
+  "aliases": [
+    "buenos aires",
+    "autódromo oscar y juan gálvez"
+  ],
+  "layout_variant": null,
+  "length_m": null,
+  "width_m": null,
+  "longest_straight_m": null,
+  "corners": {
+    "left": null,
+    "right": null
+  },
+  "verification_status": "provisional_2027_only",
+  "notes": "2027 technical data is in season_2027.json and should not be promoted to permanent facts until venue layout is confirmed.",
+  "source": {
+    "source": "MotoGP Pulselive 2027 event API",
+    "origin": "user-supplied JSON",
+    "captured_on": "2026-11-11",
+    "status": "API snapshot; provisional, not independently reverified"
+  }
+}
