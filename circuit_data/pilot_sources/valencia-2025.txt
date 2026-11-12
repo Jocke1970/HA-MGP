@@ -1,0 +1,14 @@
+About the circuit
+Circuit Ricardo Tormo
+Description: eight left handers.
+Circuit Specs
+Total length
+4.01Km / 2.49 Miles
+Total Width
+12m / 39.37ft
+Longest Straight
+876m / 2874.02ft
+Right Corners
+5
+Left Corners
+9

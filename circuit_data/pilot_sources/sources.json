@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "description": "Explicit allowlist of three MotoGP official historical 2025 GP circuit-info pages. Text extracts for deterministic offline test are NOT archived official PDFs.",
+  "sources": [
+    {
+      "circuit_id": "buriram",
+      "year": 2025,
+      "url": "https://www.motogp.com/en/calendar/2025/event/thailand/3361d50e-1ba0-4d71-83a6-99f6b49daafa",
+      "fixture": "buriram-2025.txt"
+    },
+    {
+      "circuit_id": "valencia",
+      "year": 2025,
+      "url": "https://www.motogp.com/en/calendar/2025/event/valencia/c0ff87f1-5dde-439e-830d-cf9eed4e0119",
+      "fixture": "valencia-2025.txt",
+      "review_flags": [
+        "Official description says eight left corners while Circuit Specs say nine; prefer labelled specs and flag historical wording conflict."
+      ]
+    },
+    {
+      "circuit_id": "redbullring",
+      "year": 2025,
+      "url": "https://www.motogp.com/en/calendar/2025/event/austria/2691a49e-a593-4119-8fe4-826017d5f2dd?tab=circuit-info",
+      "fixture": "redbullring-2025.txt",
+      "review_flags": [
+        "Prose describes historical 4.318km/10-turn layout; labelled MotoGP Circuit Specs describe 4.35km and 11 turns. Confirm chicane variant from official event-specific circuit map."
+      ]
+    }
+  ]
+}
