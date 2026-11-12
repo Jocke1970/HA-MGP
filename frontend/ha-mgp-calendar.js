@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const TAG='ha-motogp-next-overview-card';
-  const BUILD='calendar-20261109-10';
+  const BUILD='calendar-20261112-01';
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const parseDate=raw=>{
     const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(raw||''));
@@ -96,11 +96,11 @@
     .mgp-season-track img.is-ready{opacity:1}
     .mgp-season-track img.is-ready+svg{opacity:0}
     .mgp-season-track--next{height:155px}
-    .mgp-season-track--detail{height:clamp(205px,34dvh,330px);margin:6px 0 16px}
-    .mgp-season-detail-map .mgp-season-track--next{height:clamp(205px,34dvh,330px);margin:6px 0 16px}
+    .mgp-season-track--detail{height:clamp(240px,43dvh,400px);margin:6px 0 12px}
+    .mgp-season-detail-map .mgp-season-track--next{height:clamp(240px,43dvh,400px);margin:6px 0 12px}
     .mgp-season-detail-map svg{width:100%;height:100%;max-width:660px}
     .mgp-season-track--detail svg{max-width:660px;width:100%;height:100%}
-    .mgp-season-track--tile{height:73px;margin:2px 0}
+    .mgp-season-track--tile{height:106px;margin:2px 0}
     .mgp-season-track-note{display:block;font-size:10px;color:var(--secondary-text-color);text-align:center}
     .mgp-season-art-credit{display:grid;gap:3px;margin-top:5px;font-size:10px;color:var(--secondary-text-color)}
     .mgp-season-art-credit a{color:var(--primary-color,#039be5)}
@@ -263,7 +263,7 @@
     const selected=entries.find(e=>String(e.id||'')&&String(e.id)===String(card._mgpSelectedEventId||''));
     const detail=selected?(()=>{
       const isPast=dateKey(selected.end)<today;
-      const facts=typeof card._mgpCalendarFacts==='function'?card._mgpCalendarFacts(selected.circuit):null;
+      const facts=typeof card._mgpCalendarFacts==='function'?card._mgpCalendarFacts(selected.circuit,selectedYear):null;
       const dimensions=facts?[
         ['Banlängd',facts.length],['Bredd',facts.width],
         ['Längsta raka',facts.straight],['Högerkurvor',facts.right],
@@ -276,10 +276,10 @@
         '" alt="Föreslagen banprofil, ej verifierad" loading="lazy" style="opacity:1;position:relative;max-height:170px"></div>':'';
       const referenceHtml=ref?'<h3>Banreferens (ej verifierad MotoGP-layout)</h3>'+
         proposed+artworkCredit(ref):'';
-      const factsHtml=dimensions?'<div class="mgp-season-detail-grid">'+dimensions+'</div>'+
+      const factsHtml=dimensions?'<p class="mgp-season-detail-note">'+esc(facts.note||'Banmått från angiven källa')+'</p><div class="mgp-season-detail-grid">'+dimensions+'</div>'+
         (String(facts.source||'').startsWith('https://')?
           '<p><a href="'+esc(facts.source)+'" target="_blank" rel="noopener noreferrer">Källa för banfakta</a></p>':''):
-        '<p class="mgp-season-detail-note">Verifierade banmått saknas.</p>';
+        '<p class="mgp-season-detail-note">Banmått saknas i säsongens tillgängliga underlag.</p>';
       const selectedId=String(selected.id||'');
       const server=card._mgpEventResultsCache?.[selectedId];
       const pending=card._mgpEventResultsPending===selectedId;
@@ -316,7 +316,7 @@
         '<button type="button" data-mgp-season-close>Stäng</button></div>'+
         '<div class="mgp-season-dialog-body"><p>'+dates(selected)+' · '+circuit(selected)+'</p>'+
         '<div class="mgp-season-detail-map">'+trackHtml(selected,true)+'</div>'+referenceHtml+factsHtml+
-        '<p class="mgp-season-detail-note">Rekord kopplas till verifierad banvariant och officiell källa. Saknas uppgift visas inget påhittat värde.</p>'+
+        '<p class="mgp-season-detail-note">Rekord visas bara när banvariant och officiell rekordkälla är verifierade.</p>'+
         resultsHtml+'</div></dialog>';
     })():'';
     return '<section class="mgp-season" aria-label="'+labels[0]+'">'+
