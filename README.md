@@ -2,11 +2,14 @@
 
 Inofficiell integration för MotoGP, Moto2 och Moto3.
 
-**Kandidat för HACS beta: `2026.11.0b28` · UI `0.3.0-dev.62`.**
+**Kandidat för HACS beta: `2026.11.0b29` · UI `0.3.0-dev.63`.**
 
-Denna kandidat är ännu inte publicerad som prerelease förrän tester och release-gate är godkända. Fungerande beta b27 är rollback.
+Denna kandidat är ännu inte publicerad som prerelease förrän tester och release-gate är godkända. Fungerande beta b28 är rollback.
 
-## Nytt i b28
+## Nytt i b29
+- Större banlayouter i kalender och popup, utan ändrad popupbredd.
+- 22 preliminära 2027-banunderlag från Pulselive och 22 delvis dokumenterade 2026-banlängder visas källmärkt.
+- Gula statuspluttar även innan första statusrapporten.
 - Övergången från avslutad MotoGP-helg till nästa GP förbereder sessionsschema i den befintliga uppdateringscykeln.
 - Visuella statuspluttar för **Schema/Bana/Startlista** med strikt eventkoppling.
 - Underlag för 2027-banorna och verifiering av banvarianter (offline referensdata, ännu inte runtime).

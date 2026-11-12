@@ -29,5 +29,12 @@ const ctx={customElements:{get:()=>Card,whenDefined:()=>Promise.resolve()},docum
  card._render();assert.equal(styles.length,1);
  card._hass.states['sensor.motogp_next_race'].attributes.event_id='different';
  card._render();assert.doesNotMatch(card.root.innerHTML,/mgp-weekend-verification-item/);
- console.log('PASS: GP-specific red/yellow/green dots and no stale cross-event status');
+ // Missing backend status is explicitly shown as unverified, never green.
+ const pending=new Card();
+ delete pending._hass.states['sensor.motogp_next_race'].attributes.next_weekend_api_status;
+ pending._render();
+ assert.equal((pending.root.innerHTML.match(/mgp-weekend-verification-item"/g)||[]).length,3);
+ assert.match(pending.root.innerHTML,/Startlista/);
+ assert.doesNotMatch(pending.root.innerHTML,/data-color="green"/);
+ console.log('PASS: GP-specific red/yellow/green dots, unverified fallback and no stale cross-event status');
 })().catch(e=>{console.error(e);process.exitCode=1;});
