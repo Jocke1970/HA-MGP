@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const file=process.argv[2]||'frontend/ha-mgp-header-track.js';
 const src=fs.readFileSync(file,'utf8');
-assert.match(src,/header-track-weather-20261112-01/);
+assert.match(src,/header-track-weather-20261112-02/);
 const docs=[];
 class Overview {
   static buildInfo={version:'0.2.0-split.2'};

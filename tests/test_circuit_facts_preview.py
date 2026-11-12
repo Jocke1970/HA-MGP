@@ -20,6 +20,9 @@ class CircuitFactsPreview(unittest.TestCase):
         self.assertIn('"buenosaires":[4350,null,null,null,null]',HEADER)
         self.assertIn('"adelaide":[3219,10,640,7,9]',HEADER)
         self.assertIn("data[1]!=null",HEADER)
+        self.assertIn('"valencia":4010',HEADER)
+        self.assertIn("calendarFacts2026(circuit)",HEADER)
+        self.assertIn("Number(season)===2026",HEADER)
         self.assertIn("EXTRA_2027_CIRCUITS",HEADER)
     def test_layout_and_popup_contract(self):
         self.assertIn(".mgp-season-track--tile{height:106px",CAL)
