@@ -71,6 +71,9 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
  await Promise.resolve();await Promise.resolve();await Promise.resolve();await Promise.resolve();
  assert.equal(calls,1,'historical results fetched only when opened');
  assert.match(c.root.innerHTML,/mgp-season-dialog/);
+ assert.match(c.root.innerHTML,/mgp-season-dialog-heading/,'circuit-first detail heading');
+ assert.match(c.root.innerHTML,/data-mgp-season-close/,'map button dismisses dialog');
+ assert.doesNotMatch(c.root.innerHTML,/data-mgp-season-close>Stäng/,'no visible close button');
  assert.match(c.root.innerHTML,/Winner/,'correct event results displayed from Pulselive');
  assert.match(c.root.innerHTML,/Pole Rider/,'verified Q2 pole row displayed');
  c._click({target:clickTarget('data-mgp-season-category','Moto2')});

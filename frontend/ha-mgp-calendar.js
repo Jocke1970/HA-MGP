@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const TAG='ha-motogp-next-overview-card';
-  const BUILD='calendar-20261112-03';
+  const BUILD='calendar-20261112-04';
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const parseDate=raw=>{
     const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(raw||''));
@@ -118,9 +118,15 @@
     .mgp-season-dialog{box-sizing:border-box;position:fixed;inset:auto;top:calc(50% + 12px);left:50%;transform:translate(-50%,-50%);margin:0;width:min(820px,calc(100vw - 28px));max-width:calc(100vw - 28px);max-height:calc(100dvh - 64px);padding:0;border-radius:15px;border:1px solid var(--divider-color,#ddd);color:var(--primary-text-color);background:var(--ha-card-background,var(--card-background-color,#fff));box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden}
     .mgp-season-dialog[open]{display:flex;flex-direction:column}
     .mgp-season-dialog::backdrop{background:rgba(0,0,0,.55)}
-    .mgp-season-dialog-head{display:flex;flex:0 0 auto;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--divider-color,#ddd)}
-    .mgp-season-dialog-head strong{font-size:14px}
-    .mgp-season-dialog-head button{font:inherit;color:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--divider-color,#ddd);background:transparent;padding:7px 13px}
+    .mgp-season-dialog-head{display:flex;flex:0 0 auto;align-items:center;gap:13px;padding:13px 18px;border-bottom:1px solid var(--divider-color,#ddd)}
+    .mgp-season-dialog-flag{font-size:30px;line-height:1;flex:0 0 auto}
+    .mgp-season-dialog-flag:empty{display:none}
+    .mgp-season-dialog-heading{display:grid;gap:3px;min-width:0}
+    .mgp-season-dialog-heading strong{font-size:19px;font-weight:800;line-height:1.2;overflow-wrap:anywhere}
+    .mgp-season-dialog-race{font-size:15px;font-weight:650;line-height:1.3}
+    .mgp-season-dialog-dates{font-size:12px;color:var(--secondary-text-color)}
+    .mgp-season-detail-close{display:block;width:100%;padding:0;border:0;background:transparent;color:inherit;cursor:zoom-out;font:inherit}
+    .mgp-season-detail-close:focus-visible{outline:2px solid var(--primary-color,#039be5);outline-offset:2px}
     .mgp-season-dialog-body{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:14px}
     .mgp-season-detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
     .mgp-season-detail-grid>span{min-width:0;border:1px solid var(--divider-color,#ddd);padding:10px 12px;border-radius:8px;font-size:13px;line-height:1.45}
@@ -320,10 +326,15 @@
           '<p class="mgp-season-detail-note">Inget verifierat raceresultat för denna klass.</p>')+
         '<p class="mgp-season-detail-note">Källa: MotoGP Pulselive Results API · ingen egen varvtidsdatabas.</p>');
       return '<dialog class="mgp-season-dialog" aria-label="GP-detaljer för '+eventName(selected)+'">'+
-        '<div class="mgp-season-dialog-head"><strong>🏁 '+eventName(selected)+'</strong>'+
-        '<button type="button" data-mgp-season-close>Stäng</button></div>'+
-        '<div class="mgp-season-dialog-body"><p>'+dates(selected)+' · '+circuit(selected)+'</p>'+
-        '<div class="mgp-season-detail-map">'+trackHtml(selected,true)+'</div>'+referenceHtml+factsHtml+
+        '<div class="mgp-season-dialog-head"><span class="mgp-season-dialog-flag" aria-hidden="true">'+
+        (flagFor(selected.country)==='🏁'?'':flagFor(selected.country))+'</span>'+
+        '<div class="mgp-season-dialog-heading"><strong>'+circuit(selected)+'</strong>'+
+        '<span class="mgp-season-dialog-race">'+eventName(selected)+'</span>'+
+        '<span class="mgp-season-dialog-dates">'+dates(selected)+
+        (selected.country?' · '+country(selected):'')+'</span></div></div>'+
+        '<div class="mgp-season-dialog-body">'+
+        '<div class="mgp-season-detail-map"><button type="button" class="mgp-season-detail-close" data-mgp-season-close aria-label="Stäng popup genom att trycka på banbilden">'+
+        trackHtml(selected,true)+'</button></div>'+referenceHtml+factsHtml+
         '<p class="mgp-season-detail-note">Rekord visas bara när banvariant och officiell rekordkälla är verifierade.</p>'+
         resultsHtml+'</div></dialog>';
     })():'';
@@ -381,6 +392,12 @@
       ]){
         const dialog=view.querySelector?.(selector);
         if(dialog&&active&&typeof dialog.showModal==='function'&&!dialog.open){
+          dialog.addEventListener('click',event=>{
+            if(event.target!==dialog)return;
+            if(selector==='.mgp-season-dialog')this._mgpSelectedEventId=null;
+            if(selector==='.mgp-circuit-dialog')this._circuitOpen=false;
+            this._render();
+          });
           dialog.addEventListener('cancel',event=>{
             event.preventDefault();
             if(selector==='.mgp-season-dialog')this._mgpSelectedEventId=null;
