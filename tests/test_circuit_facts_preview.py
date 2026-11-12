@@ -16,9 +16,9 @@ class CircuitFactsPreview(unittest.TestCase):
         self.assertIn("Preliminära banmått · Pulselive 2027",HEADER)
         self.assertNotIn("recordHolder:'2027'",HEADER)
     def test_known_and_missing_fields(self):
-        self.assertIn("buriram:[4554,12,1000,5,7]",HEADER)
-        self.assertIn("buenosaires:[4350,null,null,null,null]",HEADER)
-        self.assertIn("adelaide:[3219,10,640,7,9]",HEADER)
+        self.assertIn('"buriram":[4554,12,1000,5,7]',HEADER)
+        self.assertIn('"buenosaires":[4350,null,null,null,null]',HEADER)
+        self.assertIn('"adelaide":[3219,10,640,7,9]',HEADER)
         self.assertIn("data[1]!=null",HEADER)
         self.assertIn("EXTRA_2027_CIRCUITS",HEADER)
     def test_layout_and_popup_contract(self):
