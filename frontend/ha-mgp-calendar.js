@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const TAG='ha-motogp-next-overview-card';
-  const BUILD='calendar-20261112-02';
+  const BUILD='calendar-20261112-03';
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const parseDate=raw=>{
     const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(raw||''));
@@ -122,9 +122,14 @@
     .mgp-season-dialog-head strong{font-size:14px}
     .mgp-season-dialog-head button{font:inherit;color:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--divider-color,#ddd);background:transparent;padding:7px 13px}
     .mgp-season-dialog-body{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:14px}
-    .mgp-season-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-    .mgp-season-detail-grid>span{border:1px solid var(--divider-color,#ddd);padding:9px;border-radius:8px;font-size:12px}
-    .mgp-season-detail-grid b{display:block;margin-top:4px}
+    .mgp-season-detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+    .mgp-season-detail-grid>span{min-width:0;border:1px solid var(--divider-color,#ddd);padding:10px 12px;border-radius:8px;font-size:13px;line-height:1.45}
+    .mgp-season-detail-grid b{display:block;margin-top:4px;font-size:16px;font-weight:750;overflow-wrap:anywhere}
+    .mgp-season-facts-status{display:flex;align-items:center;gap:7px;margin:12px 0 9px;font-size:13px;font-weight:650;color:var(--primary-text-color)}
+    .mgp-season-facts-dot{display:inline-block;width:9px;height:9px;flex:0 0 9px;border-radius:50%;background:#d97706}
+    .mgp-season-facts-status[data-status="verified"] .mgp-season-facts-dot{background:#16a34a}
+    @media(max-width:660px){.mgp-season-detail-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:390px){.mgp-season-detail-grid>span{padding:8px;font-size:12px}.mgp-season-detail-grid b{font-size:14px}}
     .mgp-season-results-tabs{display:flex;gap:6px;margin:12px 0;flex-wrap:wrap}
     .mgp-season-results-tabs button{border:1px solid var(--divider-color,#ddd);border-radius:9px;background:transparent;color:inherit;padding:8px 12px;cursor:pointer;font:inherit}
     .mgp-season-results-tabs button[aria-selected=true]{border-color:var(--primary-color,#039be5);background:rgba(0,153,220,.12)}
@@ -276,10 +281,13 @@
         '" alt="Föreslagen banprofil, ej verifierad" loading="lazy" style="opacity:1;position:relative;max-height:170px"></div>':'';
       const referenceHtml=ref?'<h3>Banreferens (ej verifierad MotoGP-layout)</h3>'+
         proposed+artworkCredit(ref):'';
-      const factsHtml=dimensions?'<p class="mgp-season-detail-note">'+esc(facts.note||'Banmått från angiven källa')+'</p><div class="mgp-season-detail-grid">'+dimensions+'</div>'+
+      const factsStatus=facts?.provisional?'preliminary':'verified';
+      const factsCaption=facts?.provisional?'Preliminära banfakta':'Verifierade banfakta';
+      const factsHtml=dimensions?'<div class="mgp-season-facts-status" data-status="'+factsStatus+'"><span class="mgp-season-facts-dot" aria-hidden="true"></span>'+factsCaption+'</div>'+
+        '<p class="mgp-season-detail-note">'+esc(facts.note||'Banmått från angiven källa')+'</p><div class="mgp-season-detail-grid">'+dimensions+'</div>'+
         (String(facts.source||'').startsWith('https://')?
           '<p><a href="'+esc(facts.source)+'" target="_blank" rel="noopener noreferrer">Källa för banfakta</a></p>':''):
-        '<p class="mgp-season-detail-note">Banmått saknas i säsongens tillgängliga underlag.</p>';
+        '<p class="mgp-season-detail-note">🟡 Banmått saknas i säsongens tillgängliga underlag.</p>';
       const selectedId=String(selected.id||'');
       const server=card._mgpEventResultsCache?.[selectedId];
       const pending=card._mgpEventResultsPending===selectedId;

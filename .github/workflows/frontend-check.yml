@@ -57,6 +57,7 @@ jobs:
           node tests/frontend-i18n.cjs
           node tests/frontend-calendar.cjs
           python3 tests/test_circuit_facts_preview.py
+          python3 tests/test_circuit_facts_layout.py
           node tests/frontend-api-status.cjs
           node tests/frontend-next-weekend-status.cjs
           node tests/frontend-session-dots.cjs
