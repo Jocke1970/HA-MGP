@@ -1,22 +1,21 @@
-# HA-MGP 2026.11.0b28 – nästa GP, API-status och banregistret
+# HA-MGP 2026.11.0b29 – större banlayouter och fler banfakta
 
-**HACS beta:** `2026.11.0b28` · **UI:** `0.3.0-dev.62`.
+**HACS beta:** `2026.11.0b29` · **Frontend:** `0.3.0-dev.63`.
 
 ## Nyheter
-- Efter att sista MotoGP-racet fått bekräftad avslutningsstatus växlar nästa-GP-vyn och den **befintliga** statiska uppdateringen förbereder nästa helgs schema vid nästa uppdateringscykel. Gamla eventbundna scheman/startgrids rensas.
-- Tre kompakta källstatusar för nästa GP: **Schema, Bana, Startlista** med grönt/gult/rött. Gult betyder bl.a. preliminär eller saknad verifierad källa – inte automatiskt ett API-fel. Ingen startlista gissas från `/riders` eller `/teams`.
-- Banregistret får 2026/2027-underlag, Pulselive-identiteter och verifieringsanteckningar. Dessa data är för närvarande **offline referensfiler** och används **inte automatiskt** i Home Assistants runtime.
-- Banpopupens rubrik och stängknapp har justerats i dev; målgångens frysta snapshot tillåter nu både `F` och `C` och upp till fyra minuters justering.
+- **Större banillustrationer:** kalenderkortens banhöjd 73 → 106 px; kalenderpopupens banutrymme anpassas upp till 400 px. Popupens bredd och huvudlayout är oförändrade.
+- **2027 – 22 preliminära tekniska banunderlag** från tidigare Pulselive-snapshots finns nu i kalenderns banpopup. Visar bara tillgängliga fält (banlängd, bredd, raksträcka, höger-/vänsterkurvor) och märker dem tydligt som *preliminära, inte oberoende verifierade*. Ingen rekordtid uppfinns.
+- **2026 – 22 dokumenterade banlängder** från Sporting Maps-underlaget visas som *delvis dokumenterade, inte officiellt verifierade*. Portimão/Lusail behåller redan granskade banfakta där de finns.
+- **Schema/Bana/Startlista:** gula indikatorer visas även innan backend levererat sin första verifieringsstatus för nästa GP; äldre GP-status får inte återanvändas.
+- Adelaide kan visa preliminära tekniska siffror trots att verifierad banlayout fortfarande saknas.
 
-## Fortfarande inte aktivt
-- Månadsvis automatisk bankontroll och 48-timmarskontrollen är **inte installerade som ett aktivt schemalagt jobb**.
-- `/event/.../entry` är inte tillförlitligt verifierat och anropas **inte** automatiskt. Startlistan kan därför stå som ej tillgänglig.
-- Grönt för Bana kräver faktisk layoutverifiering; API-svar ensamt räcker inte.
+## Oförändrat / begränsningar
+- Ny API-pollning inför helger, månatlig bankontroll och 48-timmarskontroll är **inte** aktiverade.
+- Preliminär deltagarlista från `/event/.../entry` är inte verifierad. Förarkatalogen används inte som startlista.
+- Banritningar i kortet är schematiska eller separat installerade lokala SVG; tillgängliga banmått bevisar inte rätt layoutvariant.
+- `main` påverkas inte.
 
-## Verifiering före HA-test
-- Kandidatens källbundna bygg- och backendtester, HACS-packagering, identiska JS-alias och versionskontroller måste vara gröna.
-- **Visuell HA-verifiering återstår efter beta:** kontrollera banpopup/stängknapp och mobil, klassfilter, helgschema, färgpluttar, raceavslut, spoilerskydd.
-- Endast `beta`. **Main orörd**.
+## Installera och testa
+Installera via **HACS beta**, aldrig dev, efter publicerad prerelease. Starta om HA mellan sessioner och ladda om webbläsaren (`Ctrl+Shift+R`). Kontrollera 2026/2027-kalender, banpopup i desktop/mobil, preliminär statusmarkering, och att livetiming, spoilerläge och helgschema fungerar som b28.
 
-## Installation och rollback
-Installera via HACS beta, **inte dev**. Behåll `/config/motogp_data/`, befintliga entiteter och en enda Lovelace-modul: `/motogp_sensor/ha-mgp.js`. Uppdatera mellan racepass och gör hård omladdning vid behov. **Rollback:** `2026.11.0b27`, med orörd och verifierad JS-bunt.
+**Rollback:** `2026.11.0b28`. Bevara `/config/motogp_data/` och befintliga entiteter.

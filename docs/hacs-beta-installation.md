@@ -1,10 +1,10 @@
-# Installera HA-MGP beta 2026.11.0b28
+# HA-MGP beta 2026.11.0b29 – installation och test
 
-1. Ta en Home Assistant-backup och säkerställ att `/config/motogp_data/` bevaras.
-2. Uppdatera till prerelease `2026.11.0b28` i HACS (när den finns). Installera **inte dev**.
-3. Starta om Home Assistant **mellan racepass**, inte under pågående tävling.
-4. Behåll endast **en** Lovelace JavaScript-modul: `/motogp_sensor/ha-mgp.js`. Ladda om sidan med `Ctrl+Shift+R`.
-5. Bekräfta UI-version `0.3.0-dev.62` och testa kalenderns GP-kort, stor banpopup och mobil-stängknapp, helgschema, klassfilter, livetiming, spoilerläge och de nya Schema/Bana/Startlista-pluttarna.
-6. Om något ser fel ut: återgå till `2026.11.0b27`, installera om via HACS och starta om mellan sessioner. Ändra inte eller radera entiteter och sessionsarkiv.
+1. Gör en Home Assistant-backup. Behåll `/config/motogp_data/` och sessionsarkiven.
+2. Välj HACS prerelease **`2026.11.0b29`**, när den publicerats. Installera inte från `dev`.
+3. Starta om HA **mellan racepass**, aldrig mitt under aktiv livetiming.
+4. Behåll en enda Lovelace JavaScript-resurs: `/motogp_sensor/ha-mgp.js`. Gör `Ctrl+Shift+R`.
+5. Kontrollera **UI `0.3.0-dev.63`**. Öppna 2027-banor som Buriram, Valencia och Adelaide: preliminära mått ska visas där de finns och ej verifierade rekord ska saknas. Kontrollera även Valencia 2026, storleken på SVG, desktop/mobilpopup, Stäng, Schema/Bana/Startlista samt livetiming och spoilerläge.
+6. Vid problem: återställ **`2026.11.0b28`** via HACS beta. Radera inte integrationens enheter, entiteter eller arkiv.
 
-Mer: [release notes](hacs-beta-release-notes.md). `main` är orörd.
+Se [release notes](hacs-beta-release-notes.md). `main` lämnas orörd.
