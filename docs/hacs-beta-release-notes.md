@@ -1,21 +1,16 @@
-# HA-MGP 2026.11.0b29 – större banlayouter och fler banfakta
+# HA-MGP 2026.11.0b30 – banpopupens placering och större GP-bana
 
-**HACS beta:** `2026.11.0b29` · **Frontend:** `0.3.0-dev.63`.
+**HACS-beta:** `2026.11.0b30` · **UI:** `0.3.0-dev.64`.
 
-## Nyheter
-- **Större banillustrationer:** kalenderkortens banhöjd 73 → 106 px; kalenderpopupens banutrymme anpassas upp till 400 px. Popupens bredd och huvudlayout är oförändrade.
-- **2027 – 22 preliminära tekniska banunderlag** från tidigare Pulselive-snapshots finns nu i kalenderns banpopup. Visar bara tillgängliga fält (banlängd, bredd, raksträcka, höger-/vänsterkurvor) och märker dem tydligt som *preliminära, inte oberoende verifierade*. Ingen rekordtid uppfinns.
-- **2026 – 22 dokumenterade banlängder** från Sporting Maps-underlaget visas som *delvis dokumenterade, inte officiellt verifierade*. Portimão/Lusail behåller redan granskade banfakta där de finns.
-- **Schema/Bana/Startlista:** gula indikatorer visas även innan backend levererat sin första verifieringsstatus för nästa GP; äldre GP-status får inte återanvändas.
-- Adelaide kan visa preliminära tekniska siffror trots att verifierad banlayout fortfarande saknas.
+## Nytt jämfört med b29
+- Båda typerna av banpopup placeras 12 px längre ned än tidigare och har mer marginal till skärmens övre och nedre kant.
+- Banillustrationen i popupen från **kommande GP-kortet** kan nu växa till samma maximala höjd som den i kalenderpopupen, 400 px.
+- Den befintliga bredden, knappen **Stäng**, faktarutorna, 2026/2027-källmärkning och all baninformation behålls.
+- Inga nya API-anrop, ingen ändrad livetiming eller automatisk preliminär startlista.
 
-## Oförändrat / begränsningar
-- Ny API-pollning inför helger, månatlig bankontroll och 48-timmarskontroll är **inte** aktiverade.
-- Preliminär deltagarlista från `/event/.../entry` är inte verifierad. Förarkatalogen används inte som startlista.
-- Banritningar i kortet är schematiska eller separat installerade lokala SVG; tillgängliga banmått bevisar inte rätt layoutvariant.
-- `main` påverkas inte.
+## Verifiering innan main
+- Installera b30 via HACS beta (inte dev) och testa i Home Assistant på dator och mobil: popupens placering, att Stäng syns, vertikal skrollning, GP-kortets och kalenderns banstorlek.
+- Kontrollera under **nästa racehelg** att livesessioner, klassbyten, helgschema, raceavslut, spoilerläge och uppdatering till nästa GP fungerar utan regression.
+- **Main släpps först efter racehelgens praktiska test och separat godkännande.** Automatiskt månads-/48h-underhåll och eventspecifik preliminär startlista är fortfarande inte aktiverade.
 
-## Installera och testa
-Installera via **HACS beta**, aldrig dev, efter publicerad prerelease. Starta om HA mellan sessioner och ladda om webbläsaren (`Ctrl+Shift+R`). Kontrollera 2026/2027-kalender, banpopup i desktop/mobil, preliminär statusmarkering, och att livetiming, spoilerläge och helgschema fungerar som b28.
-
-**Rollback:** `2026.11.0b28`. Bevara `/config/motogp_data/` och befintliga entiteter.
+**Rollback:** `2026.11.0b29` via HACS beta. Behåll `/config/motogp_data/` och dina befintliga entiteter.
