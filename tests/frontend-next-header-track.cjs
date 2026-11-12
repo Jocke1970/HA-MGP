@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const file=process.argv[2]||'frontend/ha-mgp-header-track.js';
 const src=fs.readFileSync(file,'utf8');
-assert.match(src,/header-track-weather-20261112-02/);
+assert.match(src,/header-track-weather-20261112-03/);
 const docs=[];
 class Overview {
   static buildInfo={version:'0.2.0-split.2'};
@@ -75,7 +75,7 @@ const context={customElements:{
   assert.match(src,/\.mgp-circuit-dialog-head button\{flex:0 0 auto/,'close button keeps native themed styling');
 
   assert.match(src,/mgp-circuit-detail-grid/,'responsive circuit facts present');
-  assert.match(src,/top:50%;left:50%;transform:translate\(-50%,-50%\)/,
+  assert.match(src,/top:calc\(50% \+ 12px\);left:50%;transform:translate\(-50%,-50%\)/,
     'circuit popup centers within viewport rather than clipping above it');
   assert.match(src,/\.mgp-circuit-dialog\[open\]\{display:flex;flex-direction:column\}/,
     'circuit popup keeps close button fixed while body scrolls');
