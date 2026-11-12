@@ -30,8 +30,20 @@
       const attrs = states[key]?.attributes || {};
       const status = attrs.next_weekend_api_status;
       if(!status || typeof status!=='object' || !status.event_id) continue;
-      if(String(attrs.event_id||'') !== String(status.event_id)) continue;
+      if(String(attrs.event_id||'') !== String(status.event_id)) return null;
       return status;
+    }
+    // When the coordinator has not published a first status snapshot,
+    // show clearly unverified indicators rather than silently hiding them.
+    // Never override a present status tied to the wrong event.
+    const race = states[card._ids?.race || 'sensor.motogp_next_race'] ||
+      states['sensor.motogp_next_race'];
+    const eventId = race?.attributes?.event_id;
+    if(eventId){
+      return {event_id:String(eventId),
+        schedule:{color:'yellow',status:'unavailable',reason:'not_yet_checked'},
+        circuit:{color:'yellow',status:'unavailable',reason:'not_yet_checked'},
+        entry_list:{color:'yellow',status:'unavailable',reason:'not_yet_checked'}};
     }
     return null;
   }
