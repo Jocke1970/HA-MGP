@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const TAG='ha-motogp-next-overview-card';
-  const BUILD='calendar-20261112-01';
+  const BUILD='calendar-20261112-02';
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const parseDate=raw=>{
     const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(raw||''));
@@ -115,7 +115,7 @@
     button.mgp-season-event:hover{border-color:var(--primary-color,#039be5)}
     button.mgp-season-event:focus-visible{outline:2px solid var(--primary-color,#039be5);outline-offset:2px}
     .mgp-season-event .mgp-open-label{font-size:10px;color:var(--primary-color,#039be5);margin-top:auto}
-    .mgp-season-dialog{box-sizing:border-box;position:fixed;inset:auto;top:50%;left:50%;transform:translate(-50%,-50%);margin:0;width:min(820px,calc(100vw - 28px));max-width:calc(100vw - 28px);max-height:calc(100dvh - 28px);padding:0;border-radius:15px;border:1px solid var(--divider-color,#ddd);color:var(--primary-text-color);background:var(--ha-card-background,var(--card-background-color,#fff));box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden}
+    .mgp-season-dialog{box-sizing:border-box;position:fixed;inset:auto;top:calc(50% + 12px);left:50%;transform:translate(-50%,-50%);margin:0;width:min(820px,calc(100vw - 28px));max-width:calc(100vw - 28px);max-height:calc(100dvh - 64px);padding:0;border-radius:15px;border:1px solid var(--divider-color,#ddd);color:var(--primary-text-color);background:var(--ha-card-background,var(--card-background-color,#fff));box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden}
     .mgp-season-dialog[open]{display:flex;flex-direction:column}
     .mgp-season-dialog::backdrop{background:rgba(0,0,0,.55)}
     .mgp-season-dialog-head{display:flex;flex:0 0 auto;justify-content:space-between;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--divider-color,#ddd)}
