@@ -43,6 +43,14 @@ jobs:
         run: |
           python3 scripts/build-next-one.py frontend /tmp/ha-mgp.js
           node --check /tmp/ha-mgp.js
+      - name: Build current source before checking shipped bundle contracts
+        run: |
+          mkdir -p dist
+          python3 scripts/build-next-ui-preview.py frontend dist/ha-mgp.js
+          node --check dist/ha-mgp.js
+          cp dist/ha-mgp.js dist/ha-motogp-next.js
+          cp dist/ha-mgp.js custom_components/motogp_sensor/www/ha-mgp.js
+          cp dist/ha-mgp.js custom_components/motogp_sensor/www/ha-motogp-next.js
       - name: Bundled HACS frontend package and static route checks
         run: |
           python3 tests/test_frontend_package.py
