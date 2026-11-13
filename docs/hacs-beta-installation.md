@@ -1,13 +1,13 @@
-# HA-MGP b33 – HACS beta / okulärbesiktning
+# HA-MGP b34 – HACS beta / okulärbesiktning
 
-1. Säkerhetskopiera HA och behåll `/config/motogp_data/` och tidigare arkiv.
-2. Installera **`2026.11.0b33`** via HACS beta efter publicerad prerelease. Installera **inte dev**.
-3. Starta om Home Assistant och gör `Ctrl+Shift+R` i webbläsaren.
-4. Kontrollera frontendversion **`0.3.0-dev.71`** och en enda registrerad HA-MGP-resurs.
-5. Kontrollera `Official MotoGP-page` och klicka både på banstrecket och tom yta **inne i banbildens rektangel** i båda popupvarianterna. Även klick utanför och Esc ska fungera; faktalänkar ska inte stänga av misstag.
-6. Kontrollera nästa session mot faktiskt kommande GP-schema. En gammal Moto3 FP2 får inte visas som nästa pass; vid otillräcklig verifiering ska `Nästa pass ej verifierat` visas utan nedräkning.
-7. Kontrollera att nedräkningen visar **dagar, timmar, minuter** och att passerade GP sorteras **nyaste först**, med oförändrade omgångsnummer.
-8. Testa dator och mobil. Rapportera eventuell felaktig eventgräns/tidszon (särskilt torsdagspass), eftersom gränstoleransen är 12 timmar.
-9. Vid problem: rollback till **b32** via HACS beta utan att ta bort data eller entiteter.
+1. Säkerhetskopiera HA och behåll `/config/motogp_data/` och alla entiteter.
+2. Installera **`2026.11.0b34`** via HACS beta efter bekräftad publicering. Installera aldrig dev.
+3. Starta om HA och gör hård omladdning (`Ctrl+Shift+R`).
+4. Kontrollera UI-version `0.3.0-dev.72`.
+5. I kalendern: R22 ska inte visa kod `VAL`, utan `Valencia GP`. Bekräfta övriga GP och 2027.
+6. Öppna genomfört GP och växla mellan MotoGP/Moto2/Moto3. För Pole (Q2): röd plupp om verifierad Q2-pole saknas, grön endast om officiellt Q2-resultat har förare + tid. Delvis kända uppgifter får gul plupp. P1 på startgridden är inte automatiskt pole.
+7. Testa att klick på rubrik, text och tom yta stänger popupen; klassflikar, länkar och andra kontroller ska fungera utan att oavsiktligt stänga den. Testa båda popupvarianterna på mobil och desktop, samt Esc och utanför-klick.
+8. Kontrollera att b33:s nästa-session-regler, nedräkning och senaste-avverkade GP först fungerar som innan.
+9. Vid problem: rollback till **b33** utan radering av datakatalog eller entiteter.
 
-Ingen main-release före praktiska tester och separat godkännande.
+Main uppdateras inte utan uttryckligt godkännande.
