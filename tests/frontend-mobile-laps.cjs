@@ -1,7 +1,7 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const bundle=fs.readFileSync(process.argv[2]||'custom_components/motogp_sensor/www/ha-mgp.js','utf8');
-assert.match(bundle,/0\.3\.0-dev\.64/);
+assert.match(bundle,/0\.3\.0-dev\.66/);
 const pos=bundle.lastIndexOf('/* MotoGP Next responsive timing and authenticated lap-history dialog.');
 assert.ok(pos>0,'responsive popup addon must be bundled last');
 const nextAddon=bundle.indexOf('/* MotoGP Next qualifying',pos);

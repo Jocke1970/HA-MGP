@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const file=process.argv[2]||'frontend/ha-mgp-header-track.js';
 const src=fs.readFileSync(file,'utf8');
-assert.match(src,/header-track-weather-20261112-03/);
+assert.match(src,/header-track-weather-20261112-05/);
 const docs=[];
 class Overview {
   static buildInfo={version:'0.2.0-split.2'};
@@ -69,10 +69,13 @@ const context={customElements:{
   assert.match(card.root.innerHTML,/mgp-track-fallback/,'fallback remains while SVG is unavailable');
   assert.match(card.root.innerHTML,/data-mgp-circuit-open/,'circuit map clickable');
   assert.match(card.root.innerHTML,/mgp-circuit-dialog/,'detail modal exists');
-  assert.match(card.root.innerHTML,/data-mgp-circuit-dismiss/,'detail dialog has close control');
+  assert.match(card.root.innerHTML,/data-mgp-circuit-dismiss/,'clicking the track closes the popup');
+  assert.doesNotMatch(card.root.innerHTML,/data-mgp-circuit-dismiss>Stäng/,'no visible close button');
   assert.match(card.root.innerHTML,/mgp-circuit-dialog-head/,'circuit dialog has its own styled header');
   assert.match(src,/\.mgp-circuit-dialog-head\{display:flex/,'header aligns title and close button');
-  assert.match(src,/\.mgp-circuit-dialog-head button\{flex:0 0 auto/,'close button keeps native themed styling');
+  assert.match(src,/\.mgp-dialog-image-close:focus-visible/,'image-close is keyboard accessible');
+  assert.match(card.root.innerHTML,/mgp-dialog-heading/,'circuit name and GP title shown in header');
+  assert.match(card.root.innerHTML,/🇶🇦/,'host-country flag included in dialog');
 
   assert.match(src,/mgp-circuit-detail-grid/,'responsive circuit facts present');
   assert.match(src,/top:calc\(50% \+ 12px\);left:50%;transform:translate\(-50%,-50%\)/,

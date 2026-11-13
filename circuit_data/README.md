@@ -21,3 +21,7 @@ This directory is an **initial offline reference dataset**, not yet consumed by 
 4. Enable UI consumption only after a dev visual test and full CI.
 
 Dev → beta → main; no automatic sync or scraper is implemented here.
+
+## Official-source audit pilot
+
+See [historical source audit pilot](pilot_sources/README.md). This is a separate read-only tool, **not** the frontend/backend data source. It runs offline by default; live fetching requires explicit `--fetch`.

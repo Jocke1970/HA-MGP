@@ -19,8 +19,31 @@
     "status": "API snapshot; provisional, not independently reverified"
   },
   "review_notes": [
-    "The selected GP track is marked inactive in source snapshot; confirm layout."
+    "The selected GP track is marked inactive in source snapshot; confirm layout.",
+    "2026-11-12: Official MotoGP.com circuit information corroborates 3.22 km (rounded), width 10 m, straight 640 m, 9 right and 7 left corners.",
+    "Official MotoGP.com circuit outline available as reference; selected track is_active=false remains an audit signal, not proof of mismatch. Do not set overall green until variant identity and packaged image are checked."
   ],
   "race_laps": null,
-  "race_distance_km": null
+  "race_distance_km": null,
+  "verification": {
+    "technical_facts": {
+      "status": "corroborated_against_official_motogp_circuit_information",
+      "reviewed_on": "2026-11-12",
+      "evidence": "MotoGP.com, official 2027 Adelaide circuit information: published length 3.22 km, width 10 m, longest straight 640 m, 9 right and 7 left corners. Pulselive length_m 3219 is consistent with the published rounded length.",
+      "fields": [
+        "length_m",
+        "width_m",
+        "longest_straight_m",
+        "corners.left",
+        "corners.right"
+      ],
+      "note": "MotoGP.com and Pulselive might share underlying data; this corroborates the official display, not independent physical measurement."
+    },
+    "layout": {
+      "status": "official_circuit_outline_referenced_not_yet_packaged",
+      "reviewed_on": "2026-11-12",
+      "note": "MotoGP.com circuit outline available as reference. Exact variant identity, local asset rights and frontend integration require verification."
+    },
+    "complete_verified": false
+  }
 }

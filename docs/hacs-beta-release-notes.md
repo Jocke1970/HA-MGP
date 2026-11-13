@@ -1,16 +1,17 @@
-# HA-MGP 2026.11.0b30 – banpopupens placering och större GP-bana
+# HA-MGP 2026.11.0b31 – renare banpopup och tydligare banfakta
 
-**HACS-beta:** `2026.11.0b30` · **UI:** `0.3.0-dev.64`.
+**HACS-beta:** `2026.11.0b31` · **UI:** `0.3.0-dev.66`
 
-## Nytt jämfört med b29
-- Båda typerna av banpopup placeras 12 px längre ned än tidigare och har mer marginal till skärmens övre och nedre kant.
-- Banillustrationen i popupen från **kommande GP-kortet** kan nu växa till samma maximala höjd som den i kalenderpopupen, 400 px.
-- Den befintliga bredden, knappen **Stäng**, faktarutorna, 2026/2027-källmärkning och all baninformation behålls.
-- Inga nya API-anrop, ingen ändrad livetiming eller automatisk preliminär startlista.
+## Nytt jämfört med b30
+- Banpopupens rubrik har **större nationsflagga, banans namn, GP-namn och datum/plats**, både i kalender och kommande GP.
+- Banbilden fungerar som **stängningsknapp**; den synliga "Stäng"-knappen är borttagen från just banpopuperna. Bakgrundsklick och Escape fungerar fortfarande. Om bild saknas finns en textbaserad stängningsyta.
+- Banfaktarutorna har större text och **tre kolumner** på bred skärm, två på mobil.
+- Statusetiketter skiljer verifierade uppgifter från delvis dokumenterade/preliminära; banvarianter får inte automatiskt fullständig verifieringsstatus baserat på mått.
+- En **read-only-pilot** för officiell historisk baninformation (Buriram, Valencia, Red Bull Ring) finns i utvecklingsträdet. Den kör offline som standard och gör **inga API-anrop från Home Assistant**. Detta är inte en schemalagd insamlare eller automatiskt grönt ljus för någon banlayout.
 
-## Verifiering innan main
-- Installera b30 via HACS beta (inte dev) och testa i Home Assistant på dator och mobil: popupens placering, att Stäng syns, vertikal skrollning, GP-kortets och kalenderns banstorlek.
-- Kontrollera under **nästa racehelg** att livesessioner, klassbyten, helgschema, raceavslut, spoilerläge och uppdatering till nästa GP fungerar utan regression.
-- **Main släpps först efter racehelgens praktiska test och separat godkännande.** Automatiskt månads-/48h-underhåll och eventspecifik preliminär startlista är fortfarande inte aktiverade.
+## Praktiskt test inför main
+Installera b31 via **HACS beta**, starta om HA mellan sessioner och gör hård omladdning. Verifiera popup-rubrik, flagga, korrekt namnfält, att stängning via bild och bakgrund samt Escape fungerar, samt att alla faktarutor, källhänvisningar, 2026/2027 och resultat fungerar.
 
-**Rollback:** `2026.11.0b29` via HACS beta. Behåll `/config/motogp_data/` och dina befintliga entiteter.
+Under nästa racehelg: följ livepass, klassväxling, spoilerläge, kalender/helgschema och automatisk övergång till kommande GP. **Main kräver separat godkännande efter racehelgen.**
+
+**Rollback:** `2026.11.0b30`. Bevara `/config/motogp_data/` och alla entiteter.
