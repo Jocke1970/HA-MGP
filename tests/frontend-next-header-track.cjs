@@ -74,6 +74,8 @@ const context={customElements:{
   assert.match(card.root.innerHTML,/mgp-circuit-dialog-head/,'circuit dialog has its own styled header');
   assert.match(src,/\.mgp-circuit-dialog-head\{display:flex/,'header aligns title and close button');
   assert.match(src,/\.mgp-dialog-image-close:focus-visible/,'image-close is keyboard accessible');
+  assert.match(src,/getBoundingClientRect\(\)/,'backdrop dismissal checks visible dialog geometry');
+  assert.match(src,/event\.clientX<rect\.left/,'outside click closes modal, not empty internal padding');
   assert.match(card.root.innerHTML,/mgp-dialog-heading/,'circuit name and GP title shown in header');
   assert.match(card.root.innerHTML,/🇶🇦/,'host-country flag included in dialog');
 
