@@ -78,12 +78,16 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
  assert.match(src,/event\.clientX<rect\.left/,'calendar backdrop verifies outside coordinates');
  assert.match(src,/height:clamp\(240px,43dvh,400px\)/,'full visual map area is a click target');
  assert.match(src,/querySelector\?\.\('\.mgp-season-detail-map'\)/,'direct map-area click listener');
+ assert.match(src,/\[role="tab"\]/,'interactive tabs exempt from full-dialog dismiss');
+ assert.match(src,/const descriptive=candidates\.find/,'three-letter GP codes not shown as title');
  assert.match(c.root.innerHTML,/data-mgp-season-close/,'map button dismisses dialog');
  assert.doesNotMatch(c.root.innerHTML,/data-mgp-season-close>Stäng/,'no visible close button');
  assert.match(c.root.innerHTML,/Winner/,'correct event results displayed from Pulselive');
  assert.match(c.root.innerHTML,/Pole Rider/,'verified Q2 pole row displayed');
+ assert.match(c.root.innerHTML,/data-status="verified" aria-label="Verifierat kval"/,'official Q2 pole gets green status');
  c._click({target:clickTarget('data-mgp-season-category','Moto2')});
  assert.match(c.root.innerHTML,/Inget verifierat raceresultat/,'missing category never borrows MotoGP');
+ assert.match(c.root.innerHTML,/data-status="missing" aria-label="Ej verifierat kval"/,'unverified qualifying is RED');
  c._click({target:clickTarget('data-mgp-season-close','')});
  c._click({target:clickTarget('data-mgp-season-event','second-id')});
  assert.equal(calls,1,'future GP does not fetch results');
