@@ -63,7 +63,7 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
    assert.equal(payload.type,'motogp_sensor/event_results');
    assert.equal(payload.event_id,'arg-id');
    return {event_id:'arg-id',source:'pulselive_results',categories:{
-     MotoGP:{pole:{rider:'Pole Rider',time:"1:35.010"},
+     MotoGP:{pole:{rider:'Pole Rider',time:"1:35.010",session:'Q2'},
        race:[{position:1,rider:'Winner',time:'39:20.000'}],sprint:[]}}};
  };
  const clickTarget=(attribute,value)=>({
