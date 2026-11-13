@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const file=process.argv[2]||'frontend/ha-mgp-header-track.js';
 const src=fs.readFileSync(file,'utf8');
-assert.match(src,/header-track-weather-20261112-05/);
+assert.match(src,/header-track-weather-20261113-02/);
 const docs=[];
 class Overview {
   static buildInfo={version:'0.2.0-split.2'};
@@ -74,7 +74,29 @@ const context={customElements:{
   assert.match(card.root.innerHTML,/mgp-circuit-dialog-head/,'circuit dialog has its own styled header');
   assert.match(src,/\.mgp-circuit-dialog-head\{display:flex/,'header aligns title and close button');
   assert.match(src,/\.mgp-dialog-image-close:focus-visible/,'image-close is keyboard accessible');
+  assert.match(src,/getBoundingClientRect\(\)/,'backdrop dismissal checks visible dialog geometry');
+  assert.match(src,/event\.clientX<rect\.left/,'outside click closes modal, not empty internal padding');
   assert.match(card.root.innerHTML,/mgp-dialog-heading/,'circuit name and GP title shown in header');
+  // Real Pulselive calendar abbreviations must not replace readable GP names.
+  const attrs=card._hass.states['sensor.motogp_next_race'].attributes;
+  const original={...attrs};
+  attrs.circuit='Circuit Ricardo Tormo';attrs.country='Spain';attrs.short_name='VAL';
+  delete attrs.event_name;delete attrs.sponsored_name;delete attrs.name;
+  card._render();
+  assert.match(card.root.innerHTML,/mgp-dialog-race">Valencia GP</,'VAL resolves to a readable event name');
+  assert.doesNotMatch(card.root.innerHTML,/mgp-dialog-race">VAL</,'do not render track code as GP');
+  attrs.circuit='Autódromo Internacional do Algarve';attrs.country='Portugal';attrs.short_name='POR';
+  card._render();
+  assert.match(card.root.innerHTML,/mgp-dialog-race">Portugal GP</,'POR resolves to a readable event name');
+  attrs.event_name='Grande Prémio de Portugal';
+  card._render();
+  assert.match(card.root.innerHTML,/mgp-dialog-race">Grande Prémio de Portugal</,'full source event name takes precedence');
+  attrs.short_name='XYZ';attrs.country='Qatar';attrs.circuit='Lusail International Circuit';
+  delete attrs.event_name;
+  card._render();
+  assert.match(card.root.innerHTML,/mgp-dialog-race">Qatar GP</,'unknown short code falls back to country GP');
+  Object.assign(attrs,original);
+  card._render();
   assert.match(card.root.innerHTML,/🇶🇦/,'host-country flag included in dialog');
 
   assert.match(src,/mgp-circuit-detail-grid/,'responsive circuit facts present');

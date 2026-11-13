@@ -72,6 +72,8 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
  assert.equal(calls,1,'historical results fetched only when opened');
  assert.match(c.root.innerHTML,/mgp-season-dialog/);
  assert.match(c.root.innerHTML,/mgp-season-dialog-heading/,'circuit-first detail heading');
+ assert.match(src,/event\.clientX<rect\.left/,'calendar backdrop verifies outside coordinates');
+ assert.match(src,/min-height:clamp\(240px,43dvh,400px\)/,'full visual map area is a click target');
  assert.match(c.root.innerHTML,/data-mgp-season-close/,'map button dismisses dialog');
  assert.doesNotMatch(c.root.innerHTML,/data-mgp-season-close>Stäng/,'no visible close button');
  assert.match(c.root.innerHTML,/Winner/,'correct event results displayed from Pulselive');

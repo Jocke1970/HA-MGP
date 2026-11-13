@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const TAG='ha-motogp-next-overview-card';
-  const BUILD='calendar-20261112-04';
+  const BUILD='calendar-20261113-01';
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const parseDate=raw=>{
     const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(raw||''));
@@ -125,7 +125,7 @@
     .mgp-season-dialog-heading strong{font-size:19px;font-weight:800;line-height:1.2;overflow-wrap:anywhere}
     .mgp-season-dialog-race{font-size:15px;font-weight:650;line-height:1.3}
     .mgp-season-dialog-dates{font-size:12px;color:var(--secondary-text-color)}
-    .mgp-season-detail-close{display:block;width:100%;padding:0;border:0;background:transparent;color:inherit;cursor:zoom-out;font:inherit}
+    .mgp-season-detail-close{display:block;width:100%;min-height:clamp(240px,43dvh,400px);padding:0;border:0;background:transparent;color:inherit;cursor:zoom-out;font:inherit}
     .mgp-season-detail-close:focus-visible{outline:2px solid var(--primary-color,#039be5);outline-offset:2px}
     .mgp-season-dialog-body{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:14px}
     .mgp-season-detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
@@ -393,7 +393,13 @@
         const dialog=view.querySelector?.(selector);
         if(dialog&&active&&typeof dialog.showModal==='function'&&!dialog.open){
           dialog.addEventListener('click',event=>{
+            // Close on the true backdrop only. Empty interior padding must
+            // not behave like backdrop (important on mobile).
             if(event.target!==dialog)return;
+            const rect=dialog.getBoundingClientRect();
+            const outside=event.clientX<rect.left||event.clientX>rect.right||
+              event.clientY<rect.top||event.clientY>rect.bottom;
+            if(!outside)return;
             if(selector==='.mgp-season-dialog')this._mgpSelectedEventId=null;
             if(selector==='.mgp-circuit-dialog')this._circuitOpen=false;
             this._render();
