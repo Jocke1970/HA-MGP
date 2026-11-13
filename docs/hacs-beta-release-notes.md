@@ -1,19 +1,17 @@
-# HA-MGP 2026.11.0b33 – sessionsval, nedräkning och kalenderordning
+# HA-MGP 2026.11.0b34 – kalendernamn, kvalstatus och popupklick
 
-**HACS beta:** `2026.11.0b33` · **Frontend:** `0.3.0-dev.71`
+**HACS beta:** `2026.11.0b34` · **Frontend:** `0.3.0-dev.72`
 
-## Ändrat sedan b32
-- Officiell källänk i baninformationen heter `Official MotoGP-page`.
-- Hela banbildens rektangulära klickyta fungerar för att stänga popupen; befintlig bakgrund/Esc-hantering bevaras.
-- Nästa sessions nedräkning visar dagar, timmar och minuter (`0d 12h 37m till start`) och använder befintlig tidsstämpel.
-- Nästa session måste kunna kopplas till det valda GP-evenemanget; sessionsrader utanför relevant datumfönster eller med avvikande event-ID avvisas. Vid otillräcklig data visas `Nästa pass ej verifierat` utan falsk nedräkning.
-- Genomförda Grand Prix visas nyaste först, men ursprungliga omgångsnummer behålls.
+## Ändrat sedan b33
+- Kalenderns kort använder fullständigt GP-namn eller säker namn-fallback i stället för trestavig kod som `VAL`.
+- Pole (Q2) i historiska officiella sessionsresultat får separat verifieringsstatus: **röd** när kvalresultatet inte kan verifieras; **gul** vid partiella uppgifter; **grön** endast när officiell Q2-pole har förare och kvaltid. En startgrid-P1 räcker inte till grön status.
+- Popup kan stängas genom klick på icke-interaktiva delar även utanför banbilden. Källänkar och klassflikar fortsätter vara klickbara. Befintlig Esc-/bakgrundshantering bevaras.
+- b33:s sessionsurval, nedräkning och kalenderordning behålls.
 
-## Säkerhet och avgränsning
-Endast frontend och release-metadata. **Ingen ändring av backend, Pulselive, API-anropsfrekvens eller banfaktaverifiering.**
-Den befintliga kontrollen av eventstart har en 12-timmars förtolerans; legitima tidigare pass behöver verifieras med verkliga HA-data.
+## Avgränsning
+Frontend- och releaseändringar. Inga nya backend/Pulselive-anrop och ingen egen uppskattning av pole. Den befintliga read-only Q2-klassificeringen är officiell källa.
 
 ## Okulärbesiktning
-Installera b33 via HACS beta, starta om HA och gör hård omladdning. Kontrollera nästa session mot kalendern, tidszon/nedräkning, genomförda race i fallande datumordning och båda popupvarianterna på mobil/dator.
+Bekräfta kalendernamn, röd plupp när Q2-data saknas, grön vid verifierat resultat samt popupens klickbeteende i desktop/mobil. Kontrollera samtidigt att resultattabbar och källänkar inte stängs av misstag.
 
-**Rollback:** `2026.11.0b32`. Behåll `/config/motogp_data/` och entiteter. **Main lämnas orörd.**
+**Rollback:** `2026.11.0b33`. Behåll `/config/motogp_data/` och entiteter. **Main är orörd.**

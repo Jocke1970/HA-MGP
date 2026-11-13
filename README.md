@@ -2,15 +2,14 @@
 
 Inofficiell Home Assistant-integration för MotoGP, Moto2 och Moto3.
 
-**HACS beta: `2026.11.0b33` · Frontend `0.3.0-dev.71`.**
+**HACS beta: `2026.11.0b34` · Frontend `0.3.0-dev.72`.**
 
-## Nytt i b33
-- Baninformationens officiella källänk heter `Official MotoGP-page`.
-- Hela den rektangulära banbilden är klickbar för att stänga popupen.
-- Nedräkning visar dagar, timmar och minuter i stället för tvetydig klocknotation.
-- Nästa session måste tillhöra relevant GP-helg och matcha event-ID när det anges; annars visas `Nästa pass ej verifierat`.
-- Genomförda GP visas senaste först utan omnumrering.
+## Nytt i b34
+- Kalenderns GP-namn använder beskrivande namn framför kortkoder som `VAL`, med fallback för Valencia/Portugal och land.
+- Pole (Q2) i officiella sessionsresultat har egen verifieringsplupp: röd om kvalresultatet inte är verifierat, gul vid partiella data, grön endast vid verifierad Q2-förare och kvaltid.
+- Popup kan stängas via tomma/icke-interaktiva ytor; knappar, klassflikar och länkar fortsätter fungera.
+- b33:s sessionsgränser, nedräkning och senaste-avverkade-GP-först behålls.
 
-**Testversion för okulärbesiktning.** Installera via HACS beta – aldrig dev. [Release notes](docs/hacs-beta-release-notes.md) och [installationstest](docs/hacs-beta-installation.md). Ingen backend/API-förändring; banverifieringspiloten är fortsatt offline.
+**Okulärbesiktning krävs.** Installera via HACS beta – aldrig dev. [Release notes](docs/hacs-beta-release-notes.md) och [installationscheck](docs/hacs-beta-installation.md).
 
-**Dev → beta → main.** b32 är rollback. Main uppdateras först efter praktisk granskning och separat klartecken.
+**Dev → beta → main.** b33 är rollback. Main lämnas orörd tills separat godkännande.
