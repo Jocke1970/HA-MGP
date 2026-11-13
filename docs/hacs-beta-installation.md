@@ -1,11 +1,12 @@
-# HA-MGP b30 – installation och test
+# HA-MGP b31 – HACS-beta-test
 
-1. Ta en Home Assistant-backup. Behåll `/config/motogp_data/` och dina sessionsarkiv.
-2. Installera **`2026.11.0b30`** via HACS beta när prereleasen publicerats; installera aldrig `dev` på HA.
-3. Starta om Home Assistant **mellan sessioner**, sedan hård omladdning (`Ctrl+Shift+R`).
-4. Kontrollera UI-version **`0.3.0-dev.64`** och att en enda Lovelace-resurs `/motogp_sensor/ha-mgp.js` finns.
-5. Öppna banpopupen från GP-rubriken och kalendern: kontrollera att båda ligger lagom långt ned, att Stäng alltid syns, att bilden har rätt skala och att fakta fortfarande visas.
-6. Under nästa tävlingshelg: kontrollera livetiming, klassbyte, helgschema, spoilerläge och övergång till nästa GP. Inga nya API-anrop ska skapas.
-7. Vid problem: gå tillbaka till **b29** via HACS, utan att ta bort arkiv eller entiteter.
+1. Säkerhetskopiera Home Assistant och behåll `/config/motogp_data/` samt tidigare arkiv.
+2. Välj **`2026.11.0b31`** under HACS-beta när prereleasen publicerats. Installera **inte `dev`**.
+3. Starta om HA mellan sessioner. Gör `Ctrl+Shift+R` i webbläsaren.
+4. Kontrollera att frontend visar **`0.3.0-dev.66`** och att bara den ordinarie HA-MGP-resursen är registrerad.
+5. Öppna kalenderns och kommande GP:s banpopuper. Kontrollera **nationsflagga → bannamn → GP-namn → datum**, större faktarutor med 3/2-kolumnslayout och att Stäng-knappen inte visas.
+6. Tryck på banbilden för att stänga, prova Escape och klick utanför. Vid saknad banbild ska det finnas alternativ för att stänga. Kontrollera att källänkar och resultatflikar **inte** stänger popupen.
+7. Prova livetiming, klassbyte, spoilerläge, helgschema och nästa-GP-övergång under racehelgen.
+8. Rollback vid behov: **b30** via HACS beta, utan att radera data eller entiteter.
 
-Ingen main-release före praktisk utvärdering och godkännande.
+`main` släpps först efter praktisk verifiering och uttryckligt godkännande.
