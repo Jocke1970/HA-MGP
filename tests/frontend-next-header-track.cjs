@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const file=process.argv[2]||'frontend/ha-mgp-header-track.js';
 const src=fs.readFileSync(file,'utf8');
-assert.match(src,/header-track-weather-20261113-02/);
+assert.match(src,/header-track-weather-20261113-03/);
 const docs=[];
 class Overview {
   static buildInfo={version:'0.2.0-split.2'};
@@ -74,6 +74,10 @@ const context={customElements:{
   assert.match(card.root.innerHTML,/mgp-circuit-dialog-head/,'circuit dialog has its own styled header');
   assert.match(src,/\.mgp-circuit-dialog-head\{display:flex/,'header aligns title and close button');
   assert.match(src,/\.mgp-dialog-image-close:focus-visible/,'image-close is keyboard accessible');
+  assert.match(src,/circuitDialog\.querySelector\?\.\('\.mgp-dialog-image-close'\)/,
+    'direct click listener on full-map button');
+  assert.match(src,/height:clamp\(255px,43dvh,400px\)/,'fixed rectangular map hitbox');
+  assert.match(card.root.innerHTML,/Official MotoGP-page/,'official circuit source link label');
   assert.match(src,/getBoundingClientRect\(\)/,'backdrop dismissal checks visible dialog geometry');
   assert.match(src,/event\.clientX<rect\.left/,'outside click closes modal, not empty internal padding');
   assert.match(card.root.innerHTML,/mgp-dialog-heading/,'circuit name and GP title shown in header');

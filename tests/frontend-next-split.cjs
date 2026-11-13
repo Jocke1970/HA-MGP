@@ -68,7 +68,7 @@ assert.match(overview.view.innerHTML, /Helgens schema/);
 assert.match(overview.view.innerHTML, /Banväder/);
 assert.doesNotMatch(overview.view.innerHTML, /data-timing/);
 assert.match(overview.view.innerHTML, /15:00/);
-assert.match(overview.view.innerHTML, /15:00 till start|15:00.*till start/);
+assert.match(overview.view.innerHTML, /0d 00h 15m till start/);
 assert.doesNotMatch(timing.view.innerHTML, /Helgens schema|Banväder|GRAND PRIX OF AUSTRIA/);
 assert.match(timing.view.innerHTML, /data-timing aria-expanded="true"/);
 assert.match(timing.view.innerHTML, /7:47 kvar/);
@@ -84,10 +84,10 @@ states={...states,
   'sensor.motogp_next_race':entity(race.state,{...race.attributes,sessions_all:
     schedules.map(s=>s.id==='q1'?{...s,status:'FINISHED'}:s)})};
 overview.hass={states};timing.hass={states};
-assert.match(overview.view.innerHTML,/3:00 till start/);
+assert.match(overview.view.innerHTML,/0d 00h 03m till start/);
 assert.match(timing.view.innerHTML,/Nästa: MotoGP · Q2/);
 assert.match(timing.view.innerHTML,/11:15/);
-assert.match(timing.view.innerHTML,/3:00 till start/);
+assert.match(timing.view.innerHTML,/0d 00h 03m till start/);
 assert.match(timing.view.innerHTML,/Senaste passets förardata: MotoGP · Q1 \(ej live\)/);
 assert.match(timing.view.innerHTML,/FERNANDEZ/);
 assert.doesNotMatch(timing.view.innerHTML,/● LIVE/);
@@ -98,12 +98,12 @@ assert.match(lateTiming.view.innerHTML,/Nästa: MotoGP · Q2/);
 assert.doesNotMatch(lateTiming.view.innerHTML,/FERNANDEZ/);
 // Filtered overview countdown follows its filtered schedule, standalone timing stays global.
 overview._click({target:{closest:()=>({dataset:{category:'Moto2'}})}});
-assert.match(overview.view.innerHTML,/2:28:00 till start/);
-assert.match(timing.view.innerHTML,/3:00 till start/);
+assert.match(overview.view.innerHTML,/0d 02h 28m till start/);
+assert.match(timing.view.innerHTML,/0d 00h 03m till start/);
 // Local expander does not affect the other card.
 timing._click({target:{closest:()=>({dataset:{timing:''}})}});
 assert.match(timing.view.innerHTML,/data-timing aria-expanded="false"/);
-assert.match(timing.view.innerHTML,/3:00 till start/);
+assert.match(timing.view.innerHTML,/0d 00h 03m till start/);
 assert.match(overview.view.innerHTML,/Helgens schema/);
 // Invalid rider values and HTML must never leak as raw markup.
 fakeNow=Date.parse('2026-09-19T11:16:00+02:00');

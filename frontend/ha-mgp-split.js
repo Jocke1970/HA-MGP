@@ -57,8 +57,10 @@
     const seconds = Math.ceil((timestamp-now)/1000);
     if (seconds < 0) return 'Starttid passerad';
     if (seconds === 0) return 'Startar nu';
-    const h = Math.floor(seconds/3600), m = Math.floor(seconds%3600/60), s = seconds%60;
-    return `${h ? `${h}:${pad(m)}` : String(m)}:${pad(s)} till start`;
+    const days=Math.floor(seconds/86400);
+    const hours=Math.floor(seconds%86400/3600);
+    const minutes=Math.floor(seconds%3600/60);
+    return `${days}d ${pad(hours)}h ${pad(minutes)}m till start`;
   }
   const countdownHtml = item => item ?
     `<span class="next-countdown" data-next-start="${item.date.getTime()}">${esc(countdown(item.date.getTime()))}</span>` : '';
