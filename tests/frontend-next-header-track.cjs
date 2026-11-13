@@ -161,7 +161,7 @@ const context={customElements:{
   assert.match(eventHeader[1],/data-mgp-schedule-jump/,'schedule toggle in hero');
   assert.match(eventHeader[1],/aria-expanded="false"/,'schedule initially collapsed');
   assert.match(eventHeader[1],/mgp-next-chip/,'next session chip in hero');
-  assert.match(eventHeader[1],/MotoGP · Warm Up/,'next session type is displayed');
+  assert.match(eventHeader[1],/Nästa pass ej verifierat/,'stale source schedule must not masquerade as next pass');
   assert.doesNotMatch(eventHeader[1],/data-next-start=/,'stale 2099 session rejected for 2026 GP');
   assert.match(eventHeader[1],/Nästa pass ej verifierat/,'no unverified countdown');
   assert.match(card.root.innerHTML,/<div class="foot"><details class="mgp-ui-footer">/,'UI details live in footer');
