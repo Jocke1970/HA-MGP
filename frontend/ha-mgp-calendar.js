@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const TAG='ha-motogp-next-overview-card';
-  const BUILD='calendar-20261113-03';
+  const BUILD='calendar-20261113-04';
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const parseDate=raw=>{
     const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(raw||''));
@@ -139,7 +139,7 @@
     .mgp-season-results-tabs{display:flex;gap:6px;margin:12px 0;flex-wrap:wrap}
     .mgp-season-results-tabs button{border:1px solid var(--divider-color,#ddd);border-radius:9px;background:transparent;color:inherit;padding:8px 12px;cursor:pointer;font:inherit}
     .mgp-season-results-tabs button[aria-selected=true]{border-color:var(--primary-color,#039be5);background:rgba(0,153,220,.12)}
-    .mgp-season-results{width:100%;border-collapse:collapse;font-size:12px}
+    .mgp-season-pole-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#d32f2f;margin-left:5px;vertical-align:middle}.mgp-season-pole-dot[data-status=partial]{background:#e0a000}.mgp-season-pole-dot[data-status=verified]{background:#2e9c4b}\n    .mgp-season-results{width:100%;border-collapse:collapse;font-size:12px}
     .mgp-season-results td,.mgp-season-results th{padding:7px 5px;text-align:left;border-bottom:1px solid var(--divider-color,#ddd)}
     .mgp-season-detail-note{font-size:12px;color:var(--secondary-text-color);margin:12px 0}
     .mgp-season-event.is-next{border-color:#e10600}
@@ -219,7 +219,16 @@
       it:['Calendario stagionale','Prossimo Gran Premio','Prossime gare','Gare concluse','Stagione conclusa','Dati calendario non disponibili'],
       fr:['Calendrier de la saison','Prochain Grand Prix','Prochaines courses','Courses terminées','Saison terminée','Pas de données de calendrier']
     }[locale];
-    const eventName=e=>esc(e.short_name||e.name||e.sponsored_name||'Grand Prix');
+    const eventName=e=>{
+      const candidates=[e.event_name,e.sponsored_name,e.name,e.short_name].map(v=>String(v||'').trim()).filter(Boolean);
+      const descriptive=candidates.find(v=>!/^[A-Z0-9]{2,5}$/.test(v));
+      const place=String(e.circuit||'').toLowerCase();
+      const known=place.includes('valencia')||place.includes('ricardo tormo')?'Valencia GP':
+        place.includes('portim')?'Portugal GP':null;
+      const countryName=String(e.country||'').trim();
+      const fallback=countryName?countryName+' GP':'Grand Prix';
+      return esc(descriptive||known||fallback);
+    };
     const country=e=>esc(e.country||'');
     const circuit=e=>esc(e.circuit||'');
     const dates=e=>esc(dateRange(e.start,e.end,locale));
@@ -319,8 +328,12 @@
         (pending?'<p class="mgp-season-detail-note">Hämtar Pulselive-resultat …</p>':
         error?'<p class="mgp-season-detail-note">Resultat kunde inte hämtas från Pulselive.</p>':
         !source?'<p class="mgp-season-detail-note">Välj ett avslutat GP för att hämta resultaten.</p>':
-        '<div class="mgp-season-detail-grid"><span>Pole (Q2)<b>'+
-          (pole?esc((pole.rider||'')+' · '+(pole.time||'')):'Ej tillgängligt')+'</b></span>'+
+        '<div class="mgp-season-detail-grid"><span>Pole (Q2) <i class="mgp-season-pole-dot" data-status="'+
+          (pole?.rider&&pole?.time&&pole?.session==='Q2'?'verified':pole?.rider||pole?.time?'partial':'missing')+
+          '" aria-label="'+(pole?.rider&&pole?.time&&pole?.session==='Q2'?'Verifierat kval':pole?.rider||pole?.time?'Delvis verifierat kval':'Ej verifierat kval')+
+          '" title="'+(pole?.rider&&pole?.time&&pole?.session==='Q2'?'Verifierat kval':pole?.rider||pole?.time?'Delvis verifierat kval':'Ej verifierat kval')+
+          '"></i><b>'+
+          (pole?.rider&&pole?.time?esc(pole.rider+' · '+pole.time):'Ej verifierat kval')+'</b></span>'+
           '<span>Sprint<b>'+ (sprint.length?esc(sprint[0].rider||'—'):'Ej tillgängligt')+'</b></span></div>'+
         (raceRows?'<h4>Raceresultat · '+selectedClass+'</h4><table class="mgp-season-results"><thead><tr><th>Plac.</th><th>Förare</th><th>Tid / status</th></tr></thead><tbody>'+
           raceRows+'</tbody></table>':
@@ -396,11 +409,19 @@
           dialog.addEventListener('click',event=>{
             // Close on the true backdrop only. Empty interior padding must
             // not behave like backdrop (important on mobile).
-            if(event.target!==dialog)return;
+            if(event.target!==dialog){
+              if(selector!=='.mgp-season-dialog')return;
+              if(event.target.closest?.('a,button,input,select,textarea,summary,[role="button"],[role="tab"]'))return;
+              this._mgpSelectedEventId=null;this._render();return;
+            }
             const rect=dialog.getBoundingClientRect();
             const outside=event.clientX<rect.left||event.clientX>rect.right||
               event.clientY<rect.top||event.clientY>rect.bottom;
-            if(!outside)return;
+            if(!outside){
+              if(selector!=='.mgp-season-dialog')return;
+              // Click anywhere inside except controls/links/scrollbars; tabs and sources stay usable.
+              if(event.target.closest?.('a,button,input,select,textarea,summary,[role="button"],[role="tab"]'))return;
+            }
             if(selector==='.mgp-season-dialog')this._mgpSelectedEventId=null;
             if(selector==='.mgp-circuit-dialog')this._circuitOpen=false;
             this._render();
