@@ -54,8 +54,8 @@ jobs:
         run: python3 scripts/verify_beta_lineage.py
       - name: Verify pinned b34 HACS UI bytes
         run: |
-          test "$(git hash-object custom_components/motogp_sensor/www/ha-mgp.js)" = f300acf1c8830f30dba51f79cd2eb2f0658542d9
-          test "$(git hash-object custom_components/motogp_sensor/www/ha-motogp-next.js)" = f300acf1c8830f30dba51f79cd2eb2f0658542d9
+          test "$(git hash-object custom_components/motogp_sensor/www/ha-mgp.js)" = 4b55c9d6c5a5ad8029b6f5bbba8e70066a62ddb9
+          test "$(git hash-object custom_components/motogp_sensor/www/ha-motogp-next.js)" = 4b55c9d6c5a5ad8029b6f5bbba8e70066a62ddb9
           python3 -m unittest discover -s tests -p 'test_weekend_preparation.py' -v
           python3 tests/test_circuit_facts_preview.py
           node tests/frontend-next-weekend-status.cjs
