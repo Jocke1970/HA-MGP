@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const file=process.argv[2]||'frontend/ha-mgp-header-track.js';
 const src=fs.readFileSync(file,'utf8');
-assert.match(src,/header-track-weather-20261113-02/);
+assert.match(src,/header-track-weather-20261113-05/);
 const docs=[];
 class Overview {
   static buildInfo={version:'0.2.0-split.2'};
@@ -74,9 +74,34 @@ const context={customElements:{
   assert.match(card.root.innerHTML,/mgp-circuit-dialog-head/,'circuit dialog has its own styled header');
   assert.match(src,/\.mgp-circuit-dialog-head\{display:flex/,'header aligns title and close button');
   assert.match(src,/\.mgp-dialog-image-close:focus-visible/,'image-close is keyboard accessible');
+  assert.match(src,/circuitDialog\.querySelector\?\.\('\.mgp-dialog-image-close'\)/,
+    'direct click listener on full-map button');
+  assert.match(src,/height:clamp\(255px,43dvh,400px\)/,'fixed rectangular map hitbox');
+  assert.match(card.root.innerHTML,/Official MotoGP-page/,'official circuit source link label');
   assert.match(src,/getBoundingClientRect\(\)/,'backdrop dismissal checks visible dialog geometry');
   assert.match(src,/event\.clientX<rect\.left/,'outside click closes modal, not empty internal padding');
   assert.match(card.root.innerHTML,/mgp-dialog-heading/,'circuit name and GP title shown in header');
+  // Date-window guard: a stale Moto3 session 12h away must NOT be selected
+  // when the displayed GP begins two days later.
+  const nextAttrs=card._hass.states['sensor.motogp_next_race'].attributes;
+  const priorSchedule={start:nextAttrs.date_start,end:nextAttrs.date_end,sessions:nextAttrs.sessions_all};
+  const now=Date.now();
+  const dayISO=d=>d.toISOString().slice(0,10);
+  nextAttrs.date_start=dayISO(new Date(now+2*86400000));
+  nextAttrs.date_end=dayISO(new Date(now+4*86400000));
+  nextAttrs.sessions_all=[
+    {category:'Moto3',name:'FP2',date_utc:new Date(now+12*3600000).toISOString(),status:'SCHEDULED'},
+    {category:'MotoGP',name:'FP1',date_utc:new Date(now+2*86400000+9*3600000).toISOString(),status:'SCHEDULED'}
+  ];
+  card._render();
+  assert.match(card.root.innerHTML,/MotoGP · FP1/,'select in-weekend session instead of stale Moto3 FP2');
+  assert.doesNotMatch(card.root.innerHTML,/Moto3 · FP2/,'discard cross-weekend session');
+  nextAttrs.sessions_all=[{category:'Moto3',name:'FP2',date_utc:new Date(now+12*3600000).toISOString(),status:'SCHEDULED'}];
+  card._render();
+  assert.match(card.root.innerHTML,/Nästa pass ej verifierat/,'no fake next session if schedule mismatches weekend');
+  assert.doesNotMatch(card.root.innerHTML,/data-next-start=/,'do not show countdown for wrong GP');
+  nextAttrs.date_start=priorSchedule.start;nextAttrs.date_end=priorSchedule.end;nextAttrs.sessions_all=priorSchedule.sessions;
+  card._render();
   // Real Pulselive calendar abbreviations must not replace readable GP names.
   const attrs=card._hass.states['sensor.motogp_next_race'].attributes;
   const original={...attrs};
@@ -136,8 +161,9 @@ const context={customElements:{
   assert.match(eventHeader[1],/data-mgp-schedule-jump/,'schedule toggle in hero');
   assert.match(eventHeader[1],/aria-expanded="false"/,'schedule initially collapsed');
   assert.match(eventHeader[1],/mgp-next-chip/,'next session chip in hero');
-  assert.match(eventHeader[1],/MotoGP · Warm Up/,'next session type is displayed');
-  assert.match(eventHeader[1],/data-next-start=/,'chip uses existing countdown refresh selector');
+  assert.match(eventHeader[1],/Nästa pass ej verifierat/,'stale source schedule must not masquerade as next pass');
+  assert.doesNotMatch(eventHeader[1],/data-next-start=/,'stale 2099 session rejected for 2026 GP');
+  assert.match(eventHeader[1],/Nästa pass ej verifierat/,'no unverified countdown');
   assert.match(card.root.innerHTML,/<div class="foot"><details class="mgp-ui-footer">/,'UI details live in footer');
   assert.equal((card.root.innerHTML.match(/ⓘ UI-information/g)||[]).length,1,'only one diagnostics expander');
   assert.ok(card.root.innerHTML.indexOf('mgp-hero-grid')<card.root.innerHTML.indexOf('Version footer'),

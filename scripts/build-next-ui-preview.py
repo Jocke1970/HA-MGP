@@ -10,19 +10,19 @@ import tempfile
 
 UI_BLOB = '3c31bf57cd7851dbb052a51d4b3c0e8d7dd404aa'
 QUAL_BLOB = '3cd24780166dcc578624221769a8a459c7b62819'
-HEADER_BLOB = '8f9246feec905f324e3d6791fc3ebb56da084d3c'
+HEADER_BLOB = '5cebddcf0bc90d1ec304dc2a9061a89f985206b1'
 HISTORY_BLOB = '8b7038e64df05cb7ffbc1e6059a966c867733fac'
 MOBILE_BLOB = '9fad86bfd7fdc2e461371efb458b17f6029df794'
 I18N_BLOB = '3a5bd509a76c8667ade302d84b191b81d3ca8e4e'
-CALENDAR_BLOB = '9d5fad117abd85ff1db87d57c964492100781065'
+CALENDAR_BLOB = 'ae0077263e5066be4632a2b7fe99b77ddd4a89a5'
 API_STATUS_BLOB = '32490df85fde2a651ef9b69ee7f515b57e6c267c'
 SESSION_DOTS_BLOB = '717aa859c7a096a439d36d408f5dfbdd3b30f9d9'
 TIMING_ICONS_BLOB = 'd44d19a911051d4ab67513d4191942f03eeb09b0'
 ACTIVE_CHIP_BLOB = '09d394c4847767f43f9f17de0ff41d32ec78915b'
 FINISH_SETTLING_BLOB = 'ca8386c031a720878b6bb1b982185b3390750ba8'
 PRE_SESSION_BLOB = '309a68417e5bb6227e5ca843a529662be3e24918'
-BUILD = 'next-one-20261113-02'
-VERSION = '0.3.0-dev.68'
+BUILD = 'next-one-20261113-05'
+VERSION = '0.3.0-dev.71'
 
 
 def blob(data):
@@ -163,9 +163,8 @@ def main(frontend, target):
         raise SystemExit('STOP: missing or duplicate MGP logo placeholder')
     header_source = header_source.replace('__MGP_APPROVED_BRAND_DATA_URI__', logo_uri)
     result = (text + '\n;\n' + ui.decode('utf-8') + '\n;\n' + mobile_bytes.decode('utf-8') + '\n;\n' + qual_bytes.decode('utf-8') + '\n;\n' + header_source + '\n;\n' + history_bytes.decode('utf-8') + '\n;\n' + i18n_source + '\n;\n' + calendar_bytes.decode('utf-8') + '\n;\n' + api_status_bytes.decode('utf-8') + '\n;\n' + weekend_dots_bytes.decode('utf-8') + '\n;\n' + session_dots_bytes.decode('utf-8') + '\n;\n' + timing_icons_bytes.decode('utf-8') + '\n;\n' + active_chip_bytes.decode('utf-8') + '\n;\n' + finish_settling_bytes.decode('utf-8') + '\n;\n' + pre_session_bytes.decode('utf-8')).encode('utf-8')
-    # Render day-aware countdowns in preview, keeping frozen baseline source blobs unchanged.
+    # The split source now owns the explicit day/hour/minute display. Keep only legacy patch sites below.
     output = result.decode('utf-8')
-    output = replace_one(output, "const h = Math.floor(seconds/3600), m = Math.floor(seconds%3600/60), s = seconds%60;\n    return `${h ? `${h}:${pad(m)}` : String(m)}:${pad(s)} till start`;", "const d = Math.floor(seconds/86400), h = Math.floor(seconds%86400/3600), m = Math.floor(seconds%3600/60), s = seconds%60;\n    return `${d ? `${d}d ${pad(h)}:${pad(m)}` : h ? `${h}:${pad(m)}` : String(m)}:${pad(s)} till start`;")
     output = replace_one(output, "const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;\n    return `${h?`${h}:${pad(m)}`:m}:${pad(s)} till start`;", "const d=Math.floor(sec/86400),h=Math.floor(sec%86400/3600),m=Math.floor(sec%3600/60),s=sec%60;\n    return `${d?`${d}d ${pad(h)}:${pad(m)}`:h?`${h}:${pad(m)}`:m}:${pad(s)} till start`;")
     output = replace_one(output, "Math.floor(s/60)+':'+String(s%60).padStart(2,'0')+' till start';", "(s>=86400?Math.floor(s/86400)+'d '+String(Math.floor(s%86400/3600)).padStart(2,'0')+':'+String(Math.floor(s%3600/60)).padStart(2,'0'):\n   s>=3600?Math.floor(s/3600)+':'+String(Math.floor(s%3600/60)).padStart(2,'0'):\n   String(Math.floor(s/60)))+':'+String(s%60).padStart(2,'0')+' till start';")
     result = output.encode('utf-8')

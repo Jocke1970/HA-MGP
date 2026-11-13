@@ -39,6 +39,9 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
  assert.match(c.root.innerHTML,/Valencia GP/);assert.match(c.root.innerHTML,/Argentina/);
  assert.match(c.root.innerHTML,/Kommande tävlingar/);
  assert.match(c.root.innerHTML,/Avverkade tävlingar \(2\)/);
+ assert.ok(c.root.innerHTML.indexOf('data-mgp-season-event="arg-id"') <
+    c.root.innerHTML.indexOf('data-mgp-season-event="thai-id"'),
+    'completed GP tiles show most recent first');
  assert.match(c.root.innerHTML,/dagar kvar/);
  assert.match(c.root.innerHTML,/mgp-season-track--next/,'hero has a circuit picture');
  assert.match(c.root.innerHTML,/mgp-season-track--tile/,'upcoming and past races have circuit pictures');
@@ -73,7 +76,8 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
  assert.match(c.root.innerHTML,/mgp-season-dialog/);
  assert.match(c.root.innerHTML,/mgp-season-dialog-heading/,'circuit-first detail heading');
  assert.match(src,/event\.clientX<rect\.left/,'calendar backdrop verifies outside coordinates');
- assert.match(src,/min-height:clamp\(240px,43dvh,400px\)/,'full visual map area is a click target');
+ assert.match(src,/height:clamp\(240px,43dvh,400px\)/,'full visual map area is a click target');
+ assert.match(src,/querySelector\?\.\('\.mgp-season-detail-map'\)/,'direct map-area click listener');
  assert.match(c.root.innerHTML,/data-mgp-season-close/,'map button dismisses dialog');
  assert.doesNotMatch(c.root.innerHTML,/data-mgp-season-close>Stäng/,'no visible close button');
  assert.match(c.root.innerHTML,/Winner/,'correct event results displayed from Pulselive');
