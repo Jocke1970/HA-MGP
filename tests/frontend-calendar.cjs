@@ -39,6 +39,9 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
  assert.match(c.root.innerHTML,/Valencia GP/);assert.match(c.root.innerHTML,/Argentina/);
  assert.match(c.root.innerHTML,/Kommande tävlingar/);
  assert.match(c.root.innerHTML,/Avverkade tävlingar \(2\)/);
+ assert.ok(c.root.innerHTML.indexOf('data-mgp-season-event="arg-id"') <
+    c.root.innerHTML.indexOf('data-mgp-season-event="thai-id"'),
+    'completed GP tiles show most recent first');
  assert.match(c.root.innerHTML,/dagar kvar/);
  assert.match(c.root.innerHTML,/mgp-season-track--next/,'hero has a circuit picture');
  assert.match(c.root.innerHTML,/mgp-season-track--tile/,'upcoming and past races have circuit pictures');

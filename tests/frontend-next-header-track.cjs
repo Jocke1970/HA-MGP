@@ -141,7 +141,8 @@ const context={customElements:{
   assert.match(eventHeader[1],/aria-expanded="false"/,'schedule initially collapsed');
   assert.match(eventHeader[1],/mgp-next-chip/,'next session chip in hero');
   assert.match(eventHeader[1],/MotoGP · Warm Up/,'next session type is displayed');
-  assert.match(eventHeader[1],/data-next-start=/,'chip uses existing countdown refresh selector');
+  assert.doesNotMatch(eventHeader[1],/data-next-start=/,'cross-weekend 2099 session not selected');
+  assert.match(eventHeader[1],/Nästa pass ej verifierat/,'uncertain schedule signalled');
   assert.match(card.root.innerHTML,/<div class="foot"><details class="mgp-ui-footer">/,'UI details live in footer');
   assert.equal((card.root.innerHTML.match(/ⓘ UI-information/g)||[]).length,1,'only one diagnostics expander');
   assert.ok(card.root.innerHTML.indexOf('mgp-hero-grid')<card.root.innerHTML.indexOf('Version footer'),

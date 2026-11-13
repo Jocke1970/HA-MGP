@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const TAG='ha-motogp-next-overview-card';
-  const BUILD='calendar-20261113-02';
+  const BUILD='calendar-20261113-03';
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const parseDate=raw=>{
     const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(raw||''));
@@ -264,7 +264,8 @@
     // Show every round including R1 as an ordinary clickable tile.
     const futurePreview=selectedYear>now.getFullYear()||selectedYear>backendYear;
     const upcoming=future.filter(e=>futurePreview||e!==next).map(e=>cardHtml(e,false)).join('');
-    const previous=past.map(e=>cardHtml(e,true)).join('');
+    // Display completed GPs newest-first, preserving original round numbering.
+    const previous=[...past].reverse().map(e=>cardHtml(e,true)).join('');
     const nextHtml=next?'<div class="mgp-season-next"><div class="mgp-season-next-layout"><div class="mgp-season-next-copy"><span class="mgp-season-mark">'+labels[1]+' · R'+(index+1)+'</span>'+
       '<h3>'+flagFor(next.country)+' '+eventName(next)+'</h3><b>'+dates(next)+'</b>'+
       '<small>'+circuit(next)+(next.country?' · '+country(next):'')+'</small>'+ (countdown(next)?'<strong class="mgp-season-mark">'+esc(countdown(next))+'</strong>':'')+
