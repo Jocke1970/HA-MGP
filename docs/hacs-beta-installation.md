@@ -1,12 +1,12 @@
-# HA-MGP b31 – HACS-beta-test
+# HA-MGP b32 – HACS beta / okulärbesiktning
 
-1. Säkerhetskopiera Home Assistant och behåll `/config/motogp_data/` samt tidigare arkiv.
-2. Välj **`2026.11.0b31`** under HACS-beta när prereleasen publicerats. Installera **inte `dev`**.
-3. Starta om HA mellan sessioner. Gör `Ctrl+Shift+R` i webbläsaren.
-4. Kontrollera att frontend visar **`0.3.0-dev.66`** och att bara den ordinarie HA-MGP-resursen är registrerad.
-5. Öppna kalenderns och kommande GP:s banpopuper. Kontrollera **nationsflagga → bannamn → GP-namn → datum**, större faktarutor med 3/2-kolumnslayout och att Stäng-knappen inte visas.
-6. Tryck på banbilden för att stänga, prova Escape och klick utanför. Vid saknad banbild ska det finnas alternativ för att stänga. Kontrollera att källänkar och resultatflikar **inte** stänger popupen.
-7. Prova livetiming, klassbyte, spoilerläge, helgschema och nästa-GP-övergång under racehelgen.
-8. Rollback vid behov: **b30** via HACS beta, utan att radera data eller entiteter.
+1. Säkerhetskopiera HA. Behåll `/config/motogp_data/` och tidigare arkiv.
+2. Installera **`2026.11.0b32`** via HACS beta efter publicerad prerelease. Installera **inte `dev`**.
+3. Starta om HA mellan sessioner och gör `Ctrl+Shift+R` i webbläsaren.
+4. Kontrollera frontendversionen **`0.3.0-dev.68`** och att bara ordinarie HA-MGP-resursen är registrerad.
+5. Kontrollera att Valencia visar `Valencia GP`, Portugal `Portugal GP` och andra GP visar ett riktigt namn när ett sådant finns.
+6. Testa att klicka på **banstrecket och den tomma ytan runt banan inne i banbilden**: båda ska stänga.
+7. Klicka utanför popupen, tryck `Esc` och försök klicka i faktarutor/källänkar; interna fakta ska inte stänga popupen. Testa kalenderpopup + aktivt GP, dator och mobil.
+8. Om något brister: rollback till **b31** via HACS beta, utan att radera datakatalog eller entiteter.
 
-`main` släpps först efter praktisk verifiering och uttryckligt godkännande.
+Ingen main-release görs innan praktiska tester och ditt uttryckliga godkännande.
