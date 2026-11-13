@@ -1,15 +1,19 @@
-# HA-MGP 2026.11.0b32 – GP-namn och större klickyta för banpopup
+# HA-MGP 2026.11.0b33 – sessionsval, nedräkning och kalenderordning
 
-**HACS beta:** `2026.11.0b32` · **Frontend:** `0.3.0-dev.68`
+**HACS beta:** `2026.11.0b33` · **Frontend:** `0.3.0-dev.71`
 
-## Ändrat sedan b31
-- GP-rubrik använder i första hand ett fullständigt eventnamn. Koder som `VAL` och `POR` ersätts med `Valencia GP` respektive `Portugal GP` där bana matchar; andra kortkoder får ett neutralt lands-/GP-namn.
-- Både kalenderns och aktuellt GP:s popup har en **hel klickbar banbildsyta**, inte enbart SVG-banan.
-- Bakgrundsklick kräver en faktisk position **utanför popupens** synliga rektangel. Tomma utrymmen **inne** i popupen får inte stänga den.
-- `Esc` fortsätter stänga. Faktarutor, resultat, källänkar och popupens scrollning ska fungera som tidigare.
-- Inga nya backend/API-anrop eller automatiska banverifieringar. Officiell baninsamlare är oförändrad read-only-pilot.
+## Ändrat sedan b32
+- Officiell källänk i baninformationen heter `Official MotoGP-page`.
+- Hela banbildens rektangulära klickyta fungerar för att stänga popupen; befintlig bakgrund/Esc-hantering bevaras.
+- Nästa sessions nedräkning visar dagar, timmar och minuter (`0d 12h 37m till start`) och använder befintlig tidsstämpel.
+- Nästa session måste kunna kopplas till det valda GP-evenemanget; sessionsrader utanför relevant datumfönster eller med avvikande event-ID avvisas. Vid otillräcklig data visas `Nästa pass ej verifierat` utan falsk nedräkning.
+- Genomförda Grand Prix visas nyaste först, men ursprungliga omgångsnummer behålls.
 
-## Okulärbesiktning innan main
-Installera b32 **via HACS beta**, starta om Home Assistant mellan sessioner och gör hård omladdning. Granska Valencia/Portugal och ett GP med fullständigt källnamn. Testa klick på banstreck **och tom yta inom bilden**, samt klick utanför, Esc och klick i faktarutor. Kontrollera båda popupvarianterna på dator och mobil.
+## Säkerhet och avgränsning
+Endast frontend och release-metadata. **Ingen ändring av backend, Pulselive, API-anropsfrekvens eller banfaktaverifiering.**
+Den befintliga kontrollen av eventstart har en 12-timmars förtolerans; legitima tidigare pass behöver verifieras med verkliga HA-data.
 
-**Rollback:** `2026.11.0b31`. Behåll `/config/motogp_data/` och samtliga entiteter. **Main lämnas orörd** tills senare separat beslut.
+## Okulärbesiktning
+Installera b33 via HACS beta, starta om HA och gör hård omladdning. Kontrollera nästa session mot kalendern, tidszon/nedräkning, genomförda race i fallande datumordning och båda popupvarianterna på mobil/dator.
+
+**Rollback:** `2026.11.0b32`. Behåll `/config/motogp_data/` och entiteter. **Main lämnas orörd.**
