@@ -22,7 +22,7 @@ def git_blob_sha(data: bytes) -> str:
 
 def check_bundle_integrity() -> None:
     manifest = json.loads((PKG / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "2026.11.0b34"
+    assert manifest["version"] == "2026.11.0b35"
     assert {"http", "frontend"}.issubset(manifest["dependencies"])
 
     # Beta is intentionally a minimal HACS tree (without frontend/ or dist/).

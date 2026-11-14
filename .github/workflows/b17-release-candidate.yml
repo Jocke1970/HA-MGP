@@ -1,9 +1,9 @@
-name: HA-MGP b34 release candidate gate
+name: HA-MGP b35 release candidate gate
 
 on:
   workflow_dispatch:
   push:
-    branches: ['release/b34-*']
+    branches: ['release/b35-*']
 
 permissions:
   contents: read
@@ -38,7 +38,7 @@ jobs:
           import json
           from pathlib import Path
           m=json.loads(Path('custom_components/motogp_sensor/manifest.json').read_text())
-          assert m['version']=='2026.11.0b34'
+          assert m['version']=='2026.11.0b35'
           code=Path('custom_components/motogp_sensor/coordinator.py').read_text()
           assert 'async_get_entry_list(' not in code, 'Unsupported entry endpoint must not be called in b22'
           assert 'PulseliveDiagnostics' in code, 'Passive diagnostics missing'
@@ -71,7 +71,7 @@ jobs:
           ]
           index=[src.index(marker) for _,marker in parts]
           assert index==sorted(index) and len(set(index))==len(index)
-          assert '0.3.0-dev.72' in src
+          assert '0.3.0-dev.73' in src
           assert 'header-track-weather-20261113-06' in src
           assert 'mgp-pre-grid-scroll' in src
           assert '/local/ha-mgp/circuits/' in src
