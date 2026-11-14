@@ -219,6 +219,9 @@ const context={customElements:{
   assert.equal(docs.length,1,'single style');
   const timeCard=new Timing();
   const times=timeCard._hass.states['sensor.motogp_next_race'].attributes;
+  // The fixture must identify the current GP; nearby stale sessions are not valid.
+  const today=new Date().toISOString().slice(0,10);
+  times.date_start=today;times.date_end=today;times.event_id='current-gp';
   times.sessions_all=[{date_utc:new Date(Date.now()+35*60*1000).toISOString(),status:'SCHEDULED'}];
   assert.equal(timeCard._timing(),'','timing stays hidden more than 30 min before next pass');
   times.sessions_all=[{date_utc:new Date(Date.now()+25*60*1000).toISOString(),status:'SCHEDULED'}];
