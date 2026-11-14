@@ -38,6 +38,12 @@ schedule(29,{date_start:distant,date_end:distant,event_id:'gp-portugal',sessions
  {category:'Moto2',name:'FP2',event_id:'gp-old',date_utc:new Date(Date.now()+5*60000).toISOString(),status:'Scheduled'},
  {category:'Moto3',name:'FP1',event_id:'gp-portugal',date_utc:new Date(Date.now()+5*86400000).toISOString(),status:'Scheduled'}]});
 assert.doesNotMatch(card._timing(),/Moto2 · FP2|STARTLISTA/,'stale FP2 must not trigger a false T-30 roster');
+// A mismatching event ID within the current event date window is also invalid.
+const near=new Date(Date.now()+5*60000).toISOString().slice(0,10);
+schedule(29,{date_start:near,date_end:near,event_id:'correct-gp',sessions_all:[
+ {category:'Moto2',name:'FP2',event_id:'other-gp',
+  date_utc:new Date(Date.now()+5*60000).toISOString(),status:'Scheduled'}]});
+assert.doesNotMatch(card._timing(),/Moto2 · FP2|STARTLISTA/,'pre-session rejects wrong explicit event ID');
 schedule(31);
 assert.match(card._timing(),/Senaste: MotoGP · Qualifying/);
 schedule(29);
