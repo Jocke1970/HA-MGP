@@ -39,6 +39,11 @@
   }
   function nextPass(race, now, filter = 'Total') {
     const a = race?.attributes || {};
+    const startKey=String(a.date_start||'').slice(0,10),endKey=String(a.date_end||'').slice(0,10);
+    const validKey=x=>/^\d{4}-\d{2}-\d{2}$/.test(x)&&Number.isFinite(Date.parse(x+'T00:00:00Z'));
+    if(!validKey(startKey)||!validKey(endKey)||endKey<startKey)return null;
+    const from=Date.parse(startKey+'T00:00:00Z')-12*3600000;
+    const to=Date.parse(endKey+'T00:00:00Z')+2*86400000;
     const source = Array.isArray(a.sessions_all) ? a.sessions_all : Array.isArray(a.sessions) ? a.sessions : [];
     const start = String(a.date_start || '').slice(0, 10), end = String(a.date_end || '').slice(0, 10);
     return source.map(pass => {
@@ -47,7 +52,8 @@
         name:sessionName(pass.name || pass.type || ''),
         day:`${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`,
         time:`${pad(date.getHours())}:${pad(date.getMinutes())}`} : null;
-    }).filter(item => item && (!start || item.day >= start) && (!end || item.day <= end) &&
+    }).filter(item => item && item.date.getTime()>=from && item.date.getTime()<to &&
+      (!item.pass.event_id||!a.event_id||String(item.pass.event_id)===String(a.event_id)) &&
       (filter === 'Total' || item.category === filter) && item.date.getTime() > now.getTime() &&
       !['FINISHED','CANCELLED','CANCELED'].includes(String(item.pass.status || '').toUpperCase()))
       .sort((a,b) => a.date-b.date)[0] || null;
