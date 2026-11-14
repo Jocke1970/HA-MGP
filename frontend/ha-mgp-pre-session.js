@@ -1,7 +1,7 @@
 /* HA-MGP dev.37: read-only transition from previous result to verified entrants/grid. */
 (()=>{
 'use strict';
-const TAG='ha-motogp-next-timing-card',BUILD='pre-session-grid-20261108-02';
+const TAG='ha-motogp-next-timing-card',BUILD='pre-session-grid-20261114-01';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const valid=v=>v!==null&&v!==undefined&&String(v).trim()!=='';
 const label=v=>({RAC:'Race',SPR:'Sprint',WUP:'Warm Up',PR:'Practice'})[String(v||'').toUpperCase()]||String(v||'');
@@ -39,12 +39,25 @@ function gridMarkup(rows){
  }
  return html+'</div>';
 }
+function eventWindow(attrs){
+ const start=String(attrs.date_start||'').slice(0,10),end=String(attrs.date_end||'').slice(0,10);
+ const valid=d=>/^\d{4}-\d{2}-\d{2}$/.test(d)&&Number.isFinite(Date.parse(d+'T00:00:00Z'));
+ if(!valid(start)||!valid(end)||end<start)return null;
+ return {from:Date.parse(start+'T00:00:00Z')-12*3600000,
+  to:Date.parse(end+'T00:00:00Z')+2*86400000};
+}
+function matchesEvent(s,attrs,at,window){
+ if(!s||!window||!Number.isFinite(at)||at<window.from||at>=window.to)return false;
+ if(s.event_id&&attrs.event_id&&String(s.event_id)!==String(attrs.event_id))return false;
+ return true;
+}
 function upcoming(card){
  const race=card._hass?.states?.[card._ids.race],a=race?.attributes||{};
  const all=Array.isArray(a.sessions_all)?a.sessions_all:[];
- const now=Date.now();
+ const now=Date.now(),window=eventWindow(a);
  const available=all.map(s=>({s,at:Date.parse(s?.date_utc||s?.date||'')}))
-  .filter(x=>Number.isFinite(x.at)&&!['FINISHED','CANCELLED','CANCELED'].includes(String(x.s?.status||'').toUpperCase()));
+  .filter(x=>matchesEvent(x.s,a,x.at,window)&&
+   !['FINISHED','CANCELLED','CANCELED'].includes(String(x.s?.status||'').toUpperCase()));
  const future=available.filter(x=>x.at>now).sort((x,y)=>x.at-y.at);
  // A scheduled start does not establish live timing: retain the entry roster
  // briefly until a matching and TV-delay-approved live snapshot arrives.
