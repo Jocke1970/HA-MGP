@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const TAG='ha-motogp-next-overview-card';
-  const BUILD='calendar-20261113-04';
+  const BUILD='calendar-20261114-01';
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const parseDate=raw=>{
     const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(raw||''));
@@ -334,7 +334,7 @@
           '" title="'+(pole?.rider&&pole?.time&&pole?.session==='Q2'?'Verifierat kval':pole?.rider||pole?.time?'Delvis verifierat kval':'Ej verifierat kval')+
           '"></i><b>'+
           (pole?.rider&&pole?.time?esc(pole.rider+' · '+pole.time):'Ej verifierat kval')+'</b></span>'+
-          '<span>Sprint<b>'+ (sprint.length?esc(sprint[0].rider||'—'):'Ej tillgängligt')+'</b></span></div>'+
+          (selectedClass==='MotoGP'?'<span>Sprint<b>'+ (sprint.length?esc(sprint[0].rider||'—'):'Ej tillgängligt')+'</b></span>':'')+'</div>'+
         (raceRows?'<h4>Raceresultat · '+selectedClass+'</h4><table class="mgp-season-results"><thead><tr><th>Plac.</th><th>Förare</th><th>Tid / status</th></tr></thead><tbody>'+
           raceRows+'</tbody></table>':
           '<p class="mgp-season-detail-note">Inget verifierat raceresultat för denna klass.</p>')+

@@ -84,9 +84,13 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
  assert.doesNotMatch(c.root.innerHTML,/data-mgp-season-close>Stäng/,'no visible close button');
  assert.match(c.root.innerHTML,/Winner/,'correct event results displayed from Pulselive');
  assert.match(c.root.innerHTML,/Pole Rider/,'verified Q2 pole row displayed');
+ assert.match(c.root.innerHTML,/<span>Sprint<b>/,'MotoGP shows sprint result tile');
  assert.match(c.root.innerHTML,/data-status="verified" aria-label="Verifierat kval"/,'official Q2 pole gets green status');
  c._click({target:clickTarget('data-mgp-season-category','Moto2')});
  assert.match(c.root.innerHTML,/Inget verifierat raceresultat/,'missing category never borrows MotoGP');
+ assert.doesNotMatch(c.root.innerHTML,/<span>Sprint<b>/,'Moto2 does not show sprint tile');
+ c._click({target:clickTarget('data-mgp-season-category','Moto3')});
+ assert.doesNotMatch(c.root.innerHTML,/<span>Sprint<b>/,'Moto3 does not show sprint tile');
  assert.match(c.root.innerHTML,/data-status="missing" aria-label="Ej verifierat kval"/,'unverified qualifying is RED');
  c._click({target:clickTarget('data-mgp-season-close','')});
  c._click({target:clickTarget('data-mgp-season-event','second-id')});
