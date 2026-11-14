@@ -1,4 +1,4 @@
-/* MotoGP Next SINGLE Lovelace resource | build next-one-20261113-06 | read only. */
+/* MotoGP Next SINGLE Lovelace resource | build next-one-20261114-01 | read only. */
 /* MotoGP Next: isolated frontend for motogp-test. No HA writes or service calls. */
 (() => {
   'use strict';
@@ -303,9 +303,9 @@
       this._track(now,race);
       const event=valid(race?.state)?race.state:'Inget evenemang tillgängligt';
       const meta=[a.circuit,a.country,a.date_start&&a.date_end?dateRange(a.date_start,a.date_end):''].filter(valid);
-      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.72</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
+      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.73</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
         this._schedule(race,now)+`<div class="root">${this._weather()}${this._timing()}</div>`+
-        `<div class="foot">HA-MGP UI · 0.3.0-dev.72 · UI-preview</div></div>`;
+        `<div class="foot">HA-MGP UI · 0.3.0-dev.73 · UI-preview</div></div>`;
     }
     getCardSize(){return 8;}
     getGridOptions(){return {columns:12,rows:'auto',min_columns:6};}
@@ -359,6 +359,11 @@
   }
   function nextPass(race, now, filter = 'Total') {
     const a = race?.attributes || {};
+    const startKey=String(a.date_start||'').slice(0,10),endKey=String(a.date_end||'').slice(0,10);
+    const validKey=x=>/^\d{4}-\d{2}-\d{2}$/.test(x)&&Number.isFinite(Date.parse(x+'T00:00:00Z'));
+    if(!validKey(startKey)||!validKey(endKey)||endKey<startKey)return null;
+    const from=Date.parse(startKey+'T00:00:00Z')-12*3600000;
+    const to=Date.parse(endKey+'T00:00:00Z')+2*86400000;
     const source = Array.isArray(a.sessions_all) ? a.sessions_all : Array.isArray(a.sessions) ? a.sessions : [];
     const start = String(a.date_start || '').slice(0, 10), end = String(a.date_end || '').slice(0, 10);
     return source.map(pass => {
@@ -367,7 +372,8 @@
         name:sessionName(pass.name || pass.type || ''),
         day:`${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`,
         time:`${pad(date.getHours())}:${pad(date.getMinutes())}`} : null;
-    }).filter(item => item && (!start || item.day >= start) && (!end || item.day <= end) &&
+    }).filter(item => item && item.date.getTime()>=from && item.date.getTime()<to &&
+      (!item.pass.event_id||!a.event_id||String(item.pass.event_id)===String(a.event_id)) &&
       (filter === 'Total' || item.category === filter) && item.date.getTime() > now.getTime() &&
       !['FINISHED','CANCELLED','CANCELED'].includes(String(item.pass.status || '').toUpperCase()))
       .sort((a,b) => a.date-b.date)[0] || null;
@@ -1843,7 +1849,13 @@ function timingWindow(card){
   const a=card._hass?.states?.[card._ids?.race]?.attributes||{};
   const items=Array.isArray(a.sessions_all)?a.sessions_all:Array.isArray(a.sessions)?a.sessions:[];
   const now=Date.now();
+  const start=String(a.date_start||'').slice(0,10),end=String(a.date_end||'').slice(0,10);
+  const valid=x=>/^\d{4}-\d{2}-\d{2}$/.test(x)&&Number.isFinite(Date.parse(x+'T00:00:00Z'));
+  if(!valid(start)||!valid(end)||end<start)return false;
+  const from=Date.parse(start+'T00:00:00Z')-12*3600000;
+  const to=Date.parse(end+'T00:00:00Z')+2*86400000;
   return items.some(s=>{
+    if(s?.event_id&&a.event_id&&String(s.event_id)!==String(a.event_id))return false;
     if(!s||['FINISHED','CANCELLED','CANCELED'].includes(String(s.status||'').toUpperCase()))return false;
     let d=s.date_utc?new Date(String(s.date_utc)):null;
     if(!d||!Number.isFinite(d.getTime())){
@@ -1853,6 +1865,7 @@ function timingWindow(card){
       if(d.getFullYear()!==+m[1]||d.getMonth()!==+m[2]-1||d.getDate()!==+m[3]||
         d.getHours()!==+m[4]||d.getMinutes()!==+m[5])return false;
     }
+    if(d.getTime()<from||d.getTime()>=to)return false;
     const delta=d.getTime()-now;
     // 30 min lead-in, then a 3h grace period for delayed, not-yet-finished starts.
     return delta<=30*60*1000 && delta>=-3*60*60*1000;
@@ -3411,7 +3424,7 @@ customElements.whenDefined(TAG).then(install);
 /* HA-MGP dev.37: read-only transition from previous result to verified entrants/grid. */
 (()=>{
 'use strict';
-const TAG='ha-motogp-next-timing-card',BUILD='pre-session-grid-20261108-02';
+const TAG='ha-motogp-next-timing-card',BUILD='pre-session-grid-20261114-01';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const valid=v=>v!==null&&v!==undefined&&String(v).trim()!=='';
 const label=v=>({RAC:'Race',SPR:'Sprint',WUP:'Warm Up',PR:'Practice'})[String(v||'').toUpperCase()]||String(v||'');
@@ -3449,12 +3462,25 @@ function gridMarkup(rows){
  }
  return html+'</div>';
 }
+function eventWindow(attrs){
+ const start=String(attrs.date_start||'').slice(0,10),end=String(attrs.date_end||'').slice(0,10);
+ const valid=d=>/^\d{4}-\d{2}-\d{2}$/.test(d)&&Number.isFinite(Date.parse(d+'T00:00:00Z'));
+ if(!valid(start)||!valid(end)||end<start)return null;
+ return {from:Date.parse(start+'T00:00:00Z')-12*3600000,
+  to:Date.parse(end+'T00:00:00Z')+2*86400000};
+}
+function matchesEvent(s,attrs,at,window){
+ if(!s||!window||!Number.isFinite(at)||at<window.from||at>=window.to)return false;
+ if(s.event_id&&attrs.event_id&&String(s.event_id)!==String(attrs.event_id))return false;
+ return true;
+}
 function upcoming(card){
  const race=card._hass?.states?.[card._ids.race],a=race?.attributes||{};
  const all=Array.isArray(a.sessions_all)?a.sessions_all:[];
- const now=Date.now();
+ const now=Date.now(),window=eventWindow(a);
  const available=all.map(s=>({s,at:Date.parse(s?.date_utc||s?.date||'')}))
-  .filter(x=>Number.isFinite(x.at)&&!['FINISHED','CANCELLED','CANCELED'].includes(String(x.s?.status||'').toUpperCase()));
+  .filter(x=>matchesEvent(x.s,a,x.at,window)&&
+   !['FINISHED','CANCELLED','CANCELED'].includes(String(x.s?.status||'').toUpperCase()));
  const future=available.filter(x=>x.at>now).sort((x,y)=>x.at-y.at);
  // A scheduled start does not establish live timing: retain the entry roster
  // briefly until a matching and TV-delay-approved live snapshot arrives.

@@ -219,6 +219,9 @@ const context={customElements:{
   assert.equal(docs.length,1,'single style');
   const timeCard=new Timing();
   const times=timeCard._hass.states['sensor.motogp_next_race'].attributes;
+  // The fixture must identify the current GP; nearby stale sessions are not valid.
+  const today=new Date().toISOString().slice(0,10);
+  times.date_start=today;times.date_end=today;times.event_id='current-gp';
   times.sessions_all=[{date_utc:new Date(Date.now()+35*60*1000).toISOString(),status:'SCHEDULED'}];
   assert.equal(timeCard._timing(),'','timing stays hidden more than 30 min before next pass');
   times.sessions_all=[{date_utc:new Date(Date.now()+25*60*1000).toISOString(),status:'SCHEDULED'}];
@@ -232,6 +235,16 @@ const context={customElements:{
   timeCard._live=null;
   times.sessions_all=[{date_utc:new Date(Date.now()+31*60*1000).toISOString(),status:'SCHEDULED'}];
   assert.equal(timeCard._timing(),'','31-minute boundary must remain hidden');
+  // Three independent session paths must reject a stale nearby pass for a later GP.
+  const laterGP=new Date(Date.now()+5*86400000).toISOString().slice(0,10);
+  times.date_start=laterGP;times.date_end=laterGP;times.event_id='portugal-gp';
+  times.sessions_all=[
+    {event_id:'old-gp',category:'Moto2',name:'FP2',date_utc:new Date(Date.now()+5*60000).toISOString(),status:'SCHEDULED'},
+    {event_id:'portugal-gp',category:'Moto3',name:'FP1',date_utc:new Date(Date.now()+5*86400000).toISOString(),status:'SCHEDULED'}];
+  assert.equal(timeCard._timing(),'','nearby stale FP2 may not reveal timing for Portugal');
+  times.sessions_all=[{event_id:'old-gp',category:'Moto2',name:'FP2',
+    date_utc:new Date(Date.now()+25*60000).toISOString(),status:'SCHEDULED'}];
+  assert.equal(timeCard._timing(),'','mismatched event ID never opens timing within 30 min');
 
   assert.match(docs[0].textContent,/@container \(max-width:900px\)/);
   assert.match(docs[0].textContent,/@container \(max-width:680px\)/);

@@ -22,13 +22,28 @@ vm.runInNewContext(fs.readFileSync(process.argv[2]||'frontend/ha-mgp-pre-session
   {customElements:elements,Date,console});
 const card=new Timing();
 function schedule(offset,attrs={}){
+  const date=new Date(Date.now()+offset*60000).toISOString().slice(0,10);
   card._hass.states['sensor.motogp_next_race']={attributes:{
-    sessions_all:[{category:'Moto3',name:'Race',date_utc:new Date(Date.now()+offset*60000).toISOString(),status:'Scheduled'}],
+    date_start:date,date_end:date,event_id:'gp-current',
+    sessions_all:[{category:'Moto3',name:'Race',event_id:'gp-current',date_utc:new Date(Date.now()+offset*60000).toISOString(),status:'Scheduled'}],
     entry_lists:{Moto3:[{number:'9',rider:'Tester Nine',team:'Red'},{number:'2',rider:'Tester Two',team:'Blue'}]},
     start_grids:{Moto3:[{position:2,number:'9',rider:'Tester Nine'},{position:1,number:'2',rider:'Tester Two'}]},
     ...attrs,
   }};
 }
+schedule(31);
+// Regression: an old FP2 near the current time must not override a later GP.
+const distant=new Date(Date.now()+5*86400000).toISOString().slice(0,10);
+schedule(29,{date_start:distant,date_end:distant,event_id:'gp-portugal',sessions_all:[
+ {category:'Moto2',name:'FP2',event_id:'gp-old',date_utc:new Date(Date.now()+5*60000).toISOString(),status:'Scheduled'},
+ {category:'Moto3',name:'FP1',event_id:'gp-portugal',date_utc:new Date(Date.now()+5*86400000).toISOString(),status:'Scheduled'}]});
+assert.doesNotMatch(card._timing(),/Moto2 · FP2|STARTLISTA/,'stale FP2 must not trigger a false T-30 roster');
+// A mismatching event ID within the current event date window is also invalid.
+const near=new Date(Date.now()+5*60000).toISOString().slice(0,10);
+schedule(29,{date_start:near,date_end:near,event_id:'correct-gp',sessions_all:[
+ {category:'Moto2',name:'FP2',event_id:'other-gp',
+  date_utc:new Date(Date.now()+5*60000).toISOString(),status:'Scheduled'}]});
+assert.doesNotMatch(card._timing(),/Moto2 · FP2|STARTLISTA/,'pre-session rejects wrong explicit event ID');
 schedule(31);
 assert.match(card._timing(),/Senaste: MotoGP · Qualifying/);
 schedule(29);

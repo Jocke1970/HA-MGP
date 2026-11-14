@@ -128,6 +128,22 @@ states={...states,'switch.motogp_no_spoiler':entity('on')};
 timing.hass={states};
 assert.doesNotMatch(timing.view.innerHTML,/&lt;script&gt;alert/);
 assert.match(timing.view.innerHTML,/SPOILERLÄGE/);
+// A stale near-now Moto2 FP2 must not override a future Portugal FP1 in the split card.
+fakeNow=Date.parse('2026-11-14T10:20:00+01:00');
+const portugal=entity('GRAND PRIX OF PORTUGAL',{
+ date_start:'2026-11-20',date_end:'2026-11-22',event_id:'portugal',
+ sessions_all:[
+  {category:'Moto2',name:'FP2',event_id:'old-event',
+    date_utc:new Date(fakeNow+5*60000).toISOString(),status:'SCHEDULED'},
+  {category:'Moto3',name:'FP1',event_id:'portugal',
+    date_utc:'2026-11-20T09:00:00Z',status:'SCHEDULED'}
+ ]});
+const guardedTiming=new Timing();
+guardedTiming.setConfig({type:'custom:ha-motogp-next-timing-card'});
+const guardedStates={'sensor.motogp_next_race':portugal,'switch.motogp_no_spoiler':entity('off')};
+guardedTiming.hass={states:guardedStates};
+assert.doesNotMatch(guardedTiming.view.innerHTML,/Moto2 · FP2/,'split card rejects stale FP2');
+assert.match(guardedTiming.view.innerHTML,/Moto3 · FP1/,'split card selects the later GP pass');
 // A 1-second countdown tick only edits countdown text nodes; no 1-second table rerender.
 const updated={textContent:''};
 timing.shadowRoot.querySelectorAll=()=>[{getAttribute:()=>String(Date.parse('2026-09-19T11:20:00+02:00')),

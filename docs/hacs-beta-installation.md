@@ -1,13 +1,12 @@
-# HA-MGP b34 – HACS beta / okulärbesiktning
+# HA-MGP b35 – HACS beta / okulärbesiktning
 
-1. Säkerhetskopiera HA och behåll `/config/motogp_data/` och alla entiteter.
-2. Installera **`2026.11.0b34`** via HACS beta efter bekräftad publicering. Installera aldrig dev.
+1. Säkerhetskopiera Home Assistant. Behåll `/config/motogp_data/` och alla entiteter.
+2. Installera **`2026.11.0b35`** från HACS beta efter publicerad prerelease, aldrig dev.
 3. Starta om HA och gör hård omladdning (`Ctrl+Shift+R`).
-4. Kontrollera UI-version `0.3.0-dev.72`.
-5. I kalendern: R22 ska inte visa kod `VAL`, utan `Valencia GP`. Bekräfta övriga GP och 2027.
-6. Öppna genomfört GP och växla mellan MotoGP/Moto2/Moto3. För Pole (Q2): röd plupp om verifierad Q2-pole saknas, grön endast om officiellt Q2-resultat har förare + tid. Delvis kända uppgifter får gul plupp. P1 på startgridden är inte automatiskt pole.
-7. Testa att klick på rubrik, text och tom yta stänger popupen; klassflikar, länkar och andra kontroller ska fungera utan att oavsiktligt stänga den. Testa båda popupvarianterna på mobil och desktop, samt Esc och utanför-klick.
-8. Kontrollera att b33:s nästa-session-regler, nedräkning och senaste-avverkade GP först fungerar som innan.
-9. Vid problem: rollback till **b33** utan radering av datakatalog eller entiteter.
+4. Kontrollera att frontend visar `0.3.0-dev.73`.
+5. Under väntan på Portugal: toppkortet ska fortsätta visa korrekt nästa session (t.ex. Moto3 FP1); timingkortet får inte visa en gammal Moto2 FP2 eller felaktig "STARTLISTA · INVÄNTAR LIVE".
+6. Timingkortet får öppna förstartsläget först inom 30 minuter före ett **matchande GP-pass**, och får fortsätta vid fördröjd bekräftelse. Äkta live-session får visas som tidigare.
+7. Kontrollera att kalenderpopup, banfakta, kvalpluppar och MotoGP/Moto2/Moto3-flikar fungerar som i b34 på dator och mobil.
+8. Vid problem: rollback till **b34**, utan att ta bort data eller entiteter.
 
-Main uppdateras inte utan uttryckligt godkännande.
+**Main lämnas orörd** tills okulärbesiktningen är godkänd.

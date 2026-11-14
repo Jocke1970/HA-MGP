@@ -113,7 +113,13 @@ function timingWindow(card){
   const a=card._hass?.states?.[card._ids?.race]?.attributes||{};
   const items=Array.isArray(a.sessions_all)?a.sessions_all:Array.isArray(a.sessions)?a.sessions:[];
   const now=Date.now();
+  const start=String(a.date_start||'').slice(0,10),end=String(a.date_end||'').slice(0,10);
+  const valid=x=>/^\d{4}-\d{2}-\d{2}$/.test(x)&&Number.isFinite(Date.parse(x+'T00:00:00Z'));
+  if(!valid(start)||!valid(end)||end<start)return false;
+  const from=Date.parse(start+'T00:00:00Z')-12*3600000;
+  const to=Date.parse(end+'T00:00:00Z')+2*86400000;
   return items.some(s=>{
+    if(s?.event_id&&a.event_id&&String(s.event_id)!==String(a.event_id))return false;
     if(!s||['FINISHED','CANCELLED','CANCELED'].includes(String(s.status||'').toUpperCase()))return false;
     let d=s.date_utc?new Date(String(s.date_utc)):null;
     if(!d||!Number.isFinite(d.getTime())){
@@ -123,6 +129,7 @@ function timingWindow(card){
       if(d.getFullYear()!==+m[1]||d.getMonth()!==+m[2]-1||d.getDate()!==+m[3]||
         d.getHours()!==+m[4]||d.getMinutes()!==+m[5])return false;
     }
+    if(d.getTime()<from||d.getTime()>=to)return false;
     const delta=d.getTime()-now;
     // 30 min lead-in, then a 3h grace period for delayed, not-yet-finished starts.
     return delta<=30*60*1000 && delta>=-3*60*60*1000;
