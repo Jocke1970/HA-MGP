@@ -118,7 +118,7 @@ jobs:
           assert "mgp-timing-record-chip" in source
           assert "Championship standings" in source
           assert '"es":{' in source
-          assert "calendar-20261113-04" in source
+          assert "calendar-20261114-01" in source
           assert "mgp-season" in source
           assert 'HA-MGP UI · 0.3.0-dev.74' in source
           assert source == Path('custom_components/motogp_sensor/www/ha-motogp-next.js').read_text(encoding='utf-8')
