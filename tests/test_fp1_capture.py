@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Read-only FP1 collector smoke tests."""
 import importlib.util
+import argparse
+from unittest.mock import patch
 import json
 import stat
 import tempfile
@@ -26,4 +28,18 @@ with tempfile.TemporaryDirectory() as directory:
     mod.write_line(path, result)
     assert json.loads(path.read_text()) == result
     assert stat.S_IMODE(path.stat().st_mode) == 0o600
+with tempfile.TemporaryDirectory() as directory:
+    target = Path(directory)
+    token_file = target / "token"
+    token_file.write_text("dummy-token")
+    args = argparse.Namespace(token_env="MISSING_TOKEN", token_file=str(token_file),
+                              ha_url="http://127.0.0.1:8123",
+                              start="2026-11-20T09:45:00+01:00",
+                              end="2026-11-20T12:45:00+01:00",
+                              once=True, timeout=2, interval=15,
+                              output=str(target / "once.jsonl"))
+    with patch.object(mod, "capture", return_value={"timestamp_utc": mod.utc_now(),
+        "entities": {"sensor.motogp_next_race": {"state": "POR"}}, "errors": {}}):
+        assert mod.run(args) == 0
+    assert len((target / "once.jsonl").read_text().splitlines()) == 1
 print("FP1 collector smoke tests OK")
