@@ -1,0 +1,10 @@
+[Unit]
+Description=HA-MGP FP1 diagnostic capture (Portugal)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=%h/.config/ha-mgp-fp1.env
+ExecStart=/usr/bin/python3 %h/HA-MGP/scripts/diagnostics/capture_fp1.py --output %h/ha-mgp-captures/mgp-fp1-2026-11-20.jsonl
+TimeoutStartSec=4h
