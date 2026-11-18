@@ -181,6 +181,53 @@ def check_websocket_dependencies() -> None:
     assert "websocket_api.async_register_command(hass, websocket_rider_laps)" in source
 
 
+
+def check_results_event_date_guard() -> None:
+    """Regression: Portugal Results timetable was one week stale."""
+    import importlib
+
+    pkg_name = "motogp_guard_test"
+    pkg = types.ModuleType(pkg_name)
+    pkg.__path__ = [str(INTEGRATION)]
+    sys.modules[pkg_name] = pkg
+    try:
+        guard = importlib.import_module(f"{pkg_name}.broadcast_schedule")
+        event = {"date_start": "2026-11-20", "date_end": "2026-11-22"}
+        stale = {"id": "results-old-fp2", "date": "2026-11-14T09:25:00+00:00"}
+        current = {"id": "results-new-fp1", "date": "2026-11-20T09:00:00+00:00"}
+        thursday = {"id": "results-thursday", "date": "2026-11-19T15:00:00+00:00"}
+        rows, rejected = guard.results_sessions_for_event(
+            [stale, current, thursday, {"id": "undated"}, None], event
+        )
+        assert [row["id"] for row in rows] == ["results-new-fp1", "results-thursday"]
+        assert rejected == 3
+        broadcast = {"broadcasts": [
+            {"type": "SESSION", "category": {"name": "Moto3"},
+             "shortname": "FP1", "date_start": "2026-11-20T09:00:00+00:00"}
+        ]}
+        fallback = guard.broadcast_schedule_rows(
+            broadcast, [{"category": "Moto3", "date_utc": stale["date"]}],
+            "Europe/Lisbon",
+        )
+        assert len(fallback) == 1
+        assert fallback[0]["source"] == "broadcast_schedule"
+        assert fallback[0]["id"] == "" and fallback[0]["category_id"] is None
+        assert guard.broadcast_schedule_rows(
+            broadcast, [{"category": "Moto3", "date_utc": current["date"]}],
+            "Europe/Lisbon",
+        ) == []
+        coordinator = (INTEGRATION / "coordinator.py").read_text(encoding="utf-8")
+        assert "category_sessions, rejected = results_sessions_for_event(" in coordinator
+        assert "schedule_sessions, _ = results_sessions_for_event(" in coordinator
+        assert "sessions, _ = results_sessions_for_event(sessions, event)" in coordinator
+        assert 'status["results_sessions_rejected"] = stale_results_rows' in coordinator
+        assert '"stale_results_sessions_rejected" if stale_results_rows' in coordinator
+    finally:
+        for key in list(sys.modules):
+            if key == pkg_name or key.startswith(pkg_name + "."):
+                del sys.modules[key]
+
+
 def check_beta_version() -> None:
     manifest = json.loads((INTEGRATION / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["domain"] == "motogp_sensor"
@@ -195,5 +242,6 @@ if __name__ == "__main__":
     check_live_poll_freshness_contract()
     check_category_scoped_standings()
     check_websocket_dependencies()
+    check_results_event_date_guard()
     check_beta_version()
     print("Weekend regressions OK: R/D polling, Mandalika timezone, tiered session-start polling, poll freshness metadata, broadcast URL template, 2026.11.0b2")

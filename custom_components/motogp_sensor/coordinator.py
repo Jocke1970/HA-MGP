@@ -18,7 +18,7 @@ from .api_event_archive import PulseliveEventArchive, DiagnosticArchiveError
 from .session_lap_archive import ArchiveError, SessionLapArchive
 from .qualifying_grid import q1_eliminated_rows
 from .weather_conditions import select_session_weather, observe_weather_report
-from .broadcast_schedule import broadcast_schedule_rows
+from .broadcast_schedule import broadcast_schedule_rows, results_sessions_for_event
 from .schedule_time import (
     canonical_time_zone,
     scheduled_session_start_near,
@@ -652,6 +652,9 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 )
                 sessions = []
 
+            # Stale Results sessions must not drive Q1, records or status for this GP.
+            sessions, _ = results_sessions_for_event(sessions, event)
+
             # Never expose classified Q1 eliminations during Q1 itself.
             # Only request them after this category's scheduled Q2 begins.
             # Q1->Q2 promotion rules come from the 2026 FIM regulations.
@@ -849,6 +852,7 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 "entry_list": {"color": "yellow", "status": "unavailable", "reason": "no_verified_event_entry_endpoint"},
             }
             schedule_errors = 0
+            stale_results_rows = 0
             all_sessions: list[dict[str, Any]] = []
             seen_categories: list[str] = []
 
@@ -878,6 +882,14 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                         err,
                     )
                     continue
+
+                category_sessions, rejected = results_sessions_for_event(category_sessions, schedule_event)
+                stale_results_rows += rejected
+                if rejected:
+                    _LOGGER.debug(
+                        "Ignored %d stale Results timetable rows for %s in %s",
+                        rejected, schedule_category_name, event_uuid,
+                    )
 
                 if category_sessions and schedule_category_name not in seen_categories:
                     seen_categories.append(schedule_category_name)
@@ -944,6 +956,9 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 name for name in seen_categories if name not in ordered_categories
             )
 
+            status = self.static["next_weekend_api_status"]
+            status["results_sessions_rejected"] = stale_results_rows
+            status["broadcast_fallback_count"] = len(broadcast_rows)
             self.static["weekend_sessions_all"] = all_sessions
             self.static["schedule_categories"] = ordered_categories
             status = self.static["next_weekend_api_status"]
@@ -959,7 +974,10 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             elif all_sessions:
                 status["schedule"] = {
                     "color": "yellow", "status": "preliminary",
-                    "reason": "partial_schedule_or_missing_timestamp",
+                    "reason": (
+                        "stale_results_sessions_rejected" if stale_results_rows
+                        else "partial_schedule_or_missing_timestamp"
+                    ),
                 }
             elif schedule_errors:
                 status["schedule"] = {
@@ -1060,6 +1078,7 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 _LOGGER.debug("Weekend schedule sessions failed: %s", err)
                 schedule_sessions = []
 
+            schedule_sessions, _ = results_sessions_for_event(schedule_sessions, schedule_event)
             normalized_sessions: list[dict[str, Any]] = []
 
             for sess in schedule_sessions:
