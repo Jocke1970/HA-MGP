@@ -1,17 +1,17 @@
-# HA-MGP 2026.11.0b35 – konsekvent sessionsval i timingkortet
+# HA-MGP 2026.11.0b36 – rätt Results-datum och Sprint-ruta per klass
 
-**HACS beta:** `2026.11.0b35` · **Frontend:** `0.3.0-dev.73`
+**HACS beta:** `2026.11.0b36` · **Frontend:** `0.3.0-dev.74`
 
-## Ändrat sedan b34
-- Timingkortets kommande session, T−30 förstart och timingfönstrets synlighet kontrolleras nu mot valt GP:s start-/slutdatum och event-ID när det finns.
-- Gamla pass som Moto2 FP2 får inte aktivera en falsk startlista eller fel nedräkning när Portugal GP:s Moto3 FP1 är nästa relevanta pass.
-- Regressionstester jämför alla tre kodvägarnas avvisning av fel GP samt relevanta gränser kring T−30 och live.
-- Toppkortets fungerande nästa-session-urval, kalendervy och popup ändras inte.
+## Ändrat sedan b35
+- Backend filtrerar felaktigt daterade Results API-sessioner utanför aktuellt GP, med ett dygns tolerans för legitima torsdagspass/tidszonsgränser. Portugal 20–22 nov ska inte blandas med Results-rader 13–15 nov.
+- Filtreringen används för `sessions_all`, MotoGP `sessions` samt kval-/banrekordurval, utan att ändra historiska resultat eller ID:n för giltiga Results-sessioner.
+- Broadcast-schema behålls som separat fallback med korrekt källmärkning och utan Results-ID. Diagnostik innehåller `results_sessions_rejected` samt `broadcast_fallback_count`. Gult schema kan nu ha orsaken `stale_results_sessions_rejected`.
+- I historiska resultat visar endast MotoGP en Sprint-ruta. Moto2 och Moto3 visar Pole (Q2) och raceresultat som tidigare.
 
-## Säkerhet
-Read-only frontendändringar. Ingen backend-/API-ändring eller extra anrop. Saknas verifierbar matchande session visas ingen påhittad förstart. Samma 12-timmars tolerans före GP-start som tidigare; legitima tidiga pass måste fortfarande kontrolleras i verkliga HA-data.
+## Avgränsning
+Ingen ändring i API-anropens frekvens, inga extra endpoints, ingen ändring av TV-delay och ingen UI-ombyggnad. Tidigare b35-fixar för timingkortet ingår. Regressionstest körs på ett blandat Portugal-schema med gamla Results-datum och korrekta Broadcast-tider.
 
 ## Okulärbesiktning
-Installera b35 via HACS beta, starta om HA och hårdladda sidan. Säkerställ att gammal Moto2 FP2 inte dyker upp medan toppkortet anger nästa Moto3 FP1. Kontrollera timingkortets verkliga förstart/live och att popup/kalender i övrigt är oförändrade.
+Installera b36 via HACS beta. Bekräfta datum och källor i `sensor.motogp_next_race`, nästa pass och att Moto2/Moto3 inte får Sprint-rutan. Var särskilt uppmärksam på om Results börjar leverera nya korrekta datum under tävlingshelgen.
 
-**Rollback:** `2026.11.0b34`. Behåll `/config/motogp_data/` och entiteter. **Main lämnas orörd.**
+**Rollback:** `2026.11.0b35`. Behåll `/config/motogp_data/` och entiteter. **Main orörd.**
