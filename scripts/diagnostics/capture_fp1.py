@@ -115,8 +115,14 @@ def stop(_sig, _frame):
 
 def run(args) -> int:
     token = os.environ.get(args.token_env, "").strip()
+    if args.token_file:
+        try:
+            token = Path(args.token_file).expanduser().read_text(encoding="utf-8").strip()
+        except OSError as err:
+            print(f"Unable to read token file: {type(err).__name__}", file=sys.stderr)
+            return 2
     if not token:
-        print(f"Missing {args.token_env} environment variable", file=sys.stderr)
+        print("Missing HA token (environment or --token-file)", file=sys.stderr)
         return 2
     start, end = parse_date(args.start), parse_date(args.end)
     if not start < end:
@@ -126,12 +132,21 @@ def run(args) -> int:
         print("Invalid HA URL", file=sys.stderr)
         return 2
     now = datetime.now(timezone.utc)
-    if now >= end:
+    if now >= end and not args.once:
         print("Capture window has already ended", file=sys.stderr)
         return 2
     signal.signal(signal.SIGINT, stop)
     signal.signal(signal.SIGTERM, stop)
     output = Path(args.output).expanduser()
+    if args.once:
+        # Intended for HA shell_command: finish in one short invocation.
+        # HA automation controls the schedule. --once also permits an
+        # intentional immediate smoke-test outside the FP1 window.
+        record = capture(args.ha_url, token, ENTITIES, args.timeout)
+        write_line(output, record)
+        print(f'{record["timestamp_utc"]}: {len(record["entities"])} OK, '
+              f'{len(record["errors"])} errors', flush=True)
+        return 0 if record["entities"] else 1
     print(f"Window {start.isoformat()} – {end.isoformat()}; output={output}",
           flush=True)
     while not _STOP:
@@ -155,6 +170,10 @@ def main() -> int:
     parser.add_argument("--ha-url", default=os.environ.get(
         "HA_URL", "http://homeassistant.local:8123"))
     parser.add_argument("--token-env", default="HA_TOKEN")
+    parser.add_argument("--token-file", default=None,
+                        help="Read token from protected file, without command-line exposure")
+    parser.add_argument("--once", action="store_true",
+                        help="Collect one HA snapshot and return (for shell_command)")
     parser.add_argument("--start", default=DEFAULT_START)
     parser.add_argument("--end", default=DEFAULT_END)
     parser.add_argument("--interval", type=int, default=15)
