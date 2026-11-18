@@ -1,4 +1,4 @@
-/* MotoGP Next SINGLE Lovelace resource | build next-one-20261114-01 | read only. */
+/* MotoGP Next SINGLE Lovelace resource | build next-one-20261114-02 | read only. */
 /* MotoGP Next: isolated frontend for motogp-test. No HA writes or service calls. */
 (() => {
   'use strict';
@@ -303,9 +303,9 @@
       this._track(now,race);
       const event=valid(race?.state)?race.state:'Inget evenemang tillgängligt';
       const meta=[a.circuit,a.country,a.date_start&&a.date_end?dateRange(a.date_start,a.date_end):''].filter(valid);
-      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.73</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
+      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.74</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
         this._schedule(race,now)+`<div class="root">${this._weather()}${this._timing()}</div>`+
-        `<div class="foot">HA-MGP UI · 0.3.0-dev.73 · UI-preview</div></div>`;
+        `<div class="foot">HA-MGP UI · 0.3.0-dev.74 · UI-preview</div></div>`;
     }
     getCardSize(){return 8;}
     getGridOptions(){return {columns:12,rows:'auto',min_columns:6};}
@@ -2450,7 +2450,7 @@ customElements.whenDefined(OVERVIEW).then(install);
 (() => {
   'use strict';
   const TAG='ha-motogp-next-overview-card';
-  const BUILD='calendar-20261113-04';
+  const BUILD='calendar-20261114-01';
   const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const parseDate=raw=>{
     const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(raw||''));
@@ -2782,7 +2782,7 @@ customElements.whenDefined(OVERVIEW).then(install);
           '" title="'+(pole?.rider&&pole?.time&&pole?.session==='Q2'?'Verifierat kval':pole?.rider||pole?.time?'Delvis verifierat kval':'Ej verifierat kval')+
           '"></i><b>'+
           (pole?.rider&&pole?.time?esc(pole.rider+' · '+pole.time):'Ej verifierat kval')+'</b></span>'+
-          '<span>Sprint<b>'+ (sprint.length?esc(sprint[0].rider||'—'):'Ej tillgängligt')+'</b></span></div>'+
+          (selectedClass==='MotoGP'?'<span>Sprint<b>'+ (sprint.length?esc(sprint[0].rider||'—'):'Ej tillgängligt')+'</b></span>':'')+'</div>'+
         (raceRows?'<h4>Raceresultat · '+selectedClass+'</h4><table class="mgp-season-results"><thead><tr><th>Plac.</th><th>Förare</th><th>Tid / status</th></tr></thead><tbody>'+
           raceRows+'</tbody></table>':
           '<p class="mgp-season-detail-note">Inget verifierat raceresultat för denna klass.</p>')+

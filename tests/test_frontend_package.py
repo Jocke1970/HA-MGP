@@ -22,7 +22,7 @@ def git_blob_sha(data: bytes) -> str:
 
 def check_bundle_integrity() -> None:
     manifest = json.loads((PKG / "manifest.json").read_text(encoding="utf-8"))
-    assert manifest["version"] == "2026.11.0b35"
+    assert manifest["version"] == "2026.11.0b36"
     assert {"http", "frontend"}.issubset(manifest["dependencies"])
 
     # Beta is intentionally a minimal HACS tree (without frontend/ or dist/).
@@ -58,7 +58,7 @@ def check_bundle_integrity() -> None:
     next_js = (ASSETS / "ha-mgp.js").read_text(encoding="utf-8")
     assert "ha-motogp-next-overview-card" in next_js
     assert "ha-motogp-next-timing-card" in next_js
-    assert "0.3.0-dev.73" in next_js
+    assert "0.3.0-dev.74" in next_js
     assert "mgp-timing-header" in next_js, "records must render inside unified timing header"
     assert "header-track-weather-20261113-06" in next_js
     assert "mgp-country-flag" in next_js
@@ -104,7 +104,7 @@ def check_bundle_integrity() -> None:
     assert "ha-motogp-next-overview-card" in next_js
     assert "Championship standings" in next_js
     assert "mgp-season" in next_js
-    assert "calendar-20261113-04" in next_js
+    assert "calendar-20261114-01" in next_js
     assert "api-status-20261108-01" in next_js
     assert "binary_sensor.motogp_live_timing_online" in next_js
     assert "session-dots-20261108-01" in next_js

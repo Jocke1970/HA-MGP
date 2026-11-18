@@ -5,7 +5,7 @@ The API gives offset-aware starts, unlike Results API's disguised wall times.
 """
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 import re
 from typing import Any
 
@@ -81,3 +81,41 @@ def broadcast_schedule_rows(
             "source": "broadcast_schedule",
         })
     return result
+
+
+def results_sessions_for_event(
+    sessions: list[dict[str, Any]],
+    event: dict[str, Any],
+) -> tuple[list[dict[str, Any]], int]:
+    """Exclude stale Results timetable rows, preserving authenticated IDs.
+
+    Compare API wall-calendar dates with the event's calendar dates: Results
+    timestamps may contain a misleading UTC offset. Allow one adjacent day
+    for legitimate Thursday sessions and midnight/time-zone boundaries.
+    Never rewrite a stale Results timestamp or borrow a Broadcast UUID.
+    """
+    try:
+        start = date.fromisoformat(str(event["date_start"])[:10])
+        end = date.fromisoformat(str(event["date_end"])[:10])
+        if end < start:
+            raise ValueError("reversed event window")
+    except (KeyError, TypeError, ValueError):
+        return [], len(sessions)
+
+    earliest, latest = start - timedelta(days=1), end + timedelta(days=1)
+    accepted: list[dict[str, Any]] = []
+    rejected = 0
+    for session in sessions:
+        if not isinstance(session, dict):
+            rejected += 1
+            continue
+        try:
+            day = date.fromisoformat(str(session.get("date") or "")[:10])
+        except ValueError:
+            rejected += 1
+            continue
+        if earliest <= day <= latest:
+            accepted.append(session)
+        else:
+            rejected += 1
+    return accepted, rejected

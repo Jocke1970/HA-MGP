@@ -1,12 +1,14 @@
-# HA-MGP b35 – HACS beta / okulärbesiktning
+# HA-MGP b36 – HACS beta / okulärbesiktning
 
-1. Säkerhetskopiera Home Assistant. Behåll `/config/motogp_data/` och alla entiteter.
-2. Installera **`2026.11.0b35`** från HACS beta efter publicerad prerelease, aldrig dev.
-3. Starta om HA och gör hård omladdning (`Ctrl+Shift+R`).
-4. Kontrollera att frontend visar `0.3.0-dev.73`.
-5. Under väntan på Portugal: toppkortet ska fortsätta visa korrekt nästa session (t.ex. Moto3 FP1); timingkortet får inte visa en gammal Moto2 FP2 eller felaktig "STARTLISTA · INVÄNTAR LIVE".
-6. Timingkortet får öppna förstartsläget först inom 30 minuter före ett **matchande GP-pass**, och får fortsätta vid fördröjd bekräftelse. Äkta live-session får visas som tidigare.
-7. Kontrollera att kalenderpopup, banfakta, kvalpluppar och MotoGP/Moto2/Moto3-flikar fungerar som i b34 på dator och mobil.
-8. Vid problem: rollback till **b34**, utan att ta bort data eller entiteter.
+1. Säkerhetskopiera Home Assistant. Behåll `/config/motogp_data/` och registrerade entiteter.
+2. Installera **`2026.11.0b36`** från HACS beta efter att prerelease finns. Installera inte dev.
+3. Starta om Home Assistant och gör en hård omladdning (`Ctrl+Shift+R`).
+4. Bekräfta frontend `0.3.0-dev.74`.
+5. I `sensor.motogp_next_race`: kontrollera `sessions_all`. För Portugal 20–22 nov ska gamla Results-rader daterade 13–15 nov vara borta. Giltiga Broadcast-rader 20–22 nov ska finnas kvar (med `source: broadcast_schedule`, tomt `id`, `category_id: null`).
+6. Kontrollera `next_weekend_api_status.results_sessions_rejected` och `broadcast_fallback_count`. Gul schemastatus med `stale_results_sessions_rejected` är förväntad om Results fortfarande levererar gamla datum.
+7. Jämför helgschemats datum/tider med aktuellt officiellt schema, särskilt söndagen: MotoGP warm-up 10:00, Moto3 race 11:00, Moto2 race 12:15, MotoGP race 14:00 (svensk tid).
+8. Öppna historiska resultat för MotoGP/Moto2/Moto3. Endast MotoGP får visa Sprint-rutan. Kvalets verifieringsplupp och övriga resultat ska fungera som innan.
+9. Kontrollera nästa-session-chip samt timing-/förstartsläge utan gamla FP2-pass. Live måste fortfarande invänta rätt matchning/TV-fördröjning.
+10. Vid problem: rollback till **b35** via HACS beta; radera inga historiska data eller entiteter.
 
 **Main lämnas orörd** tills okulärbesiktningen är godkänd.
