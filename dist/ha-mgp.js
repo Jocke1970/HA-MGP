@@ -26,8 +26,12 @@
     const match = /moto\s*(gp|2|3|e)/i.exec(raw);
     return match ? ({gp:'MotoGP','2':'Moto2','3':'Moto3',e:'MotoE'})[match[1].toLowerCase()] : raw;
   };
-  const sess = value => ({RAC:'Race',SPR:'Sprint',PR:'Practice',WUP:'Warm Up'})[String(value || '').toUpperCase()] || String(value || '');
-  const keyName = value => String(sess(value)).trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const sess = value => ({RAC:'Race',SPR:'Sprint',PR:'Practice',WUP:'Warm Up', 'TISSOT SPRINT':'Sprint'})[String(value || '').trim().toUpperCase()] || String(value || '');
+  const keyName = value => {
+    const name=String(sess(value)).trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+    // API calls the Sprint "Tissot Sprint"; calendar may call it just Sprint.
+    return name==='TISSOTSPRINT'?'SPRINT':name;
+  };
   const canon = value => String(value || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]/g, '');
   const pad = n => String(n).padStart(2, '0');
   const dayKey = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
@@ -71,8 +75,8 @@
     const n = Number(String(raw).replace(',','.').replace(/\s*(°|º|C|%|celsius)\s*$/i,''));
     return Number.isFinite(n) && n !== 0 ? `${n}${unit}` : '—';
   }
-  const active = st => ['I','S'].includes(String(st?.attributes?.session_status_id || '').toUpperCase()) || st?.state === 'In Progress';
-  const finished = st => String(st?.attributes?.session_status_id || '').toUpperCase() === 'F' || st?.state === 'Finished';
+  const active = st => ['I','S','R','D'].includes(String(st?.attributes?.session_status_id || '').toUpperCase()) || st?.state === 'In Progress';
+  const finished = st => ['F','C'].includes(String(st?.attributes?.session_status_id || '').toUpperCase()) || st?.state === 'Finished';
   const explicitFinish = s => ['FINISHED','CANCELLED','CANCELED'].includes(String(s.status || '').toUpperCase());
   const sortedRiders = entity => Array.isArray(entity?.attributes?.riders) ?
     entity.attributes.riders.filter(r => r && typeof r === 'object').slice().sort((a,b) =>
@@ -88,7 +92,7 @@
   // Require agreement among live sensors, a substantial calendar-name match, exact class,
   // exact session and exactly one matching session in today's weekend schedule.
   function matchingLive(race, se, st, positions, today) {
-    if (!active(st) || !valid(race?.state) || !valid(se?.state)) return null;
+    if (!(active(st)||finished(st)) || !valid(race?.state) || !valid(se?.state)) return null;
     const sa=se.attributes||{}, ta=st.attributes||{}, pa=positions?.attributes||{};
     const category=cat(sa.category), name=keyName(se.state);
     if (!category || !name || ![sa.event,ta.event,pa.event].every(valid) ||
@@ -105,7 +109,9 @@
     // Do not expose unbuffered raw live timing while requested TV-delay is not ready.
     const requested=nonzero(pa.tv_delay_seconds);
     if (requested && pa.tv_delay_ready === false) return null;
-    const matches=sessionsFor(race).filter(s => s._wall.day===today && s._cat===category && keyName(s._name)===name);
+    // Calendar time is for display only. A delayed/rescheduled session can
+    // cross a day boundary; match within the verified current GP weekend.
+    const matches=sessionsFor(race).filter(s => s._cat===category && keyName(s._name)===name);
     if (matches.length!==1) return null;
     return {key:`${calendar}|${today}|${category}|${name}|${matches[0].id || matches[0].date}`,
       name:sess(se.state), category};
@@ -222,10 +228,20 @@
         this._live=live;
         const riders=sortedRiders(positions);
         if (riders.length)this._snapshot={...live,day:today,riders};
-      } else if (finished(st)&&this._snapshot) {
-        const category=cat(se?.attributes?.category||st?.attributes?.category);
-        if (valid(se?.state)&&category &&
-          `${category}|${keyName(se.state)}`!==`${this._snapshot.category}|${keyName(this._snapshot.name)}`)this._snapshot=null;
+      } else if (finished(st)) {
+        // Recover the final classification even when the UI missed the live
+        // transition. Accept ONLY the exact validated, TV-delayed feed.
+        if (live) {
+          const riders=sortedRiders(positions);
+          if (riders.length) {
+            this._activeKey=live.key;
+            this._snapshot={...live,day:today,riders};
+          }
+        } else if (this._snapshot) {
+          const category=cat(se?.attributes?.category||st?.attributes?.category);
+          if (valid(se?.state)&&category &&
+            `${category}|${keyName(se.state)}`!==`${this._snapshot.category}|${keyName(this._snapshot.name)}`)this._snapshot=null;
+        }
       }
     }
     _schedule(race,now) {
@@ -507,14 +523,16 @@
           .filter(x=>x.date && x.date<=now && x.date.toDateString()===now.toDateString() &&
             now-x.date<2*60*60*1000 &&
             !['FINISHED','CANCELLED','CANCELED'].includes(String(x.pass.status||'').toUpperCase()) &&
-            !((status?.state==='Finished'||String(status?.attributes?.session_status_id||'').toUpperCase()==='F') &&
+            !((status?.state==='Finished'||['F','C'].includes(String(status?.attributes?.session_status_id||'').toUpperCase())) &&
               category(status?.attributes?.category)===category(x.pass.category||'MotoGP') &&
               sessionName(status?.attributes?.session_shortname)===sessionName(x.pass.name||x.pass.type||'')))
           .sort((a,b)=>b.date-a.date)[0]||null;
         const started=pending && now-pending.date<15*60*1000?pending:null;
+        // A new pending session must never display riders from the old race.
+        if (started && !live && snap) {this._snapshot=null;this._activeKey='';snap=null;}
         const imminent=!live && upcoming && upcoming.date>now && upcoming.date.getTime()-now.getTime()<=15*60*1000;
         if (imminent && snap) {this._snapshot=null;this._activeKey='';snap=null;}
-        const hasRiders=!spoiler && snap?.riders?.length && snap.day===this._today;
+        let hasRiders=!spoiler && snap?.riders?.length && snap.day===this._today;
         const expanded=!spoiler && (this._timingManual===null ? Boolean(hasRiders || live) : this._timingManual);
         let title, statusText, clockHtml='';
         if (live && !spoiler) {
@@ -536,6 +554,10 @@
           statusText='STARTTID PASSERAD · INVÄNTAR MATCHANDE DATA';
           clockHtml=`<span class="nt-clock"><span>${esc(pad(started.date.getHours())+':'+pad(started.date.getMinutes()))}</span>`+
             `${upcoming?`<small>Nästa: ${esc(upcoming.category)} ${esc(upcoming.name)} ${esc(upcoming.time)}</small>`:''}</span>`;
+        } else if (hasRiders && !spoiler && (status?.state==='Finished' ||
+          ['F','C'].includes(String(status?.attributes?.session_status_id||'').toUpperCase()))) {
+          title=`${snap.category} · ${snap.name}`;
+          statusText='AVSLUTAT · SLUTRESULTAT';
         } else if (upcoming) {
           title=`Nästa: ${upcoming.category} · ${upcoming.name}`;
           statusText=spoiler?'SPOILERLÄGE':hasRiders?'SENASTE PASS · EJ LIVE':'MELLAN PASSEN';
@@ -3623,6 +3645,15 @@ function rowsFor(session,attrs){
 function before(card,next,attrs){
  const s=next?.s;
  if(!s||card._live||card._spoiler?.()||next.at-Date.now()>30*60000)return null;
+ // Once this exact session has a verified finished timing snapshot,
+ // never resurrect its pre-race grid due to stale calendar status.
+ const status=card._hass?.states?.[card._ids.status];
+ const finished=['C','F'].includes(String(status?.attributes?.session_status_id||'').toUpperCase())||
+   status?.state==='Finished';
+ const snap=card._snapshot;
+ if(finished&&snap?.riders?.length&&snap.day===card._today&&
+    nameKey(s.category)===nameKey(snap.category)&&
+    nameKey(label(s.name||s.type))===nameKey(label(snap.name)))return null;
  const rows=rowsFor(s,attrs);
  return {session:s,rows,grid:/^(race|sprint)$/i.test(label(s.name||s.type))&&
   rows.length>0&&rows[0].position!==null};
@@ -3805,10 +3836,29 @@ function install(){
    }
    if(btn.hasAttribute('data-mgp-util-copy')){
      const text=this._mgpUtilityResponse?JSON.stringify(this._mgpUtilityResponse,null,2):'';
-     if(text&&navigator.clipboard?.writeText)navigator.clipboard.writeText(text).catch(()=>{
-       this._mgpUtilityError='Kopiering blockerad av webbläsaren – markera och kopiera JSON-texten.';
+     if(!text)return;
+     const fallback=()=>{
+       const field=document.createElement('textarea');
+       field.value=text;
+       field.setAttribute('readonly','');
+       field.style.position='fixed';
+       field.style.left='-9999px';
+       document.body.appendChild(field);
+       try{
+         field.focus();field.select();
+         return document.execCommand?.('copy')===true;
+       }finally{field.remove();}
+     };
+     const done=ok=>{
+       this._mgpUtilityError=ok?'JSON kopierad.':'Kopiering blockerad – markera JSON-texten och kopiera manuellt.';
        this._render();
-     });
+     };
+     if(navigator.clipboard?.writeText){
+       Promise.resolve().then(()=>navigator.clipboard.writeText(text))
+         .then(()=>done(true)).catch(()=>{try{done(fallback());}catch(_){done(false);}});
+     }else{
+       try{done(fallback());}catch(_){done(false);}
+     }
      return;
    }
    const action=btn.getAttribute('data-mgp-util-action');
