@@ -15,7 +15,11 @@ from homeassistant.components import websocket_api
 from homeassistant.core import HomeAssistant
 
 from .api import MotogpApiError
-from .const import DOMAIN, LIVE_SOURCE_PULSELIVE
+from .const import (
+    DOMAIN, LIVE_SOURCE_PULSELIVE, PULSELIVE_LIVE_TIMING_URL,
+    PULSELIVE_BROADCAST_EVENT_URL, PULSELIVE_SESSIONS_URL,
+    PULSELIVE_EVENT_GRID_URL, PULSELIVE_SESSION_CLASSIFICATION_URL,
+)
 
 COMMAND = f"{DOMAIN}/api_probe"
 ACTIONS = ("ids", "live", "broadcast", "sessions", "grid", "classification")
@@ -135,8 +139,23 @@ async def websocket_api_probe(
     if len(json.dumps(data, ensure_ascii=False, default=str)) > MAX_JSON_CHARS:
         connection.send_error(msg["id"], "large_response", "Response exceeds 250,000 characters")
         return
+    endpoint = {
+        "ids": "HA-MGP / coordinator cache (no request)",
+        "live": PULSELIVE_LIVE_TIMING_URL,
+        "broadcast": PULSELIVE_BROADCAST_EVENT_URL.format(uuid=context["event_uuid"]),
+        "sessions": (
+            f"{PULSELIVE_SESSIONS_URL}?eventUuid={context['event_uuid']}"
+            f"&categoryUuid={context['results_category_uuid']}"
+        ),
+        "grid": PULSELIVE_EVENT_GRID_URL.format(
+            event_uuid=context["event_uuid"],
+            category_uuid=context["results_category_uuid"],
+        ),
+        "classification": PULSELIVE_SESSION_CLASSIFICATION_URL.format(uuid=session_id),
+    }[action]
     connection.send_result(msg["id"], {
         "action": action,
+        "endpoint": endpoint,
         "fetched_at": datetime.now(timezone.utc).isoformat(),
         "context": context,
         "data": data,
