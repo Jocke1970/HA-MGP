@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const file=process.argv[2]||'frontend/ha-mgp-header-track.js';
 const src=fs.readFileSync(file,'utf8');
-assert.match(src,/header-track-weather-20261113-06/);
+assert.match(src,/header-track-weather-20261121-07/);
 const docs=[];
 class Overview {
   static buildInfo={version:'0.2.0-split.2'};
@@ -127,6 +127,10 @@ const context={customElements:{
   assert.match(src,/mgp-circuit-detail-grid/,'responsive circuit facts present');
   assert.match(src,/top:calc\(50% \+ 12px\);left:50%;transform:translate\(-50%,-50%\)/,
     'circuit popup centers within viewport rather than clipping above it');
+  assert.match(src,/document\.body\.appendChild\(circuitDialog\)/,
+    'native circuit dialog is portaled to the document top layer above sibling Lovelace cards');
+  assert.match(src,/this\._mgpCircuitPortal\.remove\?\.\(\)/,
+    'detached circuit dialog is cleaned up on card disconnect');
   assert.match(src,/\.mgp-circuit-dialog\[open\]\{display:flex;flex-direction:column\}/,
     'circuit popup keeps close button fixed while body scrolls');
 
