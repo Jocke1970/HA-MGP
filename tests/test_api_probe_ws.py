@@ -30,6 +30,15 @@ def load():
     const = types.ModuleType(f"{PACKAGE}.const")
     const.DOMAIN = "motogp_sensor"
     const.LIVE_SOURCE_PULSELIVE = "pulselive"
+    const.PULSELIVE_LIVE_TIMING_URL = "https://api.test/timing-gateway/livetiming-lite"
+    const.PULSELIVE_BROADCAST_EVENT_URL = "https://api.test/events/{uuid}"
+    const.PULSELIVE_SESSIONS_URL = "https://api.test/results/sessions"
+    const.PULSELIVE_EVENT_GRID_URL = (
+        "https://api.test/results/event/{event_uuid}/category/{category_uuid}/grid"
+    )
+    const.PULSELIVE_SESSION_CLASSIFICATION_URL = (
+        "https://api.test/results/session/{uuid}/classification"
+    )
     api = types.ModuleType(f"{PACKAGE}.api")
     api.MotogpApiError = type("MotogpApiError", (Exception,), {})
     mods = {PACKAGE: package, "voluptuous": vol, "homeassistant": ha,
@@ -118,12 +127,14 @@ class ProbeTests(unittest.TestCase):
         self.assertEqual(d["results_category_uuid"], "m2-uuid")
         self.assertEqual(d["results_sessions"][0]["id"], "q2-uuid")
         self.assertEqual(self.api.calls, [], "ID reading must not generate new requests")
+        self.assertIn("coordinator cache", c.result["endpoint"])
     def test_all_manual_requests_are_scoped(self):
         for action, session in (("live", ""), ("broadcast", ""), ("sessions", ""),
                                 ("grid", ""), ("classification", "q2-uuid")):
             self.co._api_probe_last_request = -100
             c = self.call(action, session_uuid=session)
             self.assertIsNone(c.error, action)
+            self.assertTrue(c.result["endpoint"].startswith("https://api.test/"))
         self.assertEqual(self.api.calls, [
             ("live", "pulselive"),
             ("broadcast", "event-uuid"),
