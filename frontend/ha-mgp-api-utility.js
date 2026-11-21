@@ -100,10 +100,29 @@ function install(){
    }
    if(btn.hasAttribute('data-mgp-util-copy')){
      const text=this._mgpUtilityResponse?JSON.stringify(this._mgpUtilityResponse,null,2):'';
-     if(text&&navigator.clipboard?.writeText)navigator.clipboard.writeText(text).catch(()=>{
-       this._mgpUtilityError='Kopiering blockerad av webbläsaren – markera och kopiera JSON-texten.';
+     if(!text)return;
+     const fallback=()=>{
+       const field=document.createElement('textarea');
+       field.value=text;
+       field.setAttribute('readonly','');
+       field.style.position='fixed';
+       field.style.left='-9999px';
+       document.body.appendChild(field);
+       try{
+         field.focus();field.select();
+         return document.execCommand?.('copy')===true;
+       }finally{field.remove();}
+     };
+     const done=ok=>{
+       this._mgpUtilityError=ok?'JSON kopierad.':'Kopiering blockerad – markera JSON-texten och kopiera manuellt.';
        this._render();
-     });
+     };
+     if(navigator.clipboard?.writeText){
+       Promise.resolve().then(()=>navigator.clipboard.writeText(text))
+         .then(()=>done(true)).catch(()=>{try{done(fallback());}catch(_){done(false);}});
+     }else{
+       try{done(fallback());}catch(_){done(false);}
+     }
      return;
    }
    const action=btn.getAttribute('data-mgp-util-action');
