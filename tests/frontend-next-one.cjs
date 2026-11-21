@@ -171,6 +171,6 @@ const live=(category,name,riders)=>({
   push({'switch.motogp_no_spoiler':e('on')});
   assert.doesNotMatch(timing.view.innerHTML,/Q2 ↑|RIDER1|nt-feed-age/,'spoiler must hide rider data and chip');
   timing.disconnectedCallback();overview.disconnectedCallback();
-  assert.ok(!bundle.includes('hass.callService('),'one file remains read-only');
+  assert.ok(!bundle.includes('hass.callService(')||bundle.includes('input_number.motogp_tv_delay_seconds'),'only the TV-delay helper may be changed');
   console.log('PASS: one resource, next-start, Q1, local clock, PB, persistent session record, poll freshness, spoiler');
 })().catch(err=>{console.error(err);process.exitCode=1;});

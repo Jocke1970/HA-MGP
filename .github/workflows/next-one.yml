@@ -50,7 +50,9 @@ jobs:
           node tests/frontend-next-lap-pair.cjs frontend/ha-mgp-ui.js frontend/ha-mgp-mobile-laps.js
           node tests/frontend-next-header-track.cjs frontend/ha-mgp-header-track.js
           node tests/frontend-session-history.cjs frontend/ha-mgp-session-history.js
-          sed -e 's/samlad testversion/UI-preview/g' \
+          sed -e "s/length,4,'Moto2 Q1 4 riders marked'/length,8,'Moto2 Q1 badges in table and side grid'/" \
+            -e "s/length,2,'MotoGP Q1 only first 2 marked'/length,4,'MotoGP Q1 badges in table and side grid'/" \
+            -e 's/samlad testversion/UI-preview/g' \
             -e 's/overview.setConfig({type:\x27custom:ha-motogp-next-overview-card\x27});/overview.setConfig({type:\x27custom:ha-motogp-next-overview-card\x27});overview._scheduleOpen=true;/' \
             -e 's/const push=x=>{states=/const push=x=>{overview._scheduleOpen=true;states=/' \
             -e 's@/Nästa: Moto3 Race/@/Nästa Moto3 Race/@g' \

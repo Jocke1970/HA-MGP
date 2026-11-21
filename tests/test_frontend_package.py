@@ -58,7 +58,7 @@ def check_bundle_integrity() -> None:
     next_js = (ASSETS / "ha-mgp.js").read_text(encoding="utf-8")
     assert "ha-motogp-next-overview-card" in next_js
     assert "ha-motogp-next-timing-card" in next_js
-    assert "0.3.0-dev.74" in next_js
+    assert "0.3.0-dev.75" in next_js
     assert "mgp-timing-header" in next_js, "records must render inside unified timing header"
     assert "header-track-weather-20261113-06" in next_js
     assert "mgp-country-flag" in next_js
@@ -66,7 +66,7 @@ def check_bundle_integrity() -> None:
     assert "data:image/webp;base64," in next_js
     assert "__MGP_APPROVED_BRAND_DATA_URI__" not in next_js
     assert "Flagga: " in next_js
-    assert "ui-preview-20261108-06" in next_js
+    assert "ui-preview-20261121-01" in next_js
     assert "history-20261107-01" in next_js
     assert "motogp_sensor/session_history" in next_js
     assert "data-motogp-history-session" in next_js
@@ -80,7 +80,7 @@ def check_bundle_integrity() -> None:
     assert "mgp-venue-strip" in next_js
     assert "MELLAN PASSEN" in next_js
     assert "STATUS OKÄND:" not in next_js
-    assert "qual-grid-20261107-02" in next_js
+    assert "qual-grid-20261121-01" in next_js
     assert "nt-qual-slot-3" in next_js
     assert "qualifying_q1_eliminated" in next_js
     assert "header-track-weather-20261113-06" in next_js
@@ -120,7 +120,8 @@ def check_bundle_integrity() -> None:
     assert "@container (max-width:620px)" in next_js
     assert "data-motogp-rider-id" in next_js
     assert "data-motogp-laps-close" in next_js
-    assert "hass.callService(" not in next_js
+    assert next_js.count("hass.callService(") == 1, "Only TV-delay helper writes are permitted"
+    assert "input_number.motogp_tv_delay_seconds" in next_js
     assert "window.location" not in next_js
     assert "const health=feedHealth(age,expected)" in next_js
     assert "if(this.isConnected)ensureAgeTimer(this)" in next_js
