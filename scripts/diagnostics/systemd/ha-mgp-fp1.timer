@@ -1,0 +1,10 @@
+[Unit]
+Description=Start HA-MGP FP1 collector Friday 20 November
+
+[Timer]
+OnCalendar=2026-11-20 08:45:00 UTC
+Persistent=true
+Unit=ha-mgp-fp1.service
+
+[Install]
+WantedBy=timers.target

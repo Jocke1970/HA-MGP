@@ -1,4 +1,4 @@
-/* MotoGP Next SINGLE Lovelace resource | build next-one-20261114-02 | read only. */
+/* MotoGP Next SINGLE Lovelace resource | build next-one-20261121-01 | read only. */
 /* MotoGP Next: isolated frontend for motogp-test. No HA writes or service calls. */
 (() => {
   'use strict';
@@ -303,9 +303,9 @@
       this._track(now,race);
       const event=valid(race?.state)?race.state:'Inget evenemang tillgängligt';
       const meta=[a.circuit,a.country,a.date_start&&a.date_end?dateRange(a.date_start,a.date_end):''].filter(valid);
-      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.74</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
+      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.75</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
         this._schedule(race,now)+`<div class="root">${this._weather()}${this._timing()}</div>`+
-        `<div class="foot">HA-MGP UI · 0.3.0-dev.74 · UI-preview</div></div>`;
+        `<div class="foot">HA-MGP UI · 0.3.0-dev.75 · UI-preview</div></div>`;
     }
     getCardSize(){return 8;}
     getGridOptions(){return {columns:12,rows:'auto',min_columns:6};}
@@ -919,7 +919,7 @@
   const OVERVIEW='ha-motogp-next-overview-card';
   const TIMING='ha-motogp-next-timing-card';
   const REQUIRED='0.2.0-split.2';
-  const BUILD='ui-preview-20261108-06';
+  const BUILD='ui-preview-20261121-01';
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const valid=v=>v!==null&&v!==undefined&&!['','unknown','unavailable','none','null','hidden'].includes(String(v).trim().toLowerCase());
   const cat=v=>{const m=/moto\s*(gp|2|3|e)/i.exec(String(v||''));return m?({gp:'MotoGP','2':'Moto2','3':'Moto3',e:'MotoE'})[m[1].toLowerCase()]:String(v||'');};
@@ -1049,6 +1049,18 @@
     .nt-lap-pair>small{font-size:10px;color:var(--secondary-text-color);font-weight:650;white-space:nowrap}
     .nt-lap-pair>small.nt-session-best{color:var(--motogp-fastest-lap-color,var(--error-color,#b71c1c));font-weight:850}
     .nt-lap-pair .nt-last-main{font-weight:850;white-space:nowrap}
+    .nt-lap-pair .nt-best-main{font-size:13px;font-weight:900;white-space:nowrap}
+    .mgp-tv-delay{display:inline-flex;align-items:center;gap:6px;position:relative;padding:4px 8px}
+    .mgp-tv-delay button{font:inherit;font-size:11px;border:1px solid var(--divider-color,#ddd);
+      border-radius:8px;padding:5px 9px;background:var(--card-background-color,#fff);
+      color:var(--primary-text-color);cursor:pointer}
+    .mgp-tv-panel{position:absolute;z-index:15;right:0;top:100%;width:min(260px,75vw);
+      padding:12px;border:1px solid var(--divider-color,#ddd);border-radius:9px;
+      background:var(--card-background-color,#fff);box-shadow:0 5px 18px rgba(0,0,0,.2)}
+    .mgp-tv-panel label{display:block;font-size:12px;font-weight:800;margin-bottom:9px}
+    .mgp-tv-panel input{width:100%}
+    .mgp-tv-panel small{display:block;color:var(--secondary-text-color)}
+
     .nt-status-pair{display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:0}
     .nt-status-pair small{font-size:10px;color:var(--secondary-text-color)}
     .nt-position-up{color:#16803b;font-weight:900}.nt-position-down{color:#dc2626;font-weight:900}
@@ -1224,7 +1236,18 @@
       // while official circuit records and observed session best stay in the same
       // visual header region, outside the button. Keep the rider table separate.
       if(html.includes('<button type="button" class="nt-head"')&&html.includes('</button>')){
-        const headerDetails=sessionFastest(this)+recordChips(this,category);
+        const helper=this._hass?.states?.['input_number.motogp_tv_delay_seconds'];
+        const rawDelay=Number(helper?.state);
+        const haveDelay=helper&&Number.isFinite(rawDelay)&&rawDelay>=0;
+        const delayValue=haveDelay?Math.round(rawDelay):0;
+        const delayControl=this._live&&!this._spoiler()?'<span class="mgp-tv-delay">'+
+          '<button type="button" data-mgp-tv-delay aria-expanded="'+Boolean(this._tvDelayOpen)+'">'+
+          '⏱ TV-delay '+(haveDelay?delayValue+' s':'saknas')+'</button>'+
+          (this._tvDelayOpen?'<span class="mgp-tv-panel"><label>TV-fördröjning · '+delayValue+' s</label>'+
+            (haveDelay?'<input type="range" data-mgp-tv-slider min="0" max="300" step="5" value="'+delayValue+'" aria-label="TV-fördröjning i sekunder">':
+              '<small>Skapa hjälparen input_number.motogp_tv_delay_seconds i Home Assistant.</small>')+
+            '</span>':'')+'</span>':'';
+        const headerDetails=delayControl+sessionFastest(this)+recordChips(this,category);
         if(headerDetails){
           html=html.replace('<button type="button" class="nt-head"',
             '<div class="mgp-timing-header"><button type="button" class="nt-head"');
@@ -1258,8 +1281,12 @@
           const original=row.slice(range.begin,range.end),best=lap(r.best_lap_time);
           const seconds=lapSeconds(r.best_lap_time);
           const overall=fastest!==null&&seconds!==null&&Math.abs(seconds-fastest)<0.0005;
-          const cell=`<span class="nt-lap-pair"><span class="nt-last-main">${original}</span>`+
-            `<small${overall?' class="nt-session-best"':''}>Snabbaste: ${esc(best)}</small></span>`;
+          const qualifying=/^(Q1|Q2)$/i.test(String(this._live?.name||this._snapshot?.name||''));
+          const cell=qualifying?
+            `<span class="nt-lap-pair"><span class="nt-best-main"${overall?' style="color:var(--motogp-fastest-lap-color,var(--error-color,#b71c1c))"':''}>${esc(best)}</span>`+
+              `<small>Senaste: ${original}</small></span>`:
+            `<span class="nt-lap-pair"><span class="nt-last-main">${original}</span>`+
+              `<small${overall?' class="nt-session-best"':''}>Snabbaste: ${esc(best)}</small></span>`;
           row=row.slice(0,range.begin)+cell+row.slice(range.end);
         }
         const status=r.on_pit?'PIT':valid(r.status_name)?String(r.status_name):valid(r.status_id)?String(r.status_id):'—';
@@ -1389,6 +1416,31 @@
         view.innerHTML=view.innerHTML.replace('</section>', '</section>'+standings);
       }
       readyClassMarks(view);
+    };
+    const oldTimingClick=Timing.prototype._click;
+    Timing.prototype._click=function(e){
+      if(e.target?.closest?.('[data-mgp-tv-delay]')){
+        this._tvDelayOpen=!this._tvDelayOpen;
+        this._render();
+        return;
+      }
+      return oldTimingClick.call(this,e);
+    };
+    const oldTimingRender=Timing.prototype._render;
+    Timing.prototype._render=function(){
+      if(!this._tvDelayChangeBound&&this.shadowRoot?.addEventListener){
+        this.shadowRoot.addEventListener('change',e=>{
+          if(!e.target?.matches?.('[data-mgp-tv-slider]'))return;
+          const value=Number(e.target.value);
+          if(!Number.isInteger(value)||value<0||value>300)return;
+          if(!this._hass?.states?.['input_number.motogp_tv_delay_seconds'])return;
+          this._hass.callService('input_number','set_value',{
+            entity_id:'input_number.motogp_tv_delay_seconds',value
+          });
+        });
+        this._tvDelayChangeBound=true;
+      }
+      return oldTimingRender.call(this);
     };
     Timing.prototype._motogpUiPreview=BUILD;
     Overview.prototype._motogpUiPreview=BUILD;
@@ -1587,7 +1639,7 @@ customElements.whenDefined(TAG).then(install);
 (() => {
 'use strict';
 const TAG='ha-motogp-next-timing-card',REQUIRED='0.2.0-split.2';
-const BUILD='qual-grid-20261107-02';
+const BUILD='qual-grid-20261121-01';
 const CSS="\n  .nt-qual-layout{display:grid;grid-template-columns:minmax(0,1fr);min-width:0}\n  .nt-qual-main{min-width:0}\n  .nt-qual-aside{min-width:0;border-top:1px solid var(--divider-color,#ddd);padding:11px;\n    background:var(--ha-card-background,var(--card-background-color,#fff))}\n  .nt-qual-title{font-size:12px;font-weight:900;margin:0 0 5px}\n  .nt-qual-caption{font-size:10px;color:var(--secondary-text-color);line-height:1.4;margin:0 0 10px}\n  .nt-qual-start{font-size:9px;text-transform:uppercase;letter-spacing:.12em;font-weight:850;\n    text-align:center;color:var(--secondary-text-color);padding:5px 0 8px;\n    border-bottom:2px solid var(--divider-color,#ddd);margin-bottom:10px}\n  .nt-qual-wave{display:flex;flex-direction:column;gap:5px;padding:0 0 10px;margin-bottom:10px;\n    border-bottom:1px dashed var(--divider-color,rgba(127,127,127,.35))}\n  .nt-qual-item{display:flex;align-items:center;gap:7px;min-width:0;min-height:36px;\n    padding:7px 9px;border-radius:8px;border:1px solid var(--divider-color,#ddd);\n    background:var(--ha-card-background,var(--card-background-color,#fff))}\n  .nt-qual-slot-1{margin-right:40px}\n  .nt-qual-slot-2{margin-left:20px;margin-right:20px}\n  .nt-qual-slot-3{margin-left:40px}\n  .nt-qual-p{flex:none;display:grid;place-items:center;width:25px;height:25px;border-radius:6px;\n    background:var(--secondary-background-color,rgba(127,127,127,.1));font-size:10px;\n    font-weight:900;font-variant-numeric:tabular-nums}\n  .nt-qual-color{width:3px;min-height:27px;align-self:stretch;flex:none;border-radius:3px;\n    background:var(--divider-color,#aaa)}\n  .nt-qual-person{min-width:0;display:flex;flex-direction:column;gap:2px}\n  .nt-qual-person strong{min-width:0;font-size:11px;font-weight:850;white-space:nowrap;\n    overflow:hidden;text-overflow:ellipsis}\n  .nt-qual-person small{font-size:9px;color:var(--secondary-text-color);white-space:nowrap;\n    overflow:hidden;text-overflow:ellipsis}\n  .nt-qual-group{margin:13px 0 9px;font-size:10px;font-weight:850;color:var(--secondary-text-color)}\n  .nt-qual-empty{padding:10px 6px;font-size:11px;color:var(--secondary-text-color)}\n  @container (min-width:940px){\n    .nt-qual-layout{grid-template-columns:minmax(0,1fr) 260px;align-items:start}\n    .nt-qual-aside{border-top:0;border-left:1px solid var(--divider-color,#ddd)}\n    .nt-qual-main .nt-table{min-width:0!important}\n    .nt-qual-main .nt-row{grid-template-columns:28px minmax(120px,1.4fr) 34px 112px 60px 61px 53px!important;\n      gap:6px!important;padding:8px 7px!important}\n    .nt-qual-main .nt-person-text small{font-size:10px}\n  }\n  @container (max-width:315px){\n    .nt-qual-slot-1{margin-right:20px}\n    .nt-qual-slot-2{margin-left:10px;margin-right:10px}\n    .nt-qual-slot-3{margin-left:20px}\n    .nt-qual-item{padding:6px}\n  }\n";
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const limits={MotoGP:12,Moto2:18,Moto3:18};
@@ -1658,7 +1710,7 @@ function waves(rows){
     '<div class="nt-qual-wave">'+wave.map(r=>{
       const slot=((r.position-1)%3)+1;
       return '<div class="nt-qual-item nt-qual-slot-'+slot+'">'+
-        '<span class="nt-qual-p">'+esc('P'+r.position)+'</span>'+
+        '<span class="nt-qual-p">'+esc(r.gridLabel||('P'+r.position))+'</span>'+
         '<span class="nt-qual-color" style="background:'+color(r.color)+'"></span>'+
         '<span class="nt-qual-person"><strong>#'+esc(r.number)+' · '+esc(r.name)+'</strong>'+
         (r.team?'<small>'+esc(r.team)+'</small>':'')+'</span></div>';
@@ -1683,15 +1735,22 @@ function companion(card){
     caption='Evenemangets publicerade grid · ordningen kan ändras före start';
   }else if(isQ1||isQ2){
     top=currentRows(snap);
+    if(isQ1){
+      // Qualifying positions are not grid places. MotoGP advances two to Q2;
+      // Moto2/3 advance four. The others provisionally start at P13/P19.
+      const advance=snap.category==='MotoGP'?2:4;
+      top=top.map(r=>({...r,gridLabel:r.position<=advance?'Q2 ↑':
+        '~P'+(limits[snap.category]+r.position-advance)}));
+    }
     if(isQ2)tail=q1Tail(race,snap.category,top);
     label='⏱ Kvalordning · preliminär';
-    caption=isQ1?'Q1-tider · inga startplatser fastställda':
+    caption=isQ1?'Q1-tider · topp '+(snap.category==='MotoGP'?2:4)+' till Q2, övriga preliminärt från P'+(limits[snap.category]+1):
       'Q2-ordning + Q1-utslagna · ännu inte officiell startgrid';
   }else{return '';} // never invent a race grid
   if(!top.length&&!tail.length)return '<aside class="nt-qual-aside" aria-label="Startgrid">'+
     '<div class="nt-qual-title">🏁 Startgrid</div>'+
     '<div class="nt-qual-empty">Inväntar verifierade kvalresultat.</div></aside>';
-  let content='<div class="nt-qual-start">Start / poleposition</div>'+waves(top);
+  let content='<div class="nt-qual-start">'+(isQ1&&!official.length?'Q1 / preliminära gridplatser':'Start / poleposition')+'</div>'+waves(top);
   if(tail.length){
     const label= snap.category==='MotoGP'?'Q1 · ej vidare · från P13':
       'Q1 · ej vidare · från P19';
@@ -3424,7 +3483,7 @@ customElements.whenDefined(TAG).then(install);
 /* HA-MGP dev.37: read-only transition from previous result to verified entrants/grid. */
 (()=>{
 'use strict';
-const TAG='ha-motogp-next-timing-card',BUILD='pre-session-grid-20261114-01';
+const TAG='ha-motogp-next-timing-card',BUILD='pre-session-grid-20261121-01';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const valid=v=>v!==null&&v!==undefined&&String(v).trim()!=='';
 const label=v=>({RAC:'Race',SPR:'Sprint',WUP:'Warm Up',PR:'Practice'})[String(v||'').toUpperCase()]||String(v||'');
@@ -3484,7 +3543,7 @@ function upcoming(card){
  const future=available.filter(x=>x.at>now).sort((x,y)=>x.at-y.at);
  // A scheduled start does not establish live timing: retain the entry roster
  // briefly until a matching and TV-delay-approved live snapshot arrives.
- const pending=available.filter(x=>x.at<=now&&now-x.at<=15*60000)
+ const pending=available.filter(x=>x.at<=now&&now-x.at<=45*60000)
   .sort((x,y)=>y.at-x.at);
  return {next:pending[0]||future[0]||null,attrs:a};
 }
@@ -3524,9 +3583,13 @@ function before(card,next,attrs){
  return {session:s,rows,grid:/^(race|sprint)$/i.test(label(s.name||s.type))&&
   rows.length>0&&rows[0].position!==null};
 }
+function checkpoint(at){
+ const minutes=Math.floor((Date.now()-at)/60000);
+ return minutes>=5?'START EJ BEKRÄFTAD · MÖJLIG FÖRSENING':'STARTLISTA · INVÄNTAR LIVE';
+}
 function countdown(at){
  const s=Math.max(0,Math.ceil((at-Date.now())/1000));
- return at<=Date.now()?'Starttid passerad · inväntar data':
+ return at<=Date.now()?'Schemalagd start passerad · inväntar bekräftelse':
   (s>=86400?Math.floor(s/86400)+'d '+String(Math.floor(s%86400/3600)).padStart(2,'0')+':'+String(Math.floor(s%3600/60)).padStart(2,'0'):
    s>=3600?Math.floor(s/3600)+':'+String(Math.floor(s%3600/60)).padStart(2,'0'):
    String(Math.floor(s/60)))+':'+String(s%60).padStart(2,'0')+' till start';
@@ -3545,7 +3608,7 @@ function install(){
    const s=roster.session,type=label(s.name||s.type);
    const title=esc(s.category||'')+' · '+esc(type);
    let html='<section class="nt-card"><button type="button" class="nt-head" data-timing aria-expanded="'+expanded+'">'+
-    '<span><span class="nt-label">🏁 '+title+'</span><span class="nt-status finished">STARTLISTA · INVÄNTAR LIVE</span></span>'+
+    '<span><span class="nt-label">🏁 '+title+'</span><span class="nt-status finished">'+esc(checkpoint(next.at))+'</span></span>'+
     '<span class="nt-clock"><small>'+esc(countdown(next.at))+'</small></span>'+
     '<span class="nt-toggle">'+(expanded?'⌃ Dölj':'⌄ Visa')+' förare</span></button>';
    if(!expanded)return html+'</section>';

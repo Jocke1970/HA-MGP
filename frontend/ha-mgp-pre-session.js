@@ -1,7 +1,7 @@
 /* HA-MGP dev.37: read-only transition from previous result to verified entrants/grid. */
 (()=>{
 'use strict';
-const TAG='ha-motogp-next-timing-card',BUILD='pre-session-grid-20261114-01';
+const TAG='ha-motogp-next-timing-card',BUILD='pre-session-grid-20261121-01';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const valid=v=>v!==null&&v!==undefined&&String(v).trim()!=='';
 const label=v=>({RAC:'Race',SPR:'Sprint',WUP:'Warm Up',PR:'Practice'})[String(v||'').toUpperCase()]||String(v||'');
@@ -61,7 +61,7 @@ function upcoming(card){
  const future=available.filter(x=>x.at>now).sort((x,y)=>x.at-y.at);
  // A scheduled start does not establish live timing: retain the entry roster
  // briefly until a matching and TV-delay-approved live snapshot arrives.
- const pending=available.filter(x=>x.at<=now&&now-x.at<=15*60000)
+ const pending=available.filter(x=>x.at<=now&&now-x.at<=45*60000)
   .sort((x,y)=>y.at-x.at);
  return {next:pending[0]||future[0]||null,attrs:a};
 }
@@ -101,9 +101,13 @@ function before(card,next,attrs){
  return {session:s,rows,grid:/^(race|sprint)$/i.test(label(s.name||s.type))&&
   rows.length>0&&rows[0].position!==null};
 }
+function checkpoint(at){
+ const minutes=Math.floor((Date.now()-at)/60000);
+ return minutes>=5?'START EJ BEKRÄFTAD · MÖJLIG FÖRSENING':'STARTLISTA · INVÄNTAR LIVE';
+}
 function countdown(at){
  const s=Math.max(0,Math.ceil((at-Date.now())/1000));
- return at<=Date.now()?'Starttid passerad · inväntar data':
+ return at<=Date.now()?'Schemalagd start passerad · inväntar bekräftelse':
   Math.floor(s/60)+':'+String(s%60).padStart(2,'0')+' till start';
 }
 function install(){
@@ -120,7 +124,7 @@ function install(){
    const s=roster.session,type=label(s.name||s.type);
    const title=esc(s.category||'')+' · '+esc(type);
    let html='<section class="nt-card"><button type="button" class="nt-head" data-timing aria-expanded="'+expanded+'">'+
-    '<span><span class="nt-label">🏁 '+title+'</span><span class="nt-status finished">STARTLISTA · INVÄNTAR LIVE</span></span>'+
+    '<span><span class="nt-label">🏁 '+title+'</span><span class="nt-status finished">'+esc(checkpoint(next.at))+'</span></span>'+
     '<span class="nt-clock"><small>'+esc(countdown(next.at))+'</small></span>'+
     '<span class="nt-toggle">'+(expanded?'⌃ Dölj':'⌄ Visa')+' förare</span></button>';
    if(!expanded)return html+'</section>';

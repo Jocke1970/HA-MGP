@@ -1,0 +1,24 @@
+shell_command:
+  ha_mgp_fp1_snapshot: >-
+    python3 /config/ha_mgp/capture_fp1.py
+    --once
+    --ha-url http://127.0.0.1:8123
+    --token-file /config/ha_mgp/.token
+    --timeout 2
+    --output /config/motogp_data/fp1_2026-11-20.jsonl
+
+automation:
+  - id: ha_mgp_fp1_capture_20261120
+    alias: "HA-MGP FP1 datainsamling 20 november"
+    triggers:
+      - trigger: time_pattern
+        seconds: "/15"
+    conditions:
+      - condition: template
+        value_template: >-
+          {{ as_timestamp(now()) >= as_timestamp('2026-11-20T09:45:00+01:00')
+             and as_timestamp(now()) < as_timestamp('2026-11-20T12:45:00+01:00') }}
+    actions:
+      - action: shell_command.ha_mgp_fp1_snapshot
+    mode: single
+    max_exceeded: silent

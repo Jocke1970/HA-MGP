@@ -68,6 +68,13 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   let h=timing._timing();
   assert.match(h,/SENASTE VARV/);assert.match(h,/FRAMFÖR/);assert.match(h,/LEDARE/);
   assert.match(h,/⏱ fastest/);assert.doesNotMatch(h,/⚡/);
+  timing._live.name='Q1';timing._snapshot.name='Q1';
+  let q=timing._timing();
+  assert.match(q,/nt-best-main/);
+  assert.ok(q.indexOf('nt-best-main')<q.indexOf('Senaste:'),'qualifying best above last');
+  timing._live.name='Q2';timing._snapshot.name='Q2';
+  assert.match(timing._timing(),/nt-best-main/);
+  timing._live.name='Race';timing._snapshot.name='Race';
   assert.match(h,/nt-last-main[\s\S]*nt-pb-chip[\s\S]*Snabbaste: 1&#39;29\.980/);
   assert.match(h,/class="nt-session-best"[^>]*>Snabbaste: 1&#39;29\.980/,'only session-fastest lap highlighted in red');
 
