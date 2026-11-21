@@ -77,7 +77,7 @@ const live=(category,name,riders)=>({
   push({'sensor.motogp_next_race':race(),...live('Moto2','Q1',[1,2,3,4,5].map(rider))});
   assert.match(overview.view.innerHTML,/samlad testversion|UI-preview/,'both verified source and packaged UI build labels are valid');
   assert.doesNotMatch(overview.view.innerHTML,/testresurs/);
-  assert.equal((timing.view.innerHTML.match(/Q2 ↑/g)||[]).length,8,'Moto2 Q1 top four marked in table and provisional grid');
+  assert.equal((timing.view.innerHTML.match(/Q2 ↑/g)||[]).length,4,'Moto2 Q1 4 riders marked');
   assert.match(timing.view.innerHTML,/Q2-GRÄNS · preliminärt/);
   assert.match(timing.shadowRoot.innerHTML,/nt-heading>span:nth-child\(2\)\{text-align:center\}/);
   assert.match(timing.view.innerHTML,/data-live-remaining/);
