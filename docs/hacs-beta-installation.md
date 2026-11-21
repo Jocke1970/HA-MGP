@@ -1,11 +1,12 @@
-# HA-MGP b38 – HACS beta / okulärbesiktning
+# HA-MGP b39 – HACS beta / okulärbesiktning
 
-1. Installera **`2026.11.0b38`** från HACS beta; installera inte dev.
-2. Starta om Home Assistant och gör `Ctrl+Shift+R`.
-3. Bekräfta backend `2026.11.0b38` och frontend `0.3.0-dev.76`.
-4. Öppna banfakta-popupen med live-timingkortet synligt. Timingkortet får inte hamna ovanpå popupen.
-5. Stäng via banbild eller utanför popupen och kontrollera att livekortet visas igen.
-6. Kontrollera att popupen fortsätter fungera efter en normal sensoruppdatering och att övriga b37-funktioner är oförändrade.
-7. Vid problem: rollback till **b37**. Radera inga historiska data.
+1. Installera **`2026.11.0b39`** från HACS beta, inte dev. Starta om HA och ladda om webbläsaren med `Ctrl+Shift+R`.
+2. Kontrollera frontend `0.3.0-dev.77` och backend `2026.11.0b39`.
+3. Öppna översiktskortets **🔧 API-verktyg → Visa**.
+4. Kontrollera GP UUID, live-session, Results-sessions UUID och vald klass. Tryck **Visa alla ID:n** för fler identifierare.
+5. Välj MotoGP, Moto2 eller Moto3 och prova **Live timing**, **Broadcast-schema**, **Results-sessioner**, **Startgrid** och **Klassificering** (kräver vald Results-sessions UUID).
+6. Klicka **Kopiera JSON** och använd resultatet för analys av API:s schema/tider; källa och hämtningstid följer med.
+7. Aktivera No Spoiler och kontrollera att verktyget inte ger nya anrop eller visar sparat JSON-svar.
+8. Vid fel kan du återgå till b38. Radera inga entiteter eller data.
 
 **Main lämnas orörd** tills betan godkänts.
