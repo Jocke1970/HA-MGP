@@ -34,14 +34,16 @@ function render(card){
  const {race,status,attrs,category,sessions,selected}=stateInfo(card);
  const spoiler=String(card._hass?.states?.['switch.motogp_no_spoiler']?.state||'off')==='on';
  const expanded=card._mgpUtilityOpen===true;
- const context=card._mgpUtilityResponse?.context||{};
+ const cached=card._mgpUtilityResponse;
+ const raw=!spoiler&&cached&&String(cached.context?.event_uuid||'')===String(attrs.event_id||'')?cached:null;
+ const context=raw?.context||{};
  const option=(v,label)=>'<option value="'+esc(v)+'"'+(category===v?' selected':'')+'>'+esc(label)+'</option>';
  const sessOptions=sessions.length?sessions.map(s=>
    '<option value="'+esc(s.id)+'"'+(selected&&String(selected.id)===String(s.id)?' selected':'')+'>'+
    esc(s.name||s.type||'Session')+' · '+esc(String(s.id).slice(0,18))+'</option>').join(''):
    '<option value="">Inga verifierade Results-sessioner</option>';
  const id=(name,value)=>'<div><b>'+esc(name)+'</b>'+esc(value||'—')+'</div>';
- const raw=card._mgpUtilityResponse;
+
  const json=raw?JSON.stringify(raw,null,2):'';
  const actionButtons=[
    ['ids','Visa alla ID:n'],['live','Live timing'],
