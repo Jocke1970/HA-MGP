@@ -110,6 +110,15 @@ function rowsFor(session,attrs){
 function before(card,next,attrs){
  const s=next?.s;
  if(!s||card._live||card._spoiler?.()||next.at-Date.now()>30*60000)return null;
+ // Once this exact session has a verified finished timing snapshot,
+ // never resurrect its pre-race grid due to stale calendar status.
+ const status=card._hass?.states?.[card._ids.status];
+ const finished=['C','F'].includes(String(status?.attributes?.session_status_id||'').toUpperCase())||
+   status?.state==='Finished';
+ const snap=card._snapshot;
+ if(finished&&snap?.riders?.length&&snap.day===card._today&&
+    nameKey(s.category)===nameKey(snap.category)&&
+    nameKey(label(s.name||s.type))===nameKey(label(snap.name)))return null;
  const rows=rowsFor(s,attrs);
  return {session:s,rows,grid:/^(race|sprint)$/i.test(label(s.name||s.type))&&
   rows.length>0&&rows[0].position!==null};
