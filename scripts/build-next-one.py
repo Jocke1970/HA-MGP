@@ -92,7 +92,7 @@ def build(directory, destination):
         "          .sort((a,b)=>b.date-a.date)[0]||null;\n"
         "        const started=pending && now-pending.date<15*60*1000?pending:null;\n"
         "        // A new pending session must never display riders from the old race.\n"
-        "        if (started && snap) {this._snapshot=null;this._activeKey='';snap=null;}",
+        "        if (started && !live && snap) {this._snapshot=null;this._activeKey='';snap=null;}",
         'separate unverified started pass from future next pass')
     split = swap(split,
         "        } else if (upcoming) {\n          title=`Nästa: ${upcoming.category} · ${upcoming.name}`;\n          statusText=spoiler?'SPOILERLÄGE':hasRiders?'SENASTE PASS AVSLUTAT':'MELLAN PASSEN';",
