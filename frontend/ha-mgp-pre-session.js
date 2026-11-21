@@ -1,39 +1,45 @@
 /* HA-MGP dev.37: read-only transition from previous result to verified entrants/grid. */
 (()=>{
 'use strict';
-const TAG='ha-motogp-next-timing-card',BUILD='pre-session-grid-20261121-01';
+const TAG='ha-motogp-next-timing-card',BUILD='pre-session-grid-20261121-02';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const valid=v=>v!==null&&v!==undefined&&String(v).trim()!=='';
 const label=v=>({RAC:'Race',SPR:'Sprint',WUP:'Warm Up',PR:'Practice'})[String(v||'').toUpperCase()]||String(v||'');
 const GRID_STYLE='<style>'+
- '.mgp-pre-grid-scroll{overflow-x:auto;padding:10px 10px 28px}'+
- '.mgp-pre-start{font-size:11px;font-weight:800;text-align:center;margin:2px 0 12px;letter-spacing:.09em}'+
- '.mgp-pre-wave{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;min-width:480px;'+
- 'padding:0 0 22px;margin-bottom:12px;border-bottom:1px dashed var(--divider-color,#8886)}'+
- '.mgp-pre-slot{display:flex;align-items:center;gap:8px;min-width:0;min-height:50px;padding:7px;'+
- 'border:1px solid var(--divider-color,#8886);border-radius:9px;'+
- 'background:var(--ha-card-background,var(--card-background-color,#fff))}'+
- '.mgp-pre-slot-2{transform:translateY(12px)}.mgp-pre-slot-3{transform:translateY(24px)}'+
- '.mgp-pre-position{font-size:11px;font-weight:900;flex:none;font-variant-numeric:tabular-nums}'+
- '.mgp-pre-number{flex:none;display:grid;place-items:center;min-width:32px;height:30px;'+
- 'padding:0 4px;border-radius:6px;font-weight:900;color:#fff;background:#555}'+
- '.mgp-pre-name{min-width:0;display:flex;flex-direction:column;gap:2px}'+
+ '.mgp-pre-grid-scroll{overflow-x:auto;padding:10px 12px 16px}'+
+ '.mgp-pre-start{font-size:10px;font-weight:850;text-align:center;margin:2px 0 12px;letter-spacing:.14em;color:var(--secondary-text-color)}'+
+ '.mgp-pre-wave{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;min-width:480px;padding:0 0 9px;margin:0 0 9px;border-bottom:1px dashed var(--divider-color,#8886)}'+
+ '.mgp-pre-slot{display:flex;align-items:center;gap:8px;min-width:0;min-height:47px;padding:7px 9px;border:1px solid var(--divider-color,#8886);border-left:4px solid var(--mgp-grid-color,#777);border-radius:9px;background:var(--ha-card-background,var(--card-background-color,#fff))}'+
+ '.mgp-pre-slot-2{transform:translateY(4px)}.mgp-pre-slot-3{transform:translateY(8px)}'+
+ '.mgp-pre-pole{border-color:#c8a146;box-shadow:inset 0 0 0 1px #c8a14655}'+
+ '.mgp-pre-position{display:flex;align-items:center;justify-content:center;min-width:32px;height:31px;border-radius:6px;background:var(--secondary-background-color,#8882);font-size:14px;font-weight:900;flex:none;font-variant-numeric:tabular-nums}'+
+ '.mgp-pre-flag{font-size:15px;flex:none}'+
+ '.mgp-pre-name{min-width:0;display:flex;flex-direction:column;gap:3px}'+
  '.mgp-pre-name b{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'+
- '.mgp-pre-name small{font-size:10px;color:var(--secondary-text-color);'+
- 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'+
- '@container (max-width:530px){.mgp-pre-grid-scroll{padding:8px 5px 25px}}'+
+ '.mgp-pre-name small{font-size:10px;color:var(--secondary-text-color);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'+
+ '@container (max-width:530px){.mgp-pre-grid-scroll{padding:8px 5px 14px}.mgp-pre-slot{padding:6px;gap:5px}.mgp-pre-name b{font-size:11px}}'+
  '</style>';
-const safeColor=v=>/^#(?:[0-9a-f]{6})$/i.test(String(v||''))?String(v):'#555';
+const safeColor=v=>/^#(?:[0-9a-f]{6})$/i.test(String(v||''))?String(v):'#777777';
+const riderNumber=v=>{const x=String(v??'').trim().replace(/^#/,'');return /^\d{1,3}$/.test(x)&&Number(x)>0?String(Number(x)):'';};
+const nameKey=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/gi,'').toLowerCase();
+const teamKey=v=>String(v||'').trim().replace(/\s+/g,' ').toLowerCase();
+const nationFlag=v=>{
+ const code=String(v||'').toUpperCase();
+ const iso3={ITA:'IT',SPA:'ES',FRA:'FR',GBR:'GB',AUS:'AU',JPN:'JP',BRA:'BR',NED:'NL',GER:'DE',POR:'PT',USA:'US',BEL:'BE',CZE:'CZ',COL:'CO',RSA:'ZA',TUR:'TR',SUI:'CH',THA:'TH',MAL:'MY',IDN:'ID',ARG:'AR',IND:'IN'};
+ const country=iso3[code]||(/^[A-Z]{2}$/.test(code)?code:'');
+ return country?String.fromCodePoint(...[...country].map(c=>127397+c.charCodeAt(0))):'';
+};
 function gridMarkup(rows){
- let html=GRID_STYLE+'<div class="mgp-pre-grid-scroll"><div class="mgp-pre-start">START / POLE POSITION</div>';
+ let html=GRID_STYLE+'<div class="mgp-pre-grid-scroll"><div class="mgp-pre-start">🏁 START / POLE POSITION</div>';
  for(let i=0;i<rows.length;i+=3){
   html+='<div class="mgp-pre-wave">';
   for(const r of rows.slice(i,i+3)){
-   const slot=(r.position-1)%3+1;
-   html+='<div class="mgp-pre-slot mgp-pre-slot-'+slot+'">'+
+   const slot=(r.position-1)%3+1,flag=nationFlag(r.nation);
+   html+='<div class="mgp-pre-slot mgp-pre-slot-'+slot+(r.position===1?' mgp-pre-pole':'')+'" style="--mgp-grid-color:'+safeColor(r.color)+'">'+
     '<span class="mgp-pre-position">P'+esc(r.position)+'</span>'+
-    '<span class="mgp-pre-number" style="background:'+safeColor(r.color)+'">#'+esc(r.number)+'</span>'+
-    '<span class="mgp-pre-name"><b>'+esc(r.rider)+'</b><small>'+esc(r.team)+'</small></span></div>';
+    (flag?'<span class="mgp-pre-flag">'+flag+'</span>':'')+
+    '<span class="mgp-pre-name"><b>'+esc(r.rider)+'</b><small>'+
+    (riderNumber(r.number)?'#'+esc(riderNumber(r.number))+' · ':'')+esc(r.team)+'</small></span></div>';
   }
   html+='</div>';
  }
@@ -77,15 +83,22 @@ function rowsFor(session,attrs){
  const complete=Array.isArray(grid)&&grid.length>=floor&&
   (!roster.length||grid.length===roster.length);
  if(race&&complete){
-  const seen=new Set(),positions=new Set(),out=[];
+  const seen=new Set(),positions=new Set(),seenNumbers=new Set(),out=[];
   for(const g of grid){
-   const position=Number(g?.position),number=String(g?.number??'').trim();
-   if(!Number.isInteger(position)||position<1||!number||seen.has(number)||positions.has(position))return roster.map(r=>({position:null,number:r.number,rider:r.rider,team:r.team||'',nation:r.nation||''}));
-   seen.add(number);positions.add(position);
-   const entrant=roster.find(r=>String(r.number)===number);
-   const rider=String(g.rider||entrant?.rider||'').trim();
-   if(!rider)return roster.map(r=>({position:null,number:r.number,rider:r.rider,team:r.team||'',nation:r.nation||''}));
-   out.push({position,number,rider,team:g.team||entrant?.team||'',nation:entrant?.nation||'',color:g.color||entrant?.color||''});
+   const position=Number(g?.position),rider=String(g?.rider||'').trim();
+   const team=String(g?.team||'').trim(),key=nameKey(rider);
+   // Published grid positions may have no rider number: resolve only from
+   // verified same-class entrant data, never guess a rider's number.
+   const candidates=roster.filter(r=>nameKey(r.rider)===key&&(!team||teamKey(r.team)===teamKey(team)));
+   const entrant=candidates.length===1?candidates[0]:null;
+   const standings=Array.isArray(attrs.standings_by_category?.[category])?attrs.standings_by_category[category]:[];
+   const verified=standings.filter(r=>nameKey(r.rider)===key&&(!team||teamKey(r.team)===teamKey(team)));
+   const match=verified.length===1?verified[0]:null;
+   const number=riderNumber(g?.number)||riderNumber(entrant?.number)||riderNumber(match?.number);
+   if(!Number.isInteger(position)||position<1||!key||seen.has(key)||positions.has(position)||(number&&seenNumbers.has(number)))
+     return roster.map(r=>({position:null,number:r.number,rider:r.rider,team:r.team||'',nation:r.nation||''}));
+   seen.add(key);positions.add(position);if(number)seenNumbers.add(number);
+   out.push({position,number,rider,team:team||entrant?.team||'',nation:g.nation||entrant?.nation||match?.nation||'',color:g.color||entrant?.color||match?.team_color||''});
   }
   if(out.length&&new Set(out.map(x=>x.position)).size===out.length&&
      Math.min(...out.map(x=>x.position))===1&&
@@ -118,7 +131,8 @@ function install(){
   const original=oldTiming.apply(this,args);
   if(this._spoiler?.()||this._live)return original;
   const {next,attrs}=upcoming(this);
-  const roster=before(this,next,attrs);
+  const standings=this._hass?.states?.['sensor.motogp_rider_standings']?.attributes?.standings_by_category||{};
+  const roster=before(this,next,{...attrs,standings_by_category:standings});
   if(roster){
    const expanded=this._timingManual===null?true:this._timingManual;
    const s=roster.session,type=label(s.name||s.type);
