@@ -25,7 +25,7 @@
     const match = /moto\s*(gp|2|3|e)/i.exec(raw);
     return match ? ({gp:'MotoGP','2':'Moto2','3':'Moto3',e:'MotoE'})[match[1].toLowerCase()] : raw;
   };
-  const sess = value => ({RAC:'Race',SPR:'Sprint',PR:'Practice',WUP:'Warm Up'})[String(value || '').toUpperCase()] || String(value || '');
+  const sess = value => ({RAC:'Race',SPR:'Sprint',PR:'Practice',WUP:'Warm Up', 'TISSOT SPRINT':'Sprint'})[String(value || '').trim().toUpperCase()] || String(value || '');
   const keyName = value => {
     const name=String(sess(value)).trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
     // API calls the Sprint "Tissot Sprint"; calendar may call it just Sprint.
