@@ -16,7 +16,7 @@ class Overview {
       'switch.motogp_no_spoiler':{state:'off'},
     },callWS:async request=>{
       calls.push(request);
-      return {action:request.action,context:{season_id:'season-uuid',live_session_id:'5'},
+      return {action:request.action,context:{event_uuid:'portugal-results-uuid',season_id:'season-uuid',live_session_id:'5'},
               fetched_at:'2026-11-21T13:00:00Z',data:{head:{session_id:'5'}}};
     }};
     this.root={innerHTML:'',listeners:{},
@@ -60,6 +60,7 @@ const event=(obj)=>({target:{closest:()=>obj}});
  card._hass.states['switch.motogp_no_spoiler'].state='on';
  card._render();
  assert.match(card.root.innerHTML,/API-verktyget är låst/);
+ assert.doesNotMatch(card.root.innerHTML,/season-uuid/,'cached data hidden during No Spoiler');
  assert.match(card.root.innerHTML,/disabled/);
  console.log('PASS: utility menu IDs, scoped manual calls, JSON, No Spoiler');
 })().catch(err=>{console.error(err);process.exitCode=1;});
