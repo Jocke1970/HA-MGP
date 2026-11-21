@@ -99,9 +99,22 @@ const published=(n,category='Moto2')=>Array.from({length:n},(_,i)=>({
   // During Q1 they are Q1 rankings, not silently final grid slots.
   t._live.name='Q1';t._snapshot.name='Q1';
   html=render(t);
-  assert.match(html,/Q1-tider · inga startplatser fastställda/);
+  assert.match(html,/Q1-tider · topp 2 till Q2, övriga preliminärt från P13/);
+  assert.match(html,/Q1 \/ preliminära gridplatser/);
+  assert.match(html,/Q2 ↑/);
+  assert.doesNotMatch(html,/Start \/ poleposition/);
   assert.doesNotMatch(html,/Q1 · ej vidare/);
-  assert.doesNotMatch(html,/P13/);
+  // MotoGP riders after the two Q2 transfers provisionally start at P13+.
+  t._snapshot.riders=[rider(1,72,'A'),rider(2,93,'B'),rider(3,94,'C')];
+  html=render(t);assert.match(html,/~P13/);
+  // Moto2 and Moto3 use four Q1 transfers, with P19+ for the rest.
+  t._live.category='Moto2';t._snapshot.category='Moto2';
+  t._snapshot.riders=[rider(1,71,'A'),rider(2,72,'B'),rider(3,73,'C'),rider(4,74,'D'),rider(5,75,'E')];
+  html=render(t);
+  assert.match(html,/topp 4 till Q2, övriga preliminärt från P19/);
+  assert.match(html,/~P19/);
+  t._live.category='MotoGP';t._snapshot.category='MotoGP';
+  t._snapshot.riders=[rider(2,93,'MARQUEZ'),rider(1,72,'BEZZECCHI')];
 
   // Duplicate riders or compromised backend segment must fail closed.
   t._live.name='Q2';t._snapshot.name='Q2';
