@@ -120,7 +120,8 @@ def check_bundle_integrity() -> None:
     assert "@container (max-width:620px)" in next_js
     assert "data-motogp-rider-id" in next_js
     assert "data-motogp-laps-close" in next_js
-    assert next_js.count("hass.callService(") == 1, "Only TV-delay helper writes are permitted"\n    assert "input_number.motogp_tv_delay_seconds" in next_js
+    assert next_js.count("hass.callService(") == 1, "Only TV-delay helper writes are permitted"
+    assert "input_number.motogp_tv_delay_seconds" in next_js
     assert "window.location" not in next_js
     assert "const health=feedHealth(age,expected)" in next_js
     assert "if(this.isConnected)ensureAgeTimer(this)" in next_js
