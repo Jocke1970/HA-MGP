@@ -86,7 +86,7 @@ def build(directory, destination):
         "          .filter(x=>x.date && x.date<=now && x.date.toDateString()===now.toDateString() &&\n"
         "            now-x.date<2*60*60*1000 &&\n"
         "            !['FINISHED','CANCELLED','CANCELED'].includes(String(x.pass.status||'').toUpperCase()) &&\n"
-        "            !((status?.state==='Finished'||String(status?.attributes?.session_status_id||'').toUpperCase()==='F') &&\n"
+        "            !((status?.state==='Finished'||['F','C'].includes(String(status?.attributes?.session_status_id||'').toUpperCase())) &&\n"
         "              category(status?.attributes?.category)===category(x.pass.category||'MotoGP') &&\n"
         "              sessionName(status?.attributes?.session_shortname)===sessionName(x.pass.name||x.pass.type||'')))\n"
         "          .sort((a,b)=>b.date-a.date)[0]||null;\n"
@@ -94,11 +94,15 @@ def build(directory, destination):
         'separate unverified started pass from future next pass')
     split = swap(split,
         "        } else if (upcoming) {\n          title=`Nästa: ${upcoming.category} · ${upcoming.name}`;\n          statusText=spoiler?'SPOILERLÄGE':hasRiders?'SENASTE PASS AVSLUTAT':'MELLAN PASSEN';",
-        "        } else if (started && !spoiler) {\n"
+        "        } else if (started && !hasRiders && !spoiler) {\n"
         "          title=`Schemalagd: ${category(started.pass.category||'MotoGP')} · ${sessionName(started.pass.name||started.pass.type||'')}`;\n"
         "          statusText='STARTTID PASSERAD · INVÄNTAR MATCHANDE DATA';\n"
         "          clockHtml=`<span class=\"nt-clock\"><span>${esc(pad(started.date.getHours())+':'+pad(started.date.getMinutes()))}</span>`+\n"
         "            `${upcoming?`<small>Nästa: ${esc(upcoming.category)} ${esc(upcoming.name)} ${esc(upcoming.time)}</small>`:''}</span>`;\n"
+        "        } else if (hasRiders && !spoiler && (status?.state==='Finished' ||\n"
+        "          ['F','C'].includes(String(status?.attributes?.session_status_id||'').toUpperCase()))) {\n"
+        "          title=`${snap.category} · ${snap.name}`;\n"
+        "          statusText='AVSLUTAT · SLUTRESULTAT';\n"
         "        } else if (upcoming) {\n"
         "          title=`Nästa: ${upcoming.category} · ${upcoming.name}`;\n"
         "          statusText=spoiler?'SPOILERLÄGE':hasRiders?'SENASTE PASS · EJ LIVE':'MELLAN PASSEN';",
