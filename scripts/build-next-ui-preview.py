@@ -21,8 +21,9 @@ TIMING_ICONS_BLOB = 'd44d19a911051d4ab67513d4191942f03eeb09b0'
 ACTIVE_CHIP_BLOB = '09d394c4847767f43f9f17de0ff41d32ec78915b'
 FINISH_SETTLING_BLOB = 'ca8386c031a720878b6bb1b982185b3390750ba8'
 PRE_SESSION_BLOB = '313e9e8bed74d1ad27dbb1f9bc6aac617199cad8'
-BUILD = 'next-one-20261121-02'
-VERSION = '0.3.0-dev.76'
+API_UTILITY_BLOB = '63dbb8cdf3f590ea988fa528b68faebedbf14426'
+BUILD = 'next-one-20261121-03'
+VERSION = '0.3.0-dev.77'
 
 
 def blob(data):
@@ -140,6 +141,12 @@ def main(frontend, target):
     pre_session_bytes = pre_session_path.read_bytes()
     if blob(pre_session_bytes) != PRE_SESSION_BLOB:
         raise SystemExit('STOP: unexpected pre-session source revision')
+    api_utility_path = frontend / 'ha-mgp-api-utility.js'
+    if not api_utility_path.is_file() or api_utility_path.is_symlink():
+        raise SystemExit('STOP: missing API utility frontend addon')
+    api_utility_bytes = api_utility_path.read_bytes()
+    if blob(api_utility_bytes) != API_UTILITY_BLOB:
+        raise SystemExit('STOP: unexpected API utility source revision')
     with tempfile.TemporaryDirectory() as temp:
         base = pathlib.Path(temp) / 'base.js'
         module.build(frontend, base)
@@ -162,7 +169,7 @@ def main(frontend, target):
     if header_source.count('__MGP_APPROVED_BRAND_DATA_URI__') != 1:
         raise SystemExit('STOP: missing or duplicate MGP logo placeholder')
     header_source = header_source.replace('__MGP_APPROVED_BRAND_DATA_URI__', logo_uri)
-    result = (text + '\n;\n' + ui.decode('utf-8') + '\n;\n' + mobile_bytes.decode('utf-8') + '\n;\n' + qual_bytes.decode('utf-8') + '\n;\n' + header_source + '\n;\n' + history_bytes.decode('utf-8') + '\n;\n' + i18n_source + '\n;\n' + calendar_bytes.decode('utf-8') + '\n;\n' + api_status_bytes.decode('utf-8') + '\n;\n' + weekend_dots_bytes.decode('utf-8') + '\n;\n' + session_dots_bytes.decode('utf-8') + '\n;\n' + timing_icons_bytes.decode('utf-8') + '\n;\n' + active_chip_bytes.decode('utf-8') + '\n;\n' + finish_settling_bytes.decode('utf-8') + '\n;\n' + pre_session_bytes.decode('utf-8')).encode('utf-8')
+    result = (text + '\n;\n' + ui.decode('utf-8') + '\n;\n' + mobile_bytes.decode('utf-8') + '\n;\n' + qual_bytes.decode('utf-8') + '\n;\n' + header_source + '\n;\n' + history_bytes.decode('utf-8') + '\n;\n' + i18n_source + '\n;\n' + calendar_bytes.decode('utf-8') + '\n;\n' + api_status_bytes.decode('utf-8') + '\n;\n' + weekend_dots_bytes.decode('utf-8') + '\n;\n' + session_dots_bytes.decode('utf-8') + '\n;\n' + timing_icons_bytes.decode('utf-8') + '\n;\n' + active_chip_bytes.decode('utf-8') + '\n;\n' + finish_settling_bytes.decode('utf-8') + '\n;\n' + pre_session_bytes.decode('utf-8') + '\n;\n' + api_utility_bytes.decode('utf-8')).encode('utf-8')
     # The split source now owns the explicit day/hour/minute display. Keep only legacy patch sites below.
     output = result.decode('utf-8')
     output = replace_one(output, "const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;\n    return `${h?`${h}:${pad(m)}`:m}:${pad(s)} till start`;", "const d=Math.floor(sec/86400),h=Math.floor(sec%86400/3600),m=Math.floor(sec%3600/60),s=sec%60;\n    return `${d?`${d}d ${pad(h)}:${pad(m)}`:h?`${h}:${pad(m)}`:m}:${pad(s)} till start`;")
