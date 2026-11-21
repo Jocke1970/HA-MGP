@@ -84,6 +84,7 @@ jobs:
           node tests/frontend-active-chip.cjs
           node tests/frontend-finish-settling.cjs
           node tests/frontend-pre-session.cjs
+          node tests/frontend-portugal-sprint.cjs
           node --check frontend/ha-mgp-pre-session.js
           python3 scripts/build-next-ui-preview.py frontend dist/ha-mgp.js
           node --check dist/ha-mgp.js
