@@ -91,11 +91,14 @@ function rowsFor(session,attrs){
    // verified same-class entrant data, never guess a rider's number.
    const candidates=roster.filter(r=>nameKey(r.rider)===key&&(!team||teamKey(r.team)===teamKey(team)));
    const entrant=candidates.length===1?candidates[0]:null;
-   const number=riderNumber(g?.number)||riderNumber(entrant?.number);
+   const standings=Array.isArray(attrs.standings_by_category?.[category])?attrs.standings_by_category[category]:[];
+   const verified=standings.filter(r=>nameKey(r.rider)===key&&(!team||teamKey(r.team)===teamKey(team)));
+   const match=verified.length===1?verified[0]:null;
+   const number=riderNumber(g?.number)||riderNumber(entrant?.number)||riderNumber(match?.number);
    if(!Number.isInteger(position)||position<1||!key||seen.has(key)||positions.has(position))
      return roster.map(r=>({position:null,number:r.number,rider:r.rider,team:r.team||'',nation:r.nation||''}));
    seen.add(key);positions.add(position);
-   out.push({position,number,rider,team:team||entrant?.team||'',nation:g.nation||entrant?.nation||'',color:g.color||entrant?.color||''});
+   out.push({position,number,rider,team:team||entrant?.team||'',nation:g.nation||entrant?.nation||match?.nation||'',color:g.color||entrant?.color||match?.team_color||''});
   }
   if(out.length&&new Set(out.map(x=>x.position)).size===out.length&&
      Math.min(...out.map(x=>x.position))===1&&
@@ -128,7 +131,8 @@ function install(){
   const original=oldTiming.apply(this,args);
   if(this._spoiler?.()||this._live)return original;
   const {next,attrs}=upcoming(this);
-  const roster=before(this,next,attrs);
+  const standings=this._hass?.states?.['sensor.motogp_rider_standings']?.attributes?.standings_by_category||{};
+  const roster=before(this,next,{...attrs,standings_by_category:standings});
   if(roster){
    const expanded=this._timingManual===null?true:this._timingManual;
    const s=roster.session,type=label(s.name||s.type);
