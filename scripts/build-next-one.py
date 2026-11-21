@@ -72,7 +72,7 @@ def build(directory, destination):
         "const imminent=!live && upcoming && upcoming.date>now && "
         "upcoming.date.getTime()-now.getTime()<=15*60*1000;\n"
         "        if (imminent && snap) {this._snapshot=null;this._activeKey='';snap=null;}\n"
-        "        const hasRiders=!spoiler && snap?.riders?.length && snap.day===this._today;",
+        "        let hasRiders=!spoiler && snap?.riders?.length && snap.day===this._today;",
         'clear old riders 15 min before a new session')
     split = swap(split,
         'const spoiler=this._spoiler();',
@@ -90,7 +90,9 @@ def build(directory, destination):
         "              category(status?.attributes?.category)===category(x.pass.category||'MotoGP') &&\n"
         "              sessionName(status?.attributes?.session_shortname)===sessionName(x.pass.name||x.pass.type||'')))\n"
         "          .sort((a,b)=>b.date-a.date)[0]||null;\n"
-        "        const started=pending && now-pending.date<15*60*1000?pending:null;",
+        "        const started=pending && now-pending.date<15*60*1000?pending:null;\n"
+        "        // A new pending session must never display riders from the old race.\n"
+        "        if (started && snap) {this._snapshot=null;this._activeKey='';snap=null;hasRiders=false;}",
         'separate unverified started pass from future next pass')
     split = swap(split,
         "        } else if (upcoming) {\n          title=`Nästa: ${upcoming.category} · ${upcoming.name}`;\n          statusText=spoiler?'SPOILERLÄGE':hasRiders?'SENASTE PASS AVSLUTAT':'MELLAN PASSEN';",
