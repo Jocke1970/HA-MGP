@@ -83,7 +83,7 @@ function rowsFor(session,attrs){
  const complete=Array.isArray(grid)&&grid.length>=floor&&
   (!roster.length||grid.length===roster.length);
  if(race&&complete){
-  const seen=new Set(),positions=new Set(),out=[];
+  const seen=new Set(),positions=new Set(),seenNumbers=new Set(),out=[];
   for(const g of grid){
    const position=Number(g?.position),rider=String(g?.rider||'').trim();
    const team=String(g?.team||'').trim(),key=nameKey(rider);
@@ -95,9 +95,9 @@ function rowsFor(session,attrs){
    const verified=standings.filter(r=>nameKey(r.rider)===key&&(!team||teamKey(r.team)===teamKey(team)));
    const match=verified.length===1?verified[0]:null;
    const number=riderNumber(g?.number)||riderNumber(entrant?.number)||riderNumber(match?.number);
-   if(!Number.isInteger(position)||position<1||!key||seen.has(key)||positions.has(position))
+   if(!Number.isInteger(position)||position<1||!key||seen.has(key)||positions.has(position)||(number&&seenNumbers.has(number)))
      return roster.map(r=>({position:null,number:r.number,rider:r.rider,team:r.team||'',nation:r.nation||''}));
-   seen.add(key);positions.add(position);
+   seen.add(key);positions.add(position);if(number)seenNumbers.add(number);
    out.push({position,number,rider,team:team||entrant?.team||'',nation:g.nation||entrant?.nation||match?.nation||'',color:g.color||entrant?.color||match?.team_color||''});
   }
   if(out.length&&new Set(out.map(x=>x.position)).size===out.length&&
