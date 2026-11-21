@@ -1,12 +1,10 @@
-# HA-MGP b39 – HACS beta / okulärbesiktning
+# HA-MGP b40 – HACS beta / okulärbesiktning
 
-1. Installera **`2026.11.0b39`** från HACS beta, inte dev. Starta om HA och ladda om webbläsaren med `Ctrl+Shift+R`.
-2. Kontrollera frontend `0.3.0-dev.77` och backend `2026.11.0b39`.
-3. Öppna översiktskortets **🔧 API-verktyg → Visa**.
-4. Kontrollera GP UUID, live-session, Results-sessions UUID och vald klass. Tryck **Visa alla ID:n** för fler identifierare.
-5. Välj MotoGP, Moto2 eller Moto3 och prova **Live timing**, **Broadcast-schema**, **Results-sessioner**, **Startgrid** och **Klassificering** (kräver vald Results-sessions UUID).
-6. Klicka **Kopiera JSON** och använd resultatet för analys av API:s schema/tider; källa och hämtningstid följer med.
-7. Aktivera No Spoiler och kontrollera att verktyget inte ger nya anrop eller visar sparat JSON-svar.
-8. Vid fel kan du återgå till b38. Radera inga entiteter eller data.
+1. Installera **`2026.11.0b40`** via HACS beta, starta om Home Assistant och gör `Ctrl+Shift+R`.
+2. Kontrollera backend `2026.11.0b40` och frontend `0.3.0-dev.78`.
+3. Före MotoGP Race: kontrollera tätare startled med P1–P3, markerad pole och verifierade teamfärger, flaggor och nummer.
+4. Okända nummer ska inte visas som `#–`. Fullständig grid får inte döljas bara för saknade nummer.
+5. Vid schemaändring följer gridden befintlig schemakälla. När matchande LIVE är verifierat ska gridden ersättas av livetiming.
+6. Vid problem: rollback till **b39**. Ingen ny HA-YAML eller installationsscript.
 
 **Main lämnas orörd** tills betan godkänts.

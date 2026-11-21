@@ -65,6 +65,17 @@ assert.match(html,/mgp-pre-slot-1/);
 assert.match(html,/mgp-pre-slot-2/);
 assert.match(html,/mgp-pre-slot-3/);
 assert.match(html,/START \/ POLE POSITION/);
+assert.match(html,/mgp-pre-pole/,'pole highlighted');
+assert.match(html,/mgp-pre-position/,'prominent position styling');
+assert.match(html,/mgp-grid-color/,'team color accent');
+const noNumbers=full.map(r=>({...r,number:null}));
+schedule(29,{entry_lists:{Moto3:[]},start_grids:{Moto3:noNumbers}});
+html=card._timing();
+assert.match(html,/Publicerad startgrid/,'grid does not disappear if upstream omits rider numbers');
+assert.match(html,/Rider 1/);
+assert.doesNotMatch(html,/#–|#—|#null/,'unknown rider numbers are not printed as placeholders');
+schedule(29,{entry_lists:{Moto3:roster},start_grids:{Moto3:full}});
+
 assert.ok(html.indexOf('P1')<html.indexOf('P2'));
 assert.ok(html.indexOf('Rider 1')<html.indexOf('Rider 19'));
 const broken=full.map(r=>({...r}));broken[18].position=21;
