@@ -91,11 +91,13 @@ assert.match(timing.view.innerHTML,/0d 00h 03m till start/);
 assert.match(timing.view.innerHTML,/Senaste passets förardata: MotoGP · Q1 \(ej live\)/);
 assert.match(timing.view.innerHTML,/FERNANDEZ/);
 assert.doesNotMatch(timing.view.innerHTML,/● LIVE/);
-// A newly mounted card after finish cannot claim historic riders it has not observed.
+// A newly mounted card may recover a verified, matching, TV-delayed final result.
+// It must not label the completed session LIVE.
 const lateTiming=new Timing();lateTiming.setConfig({type:'custom:ha-motogp-next-timing-card'});
 lateTiming.hass={states};
 assert.match(lateTiming.view.innerHTML,/Nästa: MotoGP · Q2/);
-assert.doesNotMatch(lateTiming.view.innerHTML,/FERNANDEZ/);
+assert.match(lateTiming.view.innerHTML,/FERNANDEZ/);
+assert.doesNotMatch(lateTiming.view.innerHTML,/● LIVE/);
 // Filtered overview countdown follows its filtered schedule, standalone timing stays global.
 overview._click({target:{closest:()=>({dataset:{category:'Moto2'}})}});
 assert.match(overview.view.innerHTML,/0d 02h 28m till start/);
