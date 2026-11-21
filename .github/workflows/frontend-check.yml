@@ -129,6 +129,10 @@ jobs:
         env:
           TZ: Europe/Stockholm
         run: node tests/frontend-next.cjs
+      - name: Portugal Sprint API status, rescheduled calendar and privacy regression
+        env:
+          TZ: Europe/Stockholm
+        run: node tests/frontend-portugal-sprint.cjs
       - name: Standalone timing and overview regression
         env:
           TZ: Europe/Stockholm
