@@ -2,15 +2,13 @@
 
 Inofficiell Home Assistant-integration för MotoGP, Moto2 och Moto3.
 
-**HACS beta: `2026.11.0b37` · Frontend `0.3.0-dev.75`.**
+**HACS beta: `2026.11.0b38` · Frontend `0.3.0-dev.76`.**
 
-## Nytt i b37
-- Q1 visar de två (MotoGP) respektive fyra (Moto2/Moto3) förare som går vidare och preliminära startplatser för övriga (P13+/P19+). Q1-ledaren kallas inte poleman.
-- Q1/Q2 visar förarens snabbaste varv överst och senaste varv under. Race/Sprint behåller sin visning.
-- Kompakt TV-delay-knapp öppnar skjutreglage som styr befintliga `input_number.motogp_tv_delay_seconds`.
-- Efter schemalagd start utan bekräftat live visas en checkpoint; efter fem minuter markeras möjlig försening utan att hitta på ny starttid.
-- b36:s datumskydd, Broadcast-fallback och klasspecifika Sprint-ruta behålls.
+## Nytt i b38
+- Banfakta-popupen placeras i webbläsarens översta dialoglager så att separat live-timingkort inte kan täcka popupen.
+- Popupen överlever normal uppdatering av HA-kortet och städas bort när den stängs.
+- b37:s Q1-grid, kvalvarvtider, TV-delay-knapp och checkpoint vid möjlig försening behålls.
 
 **Beta för okulärbesiktning.** Installera via HACS beta, inte dev. [Release notes](docs/hacs-beta-release-notes.md) och [testguide](docs/hacs-beta-installation.md).
 
-**Dev → beta → main.** b36 är rollback. Main ändras först efter separat godkännande.
+**Dev → beta → main.** b37 är rollback. Main ändras först efter separat godkännande.
