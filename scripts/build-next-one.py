@@ -94,7 +94,7 @@ def build(directory, destination):
         'separate unverified started pass from future next pass')
     split = swap(split,
         "        } else if (upcoming) {\n          title=`Nästa: ${upcoming.category} · ${upcoming.name}`;\n          statusText=spoiler?'SPOILERLÄGE':hasRiders?'SENASTE PASS AVSLUTAT':'MELLAN PASSEN';",
-        "        } else if (started && !hasRiders && !spoiler) {\n"
+        "        } else if (started && !spoiler) {\n"
         "          title=`Schemalagd: ${category(started.pass.category||'MotoGP')} · ${sessionName(started.pass.name||started.pass.type||'')}`;\n"
         "          statusText='STARTTID PASSERAD · INVÄNTAR MATCHANDE DATA';\n"
         "          clockHtml=`<span class=\"nt-clock\"><span>${esc(pad(started.date.getHours())+':'+pad(started.date.getMinutes()))}</span>`+\n"
