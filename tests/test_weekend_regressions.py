@@ -231,7 +231,7 @@ def check_results_event_date_guard() -> None:
 def check_beta_version() -> None:
     manifest = json.loads((INTEGRATION / "manifest.json").read_text(encoding="utf-8"))
     assert manifest["domain"] == "motogp_sensor"
-    assert manifest["version"] == "2026.11.0b39"
+    assert manifest["version"] == "2026.11.0b40"
 
 
 if __name__ == "__main__":
