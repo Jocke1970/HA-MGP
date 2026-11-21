@@ -207,6 +207,6 @@ jobs:
             exit 0
           fi
           gh release create "$TAG" --target "$(git rev-parse HEAD)" --prerelease \
-            --title 'HA-MGP 2026.11.0b41 — polished Sprint startgrid and rider numbers' \
+            --title 'HA-MGP 2026.11.0b41 — API-confirmed live timing and Sprint finish' \
             --notes-file docs/hacs-beta-release-notes.md
           gh release view "$TAG" --json tagName,isPrerelease,url,targetCommitish
