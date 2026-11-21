@@ -26,7 +26,11 @@
     return match ? ({gp:'MotoGP','2':'Moto2','3':'Moto3',e:'MotoE'})[match[1].toLowerCase()] : raw;
   };
   const sess = value => ({RAC:'Race',SPR:'Sprint',PR:'Practice',WUP:'Warm Up'})[String(value || '').toUpperCase()] || String(value || '');
-  const keyName = value => String(sess(value)).trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const keyName = value => {
+    const name=String(sess(value)).trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+    // API calls the Sprint "Tissot Sprint"; calendar may call it just Sprint.
+    return name==='TISSOTSPRINT'?'SPRINT':name;
+  };
   const canon = value => String(value || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]/g, '');
   const pad = n => String(n).padStart(2, '0');
   const dayKey = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
@@ -70,8 +74,8 @@
     const n = Number(String(raw).replace(',','.').replace(/\s*(°|º|C|%|celsius)\s*$/i,''));
     return Number.isFinite(n) && n !== 0 ? `${n}${unit}` : '—';
   }
-  const active = st => ['I','S'].includes(String(st?.attributes?.session_status_id || '').toUpperCase()) || st?.state === 'In Progress';
-  const finished = st => String(st?.attributes?.session_status_id || '').toUpperCase() === 'F' || st?.state === 'Finished';
+  const active = st => ['I','S','R','D'].includes(String(st?.attributes?.session_status_id || '').toUpperCase()) || st?.state === 'In Progress';
+  const finished = st => ['F','C'].includes(String(st?.attributes?.session_status_id || '').toUpperCase()) || st?.state === 'Finished';
   const explicitFinish = s => ['FINISHED','CANCELLED','CANCELED'].includes(String(s.status || '').toUpperCase());
   const sortedRiders = entity => Array.isArray(entity?.attributes?.riders) ?
     entity.attributes.riders.filter(r => r && typeof r === 'object').slice().sort((a,b) =>
@@ -87,7 +91,7 @@
   // Require agreement among live sensors, a substantial calendar-name match, exact class,
   // exact session and exactly one matching session in today's weekend schedule.
   function matchingLive(race, se, st, positions, today) {
-    if (!active(st) || !valid(race?.state) || !valid(se?.state)) return null;
+    if (!(active(st)||finished(st)) || !valid(race?.state) || !valid(se?.state)) return null;
     const sa=se.attributes||{}, ta=st.attributes||{}, pa=positions?.attributes||{};
     const category=cat(sa.category), name=keyName(se.state);
     if (!category || !name || ![sa.event,ta.event,pa.event].every(valid) ||
@@ -104,7 +108,9 @@
     // Do not expose unbuffered raw live timing while requested TV-delay is not ready.
     const requested=nonzero(pa.tv_delay_seconds);
     if (requested && pa.tv_delay_ready === false) return null;
-    const matches=sessionsFor(race).filter(s => s._wall.day===today && s._cat===category && keyName(s._name)===name);
+    // Calendar time is for display only. A delayed/rescheduled session can
+    // cross a day boundary; match within the verified current GP weekend.
+    const matches=sessionsFor(race).filter(s => s._cat===category && keyName(s._name)===name);
     if (matches.length!==1) return null;
     return {key:`${calendar}|${today}|${category}|${name}|${matches[0].id || matches[0].date}`,
       name:sess(se.state), category};
@@ -221,10 +227,20 @@
         this._live=live;
         const riders=sortedRiders(positions);
         if (riders.length)this._snapshot={...live,day:today,riders};
-      } else if (finished(st)&&this._snapshot) {
-        const category=cat(se?.attributes?.category||st?.attributes?.category);
-        if (valid(se?.state)&&category &&
-          `${category}|${keyName(se.state)}`!==`${this._snapshot.category}|${keyName(this._snapshot.name)}`)this._snapshot=null;
+      } else if (finished(st)) {
+        // Recover the final classification even when the UI missed the live
+        // transition. Accept ONLY the exact validated, TV-delayed feed.
+        if (live) {
+          const riders=sortedRiders(positions);
+          if (riders.length) {
+            this._activeKey=live.key;
+            this._snapshot={...live,day:today,riders};
+          }
+        } else if (this._snapshot) {
+          const category=cat(se?.attributes?.category||st?.attributes?.category);
+          if (valid(se?.state)&&category &&
+            `${category}|${keyName(se.state)}`!==`${this._snapshot.category}|${keyName(this._snapshot.name)}`)this._snapshot=null;
+        }
       }
     }
     _schedule(race,now) {
