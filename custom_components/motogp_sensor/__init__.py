@@ -28,6 +28,7 @@ from .web_assets import async_register_frontend_paths
 from .lap_history_ws import async_register_rider_laps
 from .session_history_ws import async_register_session_history
 from .event_results_ws import async_register_event_results
+from .api_probe_ws import async_register_api_probe
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -38,6 +39,7 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
     async_register_rider_laps(hass)
     async_register_session_history(hass)
     async_register_event_results(hass)
+    async_register_api_probe(hass)
     return True
 
 
