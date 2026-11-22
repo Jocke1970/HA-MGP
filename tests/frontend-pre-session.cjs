@@ -70,6 +70,19 @@ assert.match(html,/2025/,'record year shown when supplied');
 assert.match(html,/1&#39;43\.111/);
 assert.doesNotMatch(html,/1&#39;44\.999/,'historical pole record must not masquerade as this qualifying lap');
 assert.match(html,/Publicerad startgrid/);
+// A better pole lap this weekend becomes a provisional circuit record until
+// the classification API publishes an updated recordLap.
+schedule(29,{entry_lists:{Moto3:roster},start_grids:{Moto3:[{...full[0],time:"1'42.900"},...full.slice(1)]},
+  records_by_category:{Moto3:[{type:'recordLap',time:"1'43.111",rider:'PREVIOUS HOLDER',year:2025}]}});
+html=card._timing();
+assert.match(html,/Preliminärt banrekord[\\s\\S]*1&#39;42\\.900/);
+assert.match(html,/Preliminärt · aktuellt kval/);
+assert.doesNotMatch(html,/PREVIOUS HOLDER/,'slower historic record is superseded by a faster qualifying time');
+schedule(29,{entry_lists:{Moto3:roster},start_grids:{Moto3:[{...full[0],time:"1'45.652"},...full.slice(1)]},
+  records_by_category:{Moto3:[{type:'recordLap',time:"1'43.111",rider:'TEST RECORD HOLDER',year:2025}]}});
+html=card._timing();
+assert.match(html,/Absolut varvrekord/);
+assert.doesNotMatch(html,/Preliminärt banrekord/);
 // Crossing T-15 must NOT remove the pole and absolute record panel.
 schedule(14,{entry_lists:{Moto3:roster},start_grids:{Moto3:[{...full[0],time:"1'45.652"},...full.slice(1)]},
   records_by_category:{Moto3:[{type:'recordLap',time:"1'43.111",rider:'TEST RECORD HOLDER',year:2025}]}});
