@@ -75,7 +75,7 @@ function timingFacts(session,attrs,roster){
  // faster qualifying time while waiting for an official record update.
  const verifiedPole=qualifying&&pole.length===1?seconds(qualifying):null;
  const published=record?seconds(record.time):null;
- const provisional=verifiedPole!==null&&(published===null||verifiedPole<published-0.0005);
+ const provisional=verifiedPole!==null&&published!==null&&verifiedPole<published-0.0005;
  const shownRecord=provisional?qualifying:(record?format(record.time):'');
  const year=Number(record?.year);
  const recordMeta=provisional?
