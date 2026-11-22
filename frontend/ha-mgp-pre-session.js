@@ -53,7 +53,7 @@ function timingFacts(session,attrs,roster){
  const category=String(session?.category||'');
  const race=/^(race|sprint)$/i.test(label(session?.name||session?.type));
  if(!race||!['MotoGP','Moto2','Moto3'].includes(category))return '';
- const format=raw=>{const value=String(raw??'').trim();return /^(?:(?:\\d{1,2})[:'])?\\d{1,2}\\.\\d{3}$/.test(value)?value:'';};
+ const format=raw=>{const value=String(raw??'').trim();return /^(?:(?:\d{1,2})[:'])?\d{1,2}\.\d{3}$/.test(value)?value:'';};
  const grid=attrs.start_grids?.[category];
  const pole=roster.grid&&Array.isArray(grid)&&grid.length===roster.rows.length
   ?grid.filter(r=>Number(r?.position)===1):[];
