@@ -467,7 +467,11 @@
           :view.innerHTML+button;
       if(open){
         const standings=standingsHtml(this);
-        view.innerHTML=view.innerHTML.replace('</section>', '</section>'+standings);
+        view.innerHTML=view.innerHTML.includes('</section>')
+          ?view.innerHTML.replace('</section>', '</section>'+standings)
+          :view.innerHTML.includes('<div class="foot">')
+            ?view.innerHTML.replace('<div class="foot">',standings+'<div class="foot">')
+            :view.innerHTML+standings;
       }
       readyClassMarks(view);
     };
