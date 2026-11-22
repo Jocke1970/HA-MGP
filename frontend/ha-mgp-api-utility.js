@@ -1,9 +1,10 @@
 /* HA-MGP: on-demand API utility panel in the existing overview card.
+ * Renders BELOW the separate timing/startgrid card (not between overview and timing).
  * No automatic API traffic; commands use the authenticated HA WebSocket.
  */
 (() => {
 'use strict';
-const TAG='ha-motogp-next-overview-card', BUILD='api-utility-20261121-01';
+const TAG='ha-motogp-next-timing-card', BUILD='api-utility-20261122-02';
 const COMMAND='motogp_sensor/api_probe';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','"':'&#39;'}[c]));
 const CATEGORIES=['MotoGP','Moto2','Moto3'];
