@@ -103,6 +103,18 @@
   const sessionFastest=card=>{
     const snap=card._snapshot;
     if(!snap||snap.day!==card._today||!Array.isArray(snap.riders)||!snap.riders.length)return '';
+    // A retained snapshot is NOT the upcoming race. Never show the previous
+    // class's observed lap above a new class's published start grid.
+    if(!card._live){
+      const status=card._hass?.states?.[card._ids?.status];
+      const session=card._hass?.states?.[card._ids?.session];
+      const code=String(status?.attributes?.session_status_id||'').toUpperCase();
+      const norm=v=>String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'')
+        .replace(/^SPR$/,'SPRINT').replace(/^RAC$/,'RACE');
+      if(!['C','F'].includes(code) ||
+         norm(status?.attributes?.category)!==norm(snap.category) ||
+         norm(session?.state)!==norm(snap.name))return '';
+    }
     const candidates=snap.riders.map(r=>{
       const raw=lap(r.best_lap_time);
       const match=/^(?:(\d+)[:'])?(\d{1,2})\.(\d{3})$/.exec(raw);
