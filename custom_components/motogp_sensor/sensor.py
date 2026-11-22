@@ -592,6 +592,10 @@ def _static_attributes(key: str, coordinator: MotogpCoordinator) -> dict[str, An
                 static.get("weekend_sessions", [])
             )
             attrs["sessions_all"] = static.get("weekend_sessions_all", [])
+            attrs["session_status_by_category"] = (
+                {} if coordinator.no_spoiler
+                else static.get("session_status_by_category", {})
+            )
             attrs["schedule_categories"] = static.get("schedule_categories", [])
             attrs["session_count_all"] = len(
                 static.get("weekend_sessions_all", [])
