@@ -65,8 +65,22 @@ function timingFacts(session,attrs,roster){
    ['LAPRECORD','ALLTIMELAPRECORD','ALLTIMERECORD','CIRCUITRECORD','ALLTIME'].includes(
      String(r?.type||'').toUpperCase().replace(/[^A-Z0-9]/g,''))&&format(r?.time)):[];
  const record=absolute.length===1?absolute[0]:null;
+ const seconds=raw=>{
+   const m=/^(?:(\d{1,2})[:'])?(\d{1,2})\.(\d{3})$/.exec(String(raw??'').trim());
+   if(!m||Number(m[2])>=60)return null;
+   const n=Number(m[1]||0)*60+Number(m[2])+Number(m[3])/1000;
+   return n>0&&Number.isFinite(n)?n:null;
+ };
+ // Published recordLap can lag the qualifying session. Don't hide a new
+ // faster qualifying time while waiting for an official record update.
+ const verifiedPole=qualifying&&pole.length===1?seconds(qualifying):null;
+ const published=record?seconds(record.time):null;
+ const provisional=verifiedPole!==null&&(published===null||verifiedPole<published-0.0005);
+ const shownRecord=provisional?qualifying:(record?format(record.time):'');
  const year=Number(record?.year);
- const recordMeta=record?[String(record.rider||'').trim(),
+ const recordMeta=provisional?
+   [String(pole[0]?.rider||'').trim(),'Preliminärt · aktuellt kval'].filter(Boolean).join(' · '):
+   record?[String(record.rider||'').trim(),
    Number.isInteger(year)&&year>=1949&&year<=new Date().getFullYear()+1?String(year):'']
    .filter(Boolean).join(' · '):'';
  const fact=(name,value,meta)=>'<div class="mgp-pre-fact"><span>'+esc(name)+'</span>'+
@@ -74,7 +88,7 @@ function timingFacts(session,attrs,roster){
    (meta?'<small>'+esc(meta)+'</small>':'')+'</span></div>';
  return '<div class="mgp-pre-facts" aria-label="Kvaltid och banrekord">'+
    fact('Pole · aktuellt kval',qualifying,pole.length===1?String(pole[0]?.rider||'').trim():'')+
-   fact('Absolut varvrekord',record?format(record.time):'',recordMeta)+'</div>';
+   fact(provisional?'Preliminärt banrekord':'Absolut varvrekord',shownRecord,recordMeta)+'</div>';
 }
 function eventWindow(attrs){
  const start=String(attrs.date_start||'').slice(0,10),end=String(attrs.date_end||'').slice(0,10);
