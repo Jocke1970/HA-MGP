@@ -96,11 +96,13 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   assert.ok(headerStart>=0&&headerEnd>headerStart,'one unified record header before timing table');
   const headerHtml=h.slice(headerStart,headerEnd);
   assert.ok(headerHtml.indexOf('</button>')>=0,'toggle remains a separate button');
-  assert.ok(headerHtml.indexOf('nt-session-observed-best')>headerHtml.indexOf('</button>')&&
-    headerHtml.indexOf('mgp-timing-records')>headerHtml.indexOf('</button>'),
-    'session best and record chips are within header, not inside the toggle button');
+  assert.ok(headerHtml.indexOf('mgp-timing-records')>headerHtml.indexOf('</button>'),
+    'circuit record chips remain outside the toggle button');
+  assert.doesNotMatch(headerHtml,/nt-session-observed-best|Sessionens snabbaste observerade/,
+    'legacy duplicate fastest-lap header is no longer rendered');
   assert.equal((h.match(/class="mgp-timing-header"/g)||[]).length,1,'only one unified timing header');
-  assert.match(h,/nt-session-observed-best[\s\S]*Sessionens snabbaste observerade/,'session best stays in timing header');
+  assert.doesNotMatch(h,/nt-session-observed-best|Sessionens snabbaste observerade/,
+    'only backend lap-stats addon may render the fastest session lap');
   assert.equal((h.match(/class="mgp-timing-record-chip"/g)||[]).length,3);
   assert.match(h,/01:50\.028/);assert.match(h,/01:52\.561/);
   assert.doesNotMatch(h,/MOTO2 RIDER|MOTO3 RIDER|00:00\.001/);
@@ -112,9 +114,10 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   timing._ids.status='status';timing._ids.session='session';
   timing._hass.states.status={state:'Finished',attributes:{category:'MotoGP',session_status_id:'C'}};
   timing._hass.states.session={state:'Race'};
-  assert.match(timing._timing(),/nt-session-observed-best[\s\S]*Sessionens snabbaste observerade/,'finished matching session keeps best lap');
+  assert.doesNotMatch(timing._timing(),/nt-session-observed-best|Sessionens snabbaste observerade/,
+    'no duplicate calculated fastest lap, including finished races');
   timing._hass.states.status.attributes.category='Moto3';
-  assert.doesNotMatch(timing._timing(),/nt-session-observed-best/,
+  assert.doesNotMatch(timing._timing(),/nt-session-observed-best|Sessionens snabbaste observerade/,
     'previous MotoGP lap must not leak into Moto3 pre-race header');
   timing._hass.states.status.attributes.category='MotoGP';
   timing._live={category:'MotoGP',name:'Race'};
