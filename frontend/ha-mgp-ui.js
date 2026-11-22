@@ -135,7 +135,7 @@
     .nt-lap-pair>small.nt-session-best{color:var(--motogp-fastest-lap-color,var(--error-color,#b71c1c));font-weight:850}
     .nt-lap-pair .nt-last-main{font-weight:850;white-space:nowrap}
     .nt-lap-pair .nt-best-main{font-size:13px;font-weight:900;white-space:nowrap}
-    .mgp-tv-delay{display:flex;align-items:center;gap:6px;position:relative;padding:4px 12px;width:max-content;max-width:100%;box-sizing:border-box}
+    .mgp-tv-delay{display:flex;flex-direction:column;align-items:flex-start;gap:6px;position:relative;padding:4px 12px;width:max-content;max-width:100%;box-sizing:border-box}
     .mgp-tv-delay button{font:inherit;font-size:11px;border:1px solid var(--divider-color,#ddd);
       border-radius:8px;padding:5px 9px;background:var(--card-background-color,#fff);
       color:var(--primary-text-color);cursor:pointer}
