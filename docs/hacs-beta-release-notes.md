@@ -1,16 +1,15 @@
-# HA-MGP 2026.11.0b44 – banrekord och preliminära helgrekord
+# HA-MGP 2026.11.0b45 – omstartade lopp RAC2
 
-**HACS beta:** `2026.11.0b44` · **Frontend:** `0.3.0-dev.86`
+**HACS beta:** `2026.11.0b45` · **Frontend:** `0.3.0-dev.87`
 
-## Ändrat sedan b43
-- Rekordtyperna från verkligt Pulselive-API: `recordLap` för publicerat absolut varvrekord, `bestLap` för publicerat bästa racevarv. `poleLap` och `fastestLap` är sessionsuppgifter och får inte felmärkas som historiska banrekord.
-- Årets pole-tid kommer från verifierad P1 i startgridden.
-- Om ett verifierat varv under pågående GP slår det senast publicerade `recordLap` visas **preliminärt nytt banrekord** direkt, utan att invänta officiell rekorduppdatering. En känd referenstid krävs; värden från annan klass eller inte färdig TV-delay används inte.
-- Förare och år visas när recordsposten innehåller dem; startgridden visar förare för pole och rekord.
-- Bara en sammanfattning av sessionens snabbaste varv behålls, med förare, tid och varvnummer; klockan visas även vid den aktuella snabbaste varvtiden i förarlistan.
-- Den tidigare grid- och API-verktygslayouten är oförändrad. Röd flagg härleds inte från en oförändrad `In Progress`-status.
+## Ändrat sedan b44
+- Stöd för Pulselives `RAC2` / `Race PART 2` efter röd flagg. Det nya delpasset kopplas till samma klass och schemalagda Race, men egen `session_id` separerar snapshot och varvräkning.
+- Frontend visar `Moto2 · Race · Del 2` när live-API:t rapporterar `RAC2`.
+- Om sensorernas kategorier, sessions-ID eller pass skiljer sig visas inte gamla förardata som live. TV-delay och No Spoiler gäller även RAC2.
+- Backend exponerar `session_id` som attribut på live-sensorerna.
+- b44:s historiska och preliminära rekordvisning ingår oförändrad. `main` orörd.
 
 ## Verifiering
-- Kontrollera klassvisa rekord i HA, och att snabbare helgvarv markeras som preliminära till dess `recordLap` har uppdaterats.
-- Kontrollera att ett rekord inte påstås vara slaget utan publicerat jämförelsevärde; ingen klassblandning eller avsteg från TV-delay.
-- **Rollback:** `2026.11.0b43`. **Main orörd.**
+- Kontrollera att `RAC2` med status `S` visas som live, att korrekt ny 7-varvsdistans används och att startgridden inte återkommer.
+- Kontrollera att ny session inte ärver gamla förarpositioner eller varvtider.
+- Efter installation via HACS: starta om HA och hårduppdatera webbläsaren. **Rollback b44.**
