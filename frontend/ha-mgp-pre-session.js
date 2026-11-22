@@ -15,6 +15,8 @@ const GRID_STYLE='<style>'+
  '.mgp-pre-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:8px 12px}'+
  '.mgp-pre-fact{display:flex;justify-content:space-between;gap:8px;border:1px solid var(--divider-color,#8886);border-radius:8px;padding:9px 11px;font-size:12px;align-items:center}'+
  '.mgp-pre-fact strong{font-size:13px;font-variant-numeric:tabular-nums}'+
+ '.mgp-pre-fact-value{display:flex;flex-direction:column;align-items:flex-end;gap:2px;min-width:0}'+
+ '.mgp-pre-fact-value small{font-size:10px;color:var(--secondary-text-color);text-align:right}'+
  '@container (max-width:530px){.mgp-pre-facts{grid-template-columns:1fr}}'+
  '.mgp-pre-position{display:flex;align-items:center;justify-content:center;min-width:32px;height:31px;border-radius:6px;background:var(--secondary-background-color,#8882);font-size:14px;font-weight:900;flex:none;font-variant-numeric:tabular-nums}'+
  '.mgp-pre-flag{font-size:15px;flex:none}'+
@@ -62,10 +64,17 @@ function timingFacts(session,attrs,roster){
  const absolute=Array.isArray(records)?records.filter(r=>
    ['LAPRECORD','ALLTIMELAPRECORD','ALLTIMERECORD','CIRCUITRECORD','ALLTIME'].includes(
      String(r?.type||'').toUpperCase().replace(/[^A-Z0-9]/g,''))&&format(r?.time)):[];
- const record=absolute.length?absolute[0]:null;
- const fact=(name,value)=>'<div class="mgp-pre-fact"><span>'+esc(name)+'</span><strong>'+esc(value||'—')+'</strong></div>';
+ const record=absolute.length===1?absolute[0]:null;
+ const year=Number(record?.year);
+ const recordMeta=record?[String(record.rider||'').trim(),
+   Number.isInteger(year)&&year>=1949&&year<=new Date().getFullYear()+1?String(year):'']
+   .filter(Boolean).join(' · '):'';
+ const fact=(name,value,meta)=>'<div class="mgp-pre-fact"><span>'+esc(name)+'</span>'+
+   '<span class="mgp-pre-fact-value"><strong>'+esc(value||'—')+'</strong>'+
+   (meta?'<small>'+esc(meta)+'</small>':'')+'</span></div>';
  return '<div class="mgp-pre-facts" aria-label="Kvaltid och banrekord">'+
-   fact('Pole · aktuellt kval',qualifying)+fact('Absolut varvrekord',record?format(record.time):'')+'</div>';
+   fact('Pole · aktuellt kval',qualifying,pole.length===1?String(pole[0]?.rider||'').trim():'')+
+   fact('Absolut varvrekord',record?format(record.time):'',recordMeta)+'</div>';
 }
 function eventWindow(attrs){
  const start=String(attrs.date_start||'').slice(0,10),end=String(attrs.date_end||'').slice(0,10);
