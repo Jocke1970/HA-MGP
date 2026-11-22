@@ -60,7 +60,7 @@ def check_bundle_integrity() -> None:
     assert "ha-motogp-next-timing-card" in next_js
     assert "0.3.0-dev.82" in next_js
     assert "motogp_sensor/api_probe" in next_js
-    assert "api-utility-20261121-01" in next_js
+    assert "api-utility-20261122-02" in next_js
     assert "mgp-timing-header" in next_js, "records must render inside unified timing header"
     assert "header-track-weather-20261121-07" in next_js
     assert "mgp-country-flag" in next_js
