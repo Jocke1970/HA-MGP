@@ -1,8 +1,9 @@
-# HA-MGP b46 – HACS beta / verifiering
+# HA-MGP b47 – HACS beta / verifiering
 
-1. Installera **`2026.11.0b46`** via HACS beta och starta om Home Assistant. Gör sedan `Ctrl+Shift+R`.
-2. Verifiera backend **`2026.11.0b46`** och frontend **`0.3.0-dev.89`** i UI.
-3. Kontrollera att rekordrutorna visar **rekordtyp, tid, förare och årtal** direkt. För absolut varvrekord och bästa racevarv används API:s data; pole får förare från P1 och helgens årtal.
-4. Under pågående helg ska ett nytt verifierat varv visas som preliminärt rekord när en känd publicerad rekordtid slås.
-5. Vid nytt racedels-ID `RAC2`: visa **Race · Omstart** och nytt delpass varvantal; TV-delay, No Spoiler och klassisolering ska gälla.
-6. **Rollback b45** om något är fel. `main` orörd.
+1. Installera **`2026.11.0b47`** via HACS beta, starta om Home Assistant och gör `Ctrl+Shift+R`.
+2. Verifiera backend **`2026.11.0b47`** och frontend **`0.3.0-dev.91`**.
+3. Öppna **Helgens schema**: en verifierad `F/C` för rätt klass/pass ska visa **✓ KLART**, även om Results API fortfarande står i `NOT-STARTED`.
+4. För `RAC2` ska samma schemalagda Race visas, men ett nytt live-sessions-ID ska kunna återöppna loppet. Status från Moto3 får inte läcka till Moto2.
+5. Om inga bekräftade statusar finns visas **INVÄNTAR STATUS**, inte ett antaget slutresultat. Resultsrader i Timing visar **PRELIMINÄRT RESULTAT · EJ LIVE** tills slutklassificeringen verkligen bekräftats.
+6. Tidigare sessioner som blev klara innan b47 installerades kan sakna fångad Timing Gateway-finish; den befintliga femminutershämtningen kan komplettera dem om Results API uppdaterats.
+7. **Rollback b46** vid problem. `main` orörd.
