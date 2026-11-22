@@ -62,7 +62,7 @@ def check_bundle_integrity() -> None:
     assert "motogp_sensor/api_probe" in next_js
     assert "api-utility-20261122-02" in next_js
     assert "mgp-timing-header" in next_js, "records must render inside unified timing header"
-    assert "header-track-weather-20261121-07" in next_js
+    assert "header-track-weather-20261122-01" in next_js
     assert "mgp-country-flag" in next_js
     assert "mgp-brand-logo" in next_js
     assert "data:image/webp;base64," in next_js
