@@ -59,6 +59,16 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   const timing=new Timing();timing._snapshot.riders=[r];timing._hass.states={race};
   timing._ids.laps='laps';
   timing._hass.states.laps={state:'18',attributes:{num_laps:18}};
+  timing._hass.states['input_number.motogp_tv_delay_seconds']={
+    state:'0',attributes:{min:0,max:180,step:5}};
+  let delayHtml=timing._timing();
+  assert.match(delayHtml,/TV-delay 0 s/,'TV-delay button shows HA helper value');
+  timing._tvDelayOpen=true;
+  delayHtml=timing._timing();
+  assert.match(delayHtml,/data-mgp-tv-slider min="0" max="180" step="5" value="0"/,
+    'slider obeys actual Home Assistant helper bounds rather than hardcoded 300');
+  assert.doesNotMatch(delayHtml,/max="300"/);
+  timing._tvDelayOpen=false;
   let lastLap=timing._timing();
   assert.match(lastLap,/Varv 18\/18 · Sista varvet/,'final ongoing lap is not shown as zero kvar');
   assert.doesNotMatch(lastLap,/0 kvar|Avflaggat/,'reaching configured lap does not imply a finished race');
