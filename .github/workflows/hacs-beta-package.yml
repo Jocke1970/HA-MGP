@@ -114,7 +114,7 @@ jobs:
           assert "mgp-rider-flag" in source
           assert "mgp-class-mark" in source
           assert "mgp-weekend-inline" in source
-          assert "nt-session-observed-best" in source
+          assert "nt-session-observed-best" not in source
           assert "nt-session-best" in source
           assert "mgp-all-mark" in source
           assert "mgp-timing-record-chip" in source
