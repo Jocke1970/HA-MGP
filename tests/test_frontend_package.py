@@ -77,7 +77,7 @@ def check_bundle_integrity() -> None:
     assert "nt-lap-pair" in next_js
     assert "Snabbaste: " in next_js
     assert "riderStart=/<div" in next_js
-    assert "header-track-weather-20261121-07" in next_js
+    assert "header-track-weather-20261122-01" in next_js
     assert "data-mgp-hero-grid" in next_js
     assert "mgp-venue-strip" in next_js
     assert "MELLAN PASSEN" in next_js
@@ -85,7 +85,7 @@ def check_bundle_integrity() -> None:
     assert "qual-grid-20261121-01" in next_js
     assert "nt-qual-slot-3" in next_js
     assert "qualifying_q1_eliminated" in next_js
-    assert "header-track-weather-20261121-07" in next_js
+    assert "header-track-weather-20261122-01" in next_js
     assert "mgp-venue-strip" in next_js
     assert "mgp-track-svg" in next_js
     assert "Senast rapporterat" in next_js
