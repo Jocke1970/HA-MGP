@@ -61,7 +61,8 @@ const roster=full.map(r=>({number:r.number,rider:r.rider}));
 schedule(29,{entry_lists:{Moto3:roster},start_grids:{Moto3:[{...full[0],time:"1'45.652"},...full.slice(1)]},
   records_by_category:{Moto3:[
     {type:'POLE_LAP',time:"1'44.999"}, // historical pole record is NOT current qualification
-    {type:'recordLap',time:"1'43.111",rider:'TEST RECORD HOLDER',year:2025}
+    {type:'recordLap',time:"1'43.111",rider:'TEST RECORD HOLDER',year:2025},
+    {type:'bestLap',time:"1'44.111",rider:'BEST RACE RIDER',year:2024}
   ]}});
 html=card._timing();
 assert.match(html,/Pole · aktuellt kval/);
@@ -72,6 +73,13 @@ assert.match(html,/2025/,'record year shown when supplied');
 assert.match(html,/1&#39;43\.111/);
 assert.doesNotMatch(html,/1&#39;44\.999/,'historical pole record must not masquerade as this qualifying lap');
 assert.match(html,/Publicerad startgrid/);
+assert.match(html,/Bästa racevarv/);
+assert.match(html,/BEST RACE RIDER · 2024/);
+assert.match(html,/1&#39;44\.111/);
+assert.match(html,/class="mgp-pre-qual"[^>]*>⏱ 1&#39;45\.652/,
+  'individual pole grid slot includes verified qualifying time');
+assert.equal((html.match(/class="mgp-pre-qual"/g)||[]).length,1,
+  'only the one supplied qualifying time is shown; remaining 18 are not guessed');
 // A better pole lap this weekend becomes a provisional circuit record until
 // the classification API publishes an updated recordLap.
 schedule(29,{entry_lists:{Moto3:roster},start_grids:{Moto3:[{...full[0],time:"1'42.900"},...full.slice(1)]},
