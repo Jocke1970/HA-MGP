@@ -16,6 +16,7 @@ from .api import MotogpApiClient, MotogpApiError
 from .api_diagnostics import PulseliveDiagnostics
 from .api_event_archive import PulseliveEventArchive, DiagnosticArchiveError
 from .session_lap_archive import ArchiveError, SessionLapArchive
+from .session_status_overlay import observe_session_status
 from .qualifying_grid import q1_eliminated_rows
 from .weather_conditions import select_session_weather, observe_weather_report
 from .broadcast_schedule import broadcast_schedule_rows, results_sessions_for_event
@@ -110,6 +111,8 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self._finish_refresh_key: tuple[str, str, str] | None = None
         self._finish_refresh_until: datetime | None = None
         self._prev_race_week: bool | None = None
+        self._status_event_id: str | None = None
+        self._observed_session_status: dict[str, dict[str, dict[str, str]]] = {}
 
         # TV-sync buffer. Raw live snapshots are retained here and the
         # coordinator exposes a snapshot from N seconds ago.
@@ -136,6 +139,7 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "categories": [],
             "weekend_sessions": [],
             "weekend_sessions_all": [],
+            "session_status_by_category": {},
             "schedule_categories": [],
             "track_weather": None,
         }
@@ -360,6 +364,26 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         # continues to be sampled quickly while a session is active.
         raw_live = live
         live = self._apply_tv_delay(raw_live, dt_util.utcnow())
+        # A Results timetable can remain NOT-STARTED after a restarted race.
+        # Remember only observed, TV-delayed timing statuses for the current
+        # event/class/pass. The frontend can then distinguish Finished from a
+        # passed wall-clock start without inventing the missing transition.
+        current_event = self.static.get("next_event")
+        current_event_id = (
+            str(current_event.get("id") or "")
+            if isinstance(current_event, dict) else ""
+        )
+        if current_event_id != self._status_event_id:
+            self._status_event_id = current_event_id
+            self._observed_session_status = {}
+        if live is not None and live.get("tv_delay_ready") is True:
+            self._observed_session_status = observe_session_status(
+                self._observed_session_status,
+                live,
+                current_event,
+                self.static.get("weekend_sessions_all"),
+            )
+        self.static["session_status_by_category"] = self._observed_session_status
         diagnostic_events = self.api_diagnostics.observe(live, live_online, dt_util.utcnow())
         if diagnostic_events:
             try:
