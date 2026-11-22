@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const file=process.argv[2]||'frontend/ha-mgp-header-track.js';
 const src=fs.readFileSync(file,'utf8');
-assert.match(src,/header-track-weather-20261121-07/);
+assert.match(src,/header-track-weather-20261122-01/);
 const docs=[];
 class Overview {
   static buildInfo={version:'0.2.0-split.2'};
@@ -25,7 +25,7 @@ class Overview {
          sessions_all:[{category:'MotoGP',name:'WUP',date_utc:'2099-11-08T11:40:00Z',status:'SCHEDULED'}]}},
       'sensor.motogp_track_weather':{attributes:{
         results_event_uuid:'qatar-gp',category:'Moto2',session:'Q1',air:'31º',ground:'42°',humidity:'51%',track:'Dry',weather:'Clear',
-        updated_at:'2026-11-07T14:01:00Z'
+        updated_at:new Date().toISOString()
       }}
     }};
     this.showButton=true;
@@ -179,7 +179,7 @@ const context={customElements:{
   assert.match(card.root.innerHTML,/>Dry</);
   assert.match(card.root.innerHTML,/Clear/);
   assert.match(card.root.innerHTML,/Moto2 · Q1/);
-  assert.match(card.root.innerHTML,/Senast rapporterat · inte livegaranti/);
+  assert.match(card.root.innerHTML,/Sessionsrapport · ingen verifierad live-mätning/);
   const raceAttrs=card._hass.states['sensor.motogp_next_race'].attributes;
   raceAttrs.event_id='different-event';
   card._render();
@@ -189,12 +189,19 @@ const context={customElements:{
   card._render();
   const report=card._hass.states['sensor.motogp_track_weather'];
   report.attributes={...report.attributes,fetch_status:'ok',poll_count:4,change_count:2,
-    checked_at:'2026-11-08T14:05:00Z',last_success_at:'2026-11-08T14:05:00Z',
-    data_age_seconds:600};
+    checked_at:new Date().toISOString(),last_success_at:new Date().toISOString(),
+    updated_at:new Date(Date.now()-600000).toISOString(),data_age_seconds:600};
   card._render();
   assert.match(card.root.innerHTML,/Kontroller 4/);
   assert.match(card.root.innerHTML,/Ändringar 2/);
   assert.match(card.root.innerHTML,/Ändrat för 10 min sedan/);
+  assert.match(card.root.innerHTML,/31 °C/,'values can be displayed as an explicitly labeled recent session report');
+  report.attributes.updated_at=new Date(Date.now()-11*60000).toISOString();
+  card._render();
+  assert.match(card.root.innerHTML,/Ingen aktuell banvädermätning/,'stale Results weather cannot look live');
+  assert.doesNotMatch(card.root.innerHTML,/31 °C/,'stale air temperature hidden');
+  assert.doesNotMatch(card.root.innerHTML,/42 °C/,'stale track temperature hidden');
+  assert.match(card.root.innerHTML,/Sessionsrapport · ingen verifierad live-mätning/);
   report.attributes.fetch_status='error';
   card._render();
   assert.match(card.root.innerHTML,/API-fel · senast kända rapport/);
