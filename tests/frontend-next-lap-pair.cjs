@@ -86,14 +86,14 @@ const context={
   assert.match(html,/nt-lap-pair/,'fastest/last duo rendered on enriched rows');
   assert.match(html,/nt-last-main[\s\S]*1&#39;54\.999/);
   assert.match(html,/Snabbaste: 1&#39;54\.280/,'fastest lap independent of last lap');
-  assert.match(html,/Snabbaste: 1&#39;52\.426/,'latest PB is also displayed below');
-  assert.match(html,/nt-pb-chip[\s\S]*Snabbaste: 1&#39;52\.426/,'green PB styling retained');
+  assert.match(html,/Snabbaste: ⏱ 1&#39;52\.426/,'latest PB is also displayed below');
+  assert.match(html,/nt-pb-chip[\s\S]*Snabbaste: ⏱ 1&#39;52\.426/,'green PB styling retained');
   assert.match(html,/Snabbaste: —/,'never invent a best lap for unclassified rider');
   assert.match(html,/nt-status-pair/,'position and CL status enhancement still works');
   assert.equal((html.match(/class="nt-lap-pair"/g)||[]).length,3,'one duo per rider');
   assert.equal((html.match(/class="nt-session-best"/g)||[]).length,1,
     'only the fastest observed session lap can be highlighted red');
-  assert.match(html,/class="nt-session-best">Snabbaste: 1&#39;52\.426/,
+  assert.match(html,/class="nt-session-best">Snabbaste: ⏱ 1&#39;52\.426/,
     'red highlight matches the overall fastest rider');
   assert.match(html,/Snabbaste: 1&#39;54\.280<\/small>/,
     'other riders keep a neutral best-lap label');
