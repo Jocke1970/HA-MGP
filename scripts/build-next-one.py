@@ -58,10 +58,10 @@ def build(directory, destination):
     # a passed schedule time never implies official completion.
     base = swap(base,
         'const isLive=s=>Boolean(this._live)&&s._cat===this._live.category&&keyName(s._name)===keyName(this._live.name)&&s._wall.day===this._today;',
-        "const isLive=s=>Boolean(this._live)&&s._cat===this._live.category&&keyName(s._name)===keyName(this._live.name)&&s._wall.day===this._today;\\n"
-        "      const observedCode=s=>String(race?.attributes?.session_status_by_category?.[s._cat]?.[s._name]?.status_id||'').toUpperCase();\\n"
+        "const isLive=s=>Boolean(this._live)&&s._cat===this._live.category&&keyName(s._name)===keyName(this._live.name)&&s._wall.day===this._today;\n"
+        "      const observedCode=s=>String(race?.attributes?.session_status_by_category?.[s._cat]?.[s._name]?.status_id||'').toUpperCase();\n"
         "      const effectiveStatus=s=>{const published=String(s.status||'').toUpperCase();"
-        "return ['F','C'].includes(observedCode(s))?'FINISHED':published;};\\n"
+        "return ['F','C'].includes(observedCode(s))?'FINISHED':published;};\n"
         "      const confirmedFinish=s=>effectiveStatus(s)==='FINISHED';",
         'class-scoped timing status overrides stale Results timetable')
     base = swap(base,
