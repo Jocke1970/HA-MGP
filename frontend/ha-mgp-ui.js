@@ -92,6 +92,45 @@
       const pole=leaders[0],time=String(pole?.time??'').trim();
       if(timeOk(time))found.set('pole',chip('pole',time,String(pole.rider||'').trim()));
     }
+    // A new qualifying or live lap can break the circuit record before the
+    // Results classification publishes a refreshed recordLap. Use verified
+    // current-event inputs only; identify the unratified result as provisional.
+    const toSeconds=raw=>{
+      const m=/^(?:(\d{1,2})[:'])?(\d{1,2})\.(\d{3})$/.exec(String(raw??'').trim());
+      if(!m||Number(m[2])>=60)return null;
+      const n=Number(m[1]||0)*60+Number(m[2])+Number(m[3])/1000;
+      return n>0&&Number.isFinite(n)?n:null;
+    };
+    const published=Array.isArray(rows)?rows.find(r=>
+      recordKind(r?.type)==='lap'&&toSeconds(r?.time)!==null):null;
+    const baseline=toSeconds(published?.time);
+    const candidates=[];
+    if(leaders.length===1&&toSeconds(leaders[0]?.time)!==null){
+      candidates.push({time:String(leaders[0].time),rider:String(leaders[0].rider||'').trim()});
+    }
+    const snap=card._snapshot,live=card._live;
+    const positions=card._hass?.states?.[card._ids?.riders]?.attributes||{};
+    if(live?.category===category&&snap?.category===category&&
+      snap.day===card._today&&snap.name===live.name&&
+      positions.category===category&&positions.tv_delay_ready!==false&&
+      Array.isArray(snap.riders)){
+      for(const rider of snap.riders){
+        if(toSeconds(rider?.best_lap_time)!==null){
+          candidates.push({time:String(rider.best_lap_time),
+            rider:String(rider.surname||rider.shortname||'').trim()});
+        }
+      }
+    }
+    candidates.sort((a,b)=>toSeconds(a.time)-toSeconds(b.time));
+    const faster=candidates[0];
+    if(faster&&(baseline===null||toSeconds(faster.time)<baseline-0.0005)){
+      const kind='lap',time=faster.time;
+      const title=baseline===null?'Snabbaste verifierade varv · preliminärt banrekord':
+        'Preliminärt nytt banrekord';
+      found.set(kind,'<span class="mgp-timing-record-chip" title="'+esc(title+
+        (faster.rider?' · '+faster.rider:''))+'" aria-label="'+esc(title+': '+time)+
+        '"><small>'+esc(title)+'</small><strong>'+esc(time)+'</strong></span>');
+    }
     if(!found.size)return '';
     return '<div class="mgp-timing-records" role="group" aria-label="'+esc(category)+' circuit records">'+
       ['lap','pole','race'].map(k=>found.get(k)||'').join('')+'</div>';
