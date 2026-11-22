@@ -50,37 +50,47 @@
       if(img.complete){if(img.naturalWidth>0)ready();else failed();}
     }
   };
-  // Current GP records are supplied by sensor.motogp_next_race, separately per class.
-  // No new API calls and no fallback to records belonging to another class.
+  // Only explicitly typed, class-scoped Pulselive records are historical
+  // circuit records. In captured 2026 Results data, recordLap is the all-time
+  // lap record and bestLap is the best race lap. fastestLap is session-scoped,
+  // while poleLap can be the current qualifying pole, not a historical best.
+  // Never relabel either of those as an all-time circuit record.
   const recordKind=value=>{
     const key=String(value||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
-    const types={LAPRECORD:'lap',LAP:'lap',ALLTIMELAPRECORD:'lap',ALLTIMERECORD:'lap',
-      CIRCUITRECORD:'lap',ALLTIME:'lap',POLELAP:'pole',POLE:'pole',POLERECORD:'pole',
-      POLEPOSITION:'pole',BESTRACELAP:'race',BESTRACE:'race',
-      RACELAPRECORD:'race',BESTRACERECORD:'race'};
-    return types[key]||'';
+    return ({RECORDLAP:'lap',LAPRECORD:'lap',ALLTIMELAPRECORD:'lap',
+      ALLTIMERECORD:'lap',BESTLAP:'race',BESTRACELAP:'race',
+      RACELAPRECORD:'race',BESTRACERECORD:'race'})[key]||'';
   };
   const recordChips=(card,category)=>{
     if(!['MotoGP','Moto2','Moto3'].includes(category))return '';
     const attrs=card._hass?.states?.[card._ids?.race]?.attributes||{};
     const rows=attrs.records_by_category?.[category];
-    if(!Array.isArray(rows)||!rows.length)return '';
-    const found=new Map(),names={lap:'Lap record',pole:'Pole lap',race:'Race lap'};
-    for(const record of rows){
+    const found=new Map(),names={lap:'Absolut varvrekord',pole:'Pole · aktuellt kval',race:'Bästa racevarv'};
+    const timeOk=time=>/^(?:\\d{1,2}[:'])?\\d{1,2}\\.\\d{3}$/.test(time);
+    const chip=(kind,time,detail)=>{
+      const note=detail?' · '+detail:'';
+      return '<span class="mgp-timing-record-chip" title="'+esc(detail)+'" aria-label="'+
+        esc(names[kind]+': '+time+note)+'"><small>'+names[kind]+'</small><strong>'+esc(time)+'</strong></span>';
+    };
+    for(const record of Array.isArray(rows)?rows:[]){
       if(!record||typeof record!=='object')continue;
       const type=recordKind(record.type);
       if(!type||found.has(type))continue;
       const time=String(record.time??'').trim();
-      if(!/^(?:\d{1,2}[:'])?\d{1,2}\.\d{3}$/.test(time))continue;
-      const rider=String(record.rider||'').trim();
-      const year=Number(record.year);
-      const speed=Number(record.speed);
-      const detail=[rider,
-        Number.isInteger(year)&&year>=1949&&year<=new Date().getFullYear()+1?String(year):'',
-        Number.isFinite(speed)&&speed>0&&speed<500?String(Math.round(speed*10)/10)+' km/h':''
-      ].filter(Boolean).join(' · ');
-      found.set(type,'<span class="mgp-timing-record-chip" title="'+esc(detail)+'" aria-label="'+esc(names[type]+': '+time+(detail?', '+detail:''))+'">'+
-        '<small>'+names[type]+'</small><strong>'+esc(time)+'</strong></span>');
+      if(!timeOk(time))continue;
+      const rider=String(record.rider||'').trim(),year=Number(record.year),speed=Number(record.speed);
+      const detail=[rider,Number.isInteger(year)&&year>=1949&&year<=new Date().getFullYear()+1?String(year):'',
+        Number.isFinite(speed)&&speed>0&&speed<500?String(Math.round(speed*10)/10)+' km/h':'']
+        .filter(Boolean).join(' · ');
+      found.set(type,chip(type,time,detail));
+    }
+    // The current GP pole is P1's verified qualifying time, not a poleLap
+    // value drawn from an unrelated session's records payload.
+    const grid=attrs.start_grids?.[category];
+    const leaders=Array.isArray(grid)?grid.filter(r=>Number(r?.position)===1):[];
+    if(leaders.length===1){
+      const pole=leaders[0],time=String(pole?.time??'').trim();
+      if(timeOk(time))found.set('pole',chip('pole',time,String(pole.rider||'').trim()));
     }
     if(!found.size)return '';
     return '<div class="mgp-timing-records" role="group" aria-label="'+esc(category)+' circuit records">'+
