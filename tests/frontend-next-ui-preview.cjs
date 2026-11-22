@@ -122,7 +122,7 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   timing.hidden=true;assert.equal(timing._timing(),'HIDDEN');timing.hidden=false;
   const overview=new Overview();overview._hass.states={race,'sensor.motogp_rider_standings':standing};overview._live=null;
   overview._render();h=overview.view.innerHTML;
-  assert.match(h,/Startgrid · MotoGP Race/);assert.match(h,/P8 · #93/);
+  assert.doesNotMatch(h,/Startgrid · MotoGP Race|P8 · #93/,'overview must not render duplicate T-15 start grid');
   assert.match(h,/Visa VM-ställning/);
   assert.doesNotMatch(h,/STANDINGS/,'standings must be collapsed by default');
   overview._scheduleOpen=true;
@@ -209,8 +209,11 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   assert.match(overview._schedule(race,new Clock()),/🏁 ALL/,'schedule has graphic all-classes button');
   assert.match(overview._schedule(race,new Clock()),/data-category="Moto2"/,'original category action remains');
   now=Date.parse('2026-09-20T13:43:00+02:00');overview._render();
-  assert.doesNotMatch(overview.view.innerHTML,/Startgrid · MotoGP Race/,'17 min before start');
-  now=Date.parse('2026-09-20T13:46:00+02:00');overview.hidden=true;overview._render();
+  assert.doesNotMatch(overview.view.innerHTML,/Startgrid · MotoGP Race/,'overview must never render a separate start grid');
+  now=Date.parse('2026-09-20T13:46:00+02:00');overview._render();
+  assert.doesNotMatch(overview.view.innerHTML,/Startgrid · MotoGP Race|Från 15 min före start/,
+    'overview stays grid-free inside the legacy T-15 window');
+  overview.hidden=true;overview._render();
   assert.doesNotMatch(overview.view.innerHTML,/Startgrid|VM-ställning/,'no spoiler bypass');
   console.log('PASS: premium leaderboard ranks, category-specific team colors, points comparison, numeric gap, compact layout, live schedule and spoiler');
 })().catch(e=>{console.error(e);process.exitCode=1;});
