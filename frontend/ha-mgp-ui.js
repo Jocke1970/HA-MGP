@@ -460,7 +460,11 @@
         '🏆 '+(open?'Dölj VM-ställning':'Visa VM-ställning')+'</button></div>';
       // The button lives at the event header, before the schedule. The standings
       // are on-demand and no longer push live timing below the fold.
-      view.innerHTML=view.innerHTML.replace('</section>',button+'</section>');
+      view.innerHTML=view.innerHTML.includes('</section>')
+        ?view.innerHTML.replace('</section>',button+'</section>')
+        :view.innerHTML.includes('<div class="foot">')
+          ?view.innerHTML.replace('<div class="foot">',button+'<div class="foot">')
+          :view.innerHTML+button;
       if(open){
         const standings=standingsHtml(this);
         view.innerHTML=view.innerHTML.replace('</section>', '</section>'+standings);
