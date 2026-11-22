@@ -165,7 +165,7 @@
         const expanded=!spoiler && (this._timingManual===null ? Boolean(hasRiders || live) : this._timingManual);
         let title, statusText, clockHtml='';
         if (live && !spoiler) {
-          title=`${live.category} · ${live.name}${live.part?' · Del '+live.part:''}`;
+          title=`${live.category} · ${live.name}${live.part?' · Omstart':''}`;
           statusText='● LIVE';
           const lap=positive(states[this._ids.laps]?.state);
           const total=positive(states[this._ids.laps]?.attributes?.num_laps);
