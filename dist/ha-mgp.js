@@ -1,4 +1,4 @@
-/* MotoGP Next SINGLE Lovelace resource | build next-one-20261121-05 | read only. */
+/* MotoGP Next SINGLE Lovelace resource | build next-one-20261122-01 | read only. */
 /* MotoGP Next: isolated frontend for motogp-test. No HA writes or service calls. */
 (() => {
   'use strict';
@@ -319,9 +319,9 @@
       this._track(now,race);
       const event=valid(race?.state)?race.state:'Inget evenemang tillgängligt';
       const meta=[a.circuit,a.country,a.date_start&&a.date_end?dateRange(a.date_start,a.date_end):''].filter(valid);
-      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.79</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
+      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.80</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
         this._schedule(race,now)+`<div class="root">${this._weather()}${this._timing()}</div>`+
-        `<div class="foot">HA-MGP UI · 0.3.0-dev.79 · UI-preview</div></div>`;
+        `<div class="foot">HA-MGP UI · 0.3.0-dev.80 · UI-preview</div></div>`;
     }
     getCardSize(){return 8;}
     getGridOptions(){return {columns:12,rows:'auto',min_columns:6};}
@@ -1102,9 +1102,6 @@
     .np-card{background:var(--ha-card-background,var(--card-background-color,#fff));color:var(--primary-text-color);border:1px solid var(--divider-color,#ddd);border-radius:15px;overflow:hidden;min-width:0}
     .np-heading{display:flex;align-items:center;justify-content:space-between;gap:9px;border-bottom:1px solid var(--divider-color,#ddd);padding:11px 13px;font-size:14px;font-weight:900}
     .np-note{font-size:11px;color:var(--secondary-text-color);font-weight:550}
-    .np-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;padding:10px}
-    .np-slot{border:1px solid var(--divider-color,#ddd);border-radius:9px;padding:9px;min-width:0}
-    .np-slot b{font-size:12px}.np-slot small{display:block;font-size:10px;color:var(--secondary-text-color);margin-top:3px;overflow:hidden;text-overflow:ellipsis}
     .cats{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;align-items:stretch}
     .cats .cat{min-width:0;min-height:52px;display:flex;align-items:center;justify-content:center;gap:6px}
     .mgp-all-mark{font-size:15px;font-weight:900;letter-spacing:.04em}
@@ -1187,7 +1184,7 @@
     .np-show-button[aria-expanded=true]{border-color:var(--primary-color,#039be5);
       background:rgba(0,153,220,.1)}
     .np-grid.note{grid-template-columns:repeat(2,minmax(0,1fr))}
-    @media(max-width:600px){.np-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.np-note{font-size:10px}}
+    @media(max-width:600px){.np-note{font-size:10px}}
   `;
   function ensureStyle(card) {
     if(!card.shadowRoot||card.shadowRoot.querySelector('[data-motogp-ui-preview]'))return;
@@ -1343,37 +1340,6 @@
       // Never insert a second panel above the separately rendered timing card.
       return formatted;
     };
-    function gridHtml(card,now) {
-      if(card._spoiler())return '';
-      const race=card._hass?.states?.[card._ids.race],a=race?.attributes||{};
-      const schedule=Array.isArray(a.sessions_all)?a.sessions_all:Array.isArray(a.sessions)?a.sessions:[];
-      const available=schedule.map(s=>{
-        if(!s||!['Race','Sprint'].includes(session(s.name||s.type))||
-          ['FINISHED','CANCELLED','CANCELED'].includes(String(s.status||'').toUpperCase()))return null;
-        let d=null;
-        if(valid(s.date_utc)) {
-          const exact=new Date(String(s.date_utc));
-          if(!Number.isNaN(exact.getTime()))d=exact;
-        }
-        if(!d) {
-          const m=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(String(s.date||''));
-          if(!m)return null;
-          d=new Date(+m[1],+m[2]-1,+m[3],+m[4],+m[5]);
-          if(Number.isNaN(d.getTime())||d.getFullYear()!==+m[1]||d.getMonth()!==+m[2]-1||d.getDate()!==+m[3]||d.getHours()!==+m[4]||d.getMinutes()!==+m[5])return null;
-        }
-        const delta=d.getTime()-now.getTime();
-        return delta>=0&&delta<=15*60000?{s,d,delta,category:cat(s.category)}:null;
-      }).filter(Boolean).sort((x,y)=>x.delta-y.delta)[0];
-      if(!available)return '';
-      const {s,category}=available,grids=a.start_grids||{},items=grids[category];
-      const name=session(s.name||s.type);
-      const head=`<section class="np-card" aria-label="Startgrid"><div class="np-heading">`+
-        `<span>🏁 Startgrid · ${esc(category)} ${esc(name)}</span><span class="np-note">Från 15 min före start</span></div>`;
-      if(!Array.isArray(items)||!items.length)return head+'<div class="np-empty">Startgriden är inte publicerad ännu.</div></section>';
-      const rows=items.slice().sort((a,b)=>Number(a.position)-Number(b.position));
-      return head+`<div class="np-grid">${rows.map(r=>`<div class="np-slot"><b>P${esc(r.position??'—')} · #${esc(r.number??'—')}</b>`+
-        `<small>${esc(r.rider||'Okänd')}</small><small>${esc(r.team||'')}</small></div>`).join('')}</div></section>`;
-    }
     function standingsHtml(card) {
       if(card._spoiler())return '';
       const tab=['Moto3','Moto2','MotoGP'].includes(card._standingTab)?card._standingTab:'MotoGP';
@@ -1422,9 +1388,8 @@
       oldRender.call(this);ensureStyle(this);
       if(!this._hass)return;
       const view=this.shadowRoot?.getElementById('app');if(!view)return;
-      const marker='<div class="foot">';
-      const content=gridHtml(this,new Date());
-      view.innerHTML=view.innerHTML.includes(marker)?view.innerHTML.replace(marker,content+marker):view.innerHTML+content;
+      // Startgrid belongs exclusively to the timing card (pre-session).
+      // Never insert a second, older T-15 grid into the overview.
       if(this._spoiler())return;
       const open=this._standingOpen===true;
       const button='<div class="np-top-actions"><button type="button" class="np-show-button" '+
@@ -1432,10 +1397,18 @@
         '🏆 '+(open?'Dölj VM-ställning':'Visa VM-ställning')+'</button></div>';
       // The button lives at the event header, before the schedule. The standings
       // are on-demand and no longer push live timing below the fold.
-      view.innerHTML=view.innerHTML.replace('</section>',button+'</section>');
+      view.innerHTML=view.innerHTML.includes('</section>')
+        ?view.innerHTML.replace('</section>',button+'</section>')
+        :view.innerHTML.includes('<div class="foot">')
+          ?view.innerHTML.replace('<div class="foot">',button+'<div class="foot">')
+          :view.innerHTML+button;
       if(open){
         const standings=standingsHtml(this);
-        view.innerHTML=view.innerHTML.replace('</section>', '</section>'+standings);
+        view.innerHTML=view.innerHTML.includes('</section>')
+          ?view.innerHTML.replace('</section>', '</section>'+standings)
+          :view.innerHTML.includes('<div class="foot">')
+            ?view.innerHTML.replace('<div class="foot">',standings+'<div class="foot">')
+            :view.innerHTML+standings;
       }
       readyClassMarks(view);
     };
