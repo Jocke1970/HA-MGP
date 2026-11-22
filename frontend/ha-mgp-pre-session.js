@@ -12,6 +12,10 @@ const GRID_STYLE='<style>'+
  '.mgp-pre-slot{display:flex;align-items:center;gap:8px;min-width:0;min-height:47px;padding:7px 9px;border:1px solid var(--divider-color,#8886);border-left:4px solid var(--mgp-grid-color,#777);border-radius:9px;background:var(--ha-card-background,var(--card-background-color,#fff))}'+
  '.mgp-pre-slot-2{transform:translateY(4px)}.mgp-pre-slot-3{transform:translateY(8px)}'+
  '.mgp-pre-pole{border-color:#c8a146;box-shadow:inset 0 0 0 1px #c8a14655}'+
+ '.mgp-pre-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:8px 12px}'+
+ '.mgp-pre-fact{display:flex;justify-content:space-between;gap:8px;border:1px solid var(--divider-color,#8886);border-radius:8px;padding:9px 11px;font-size:12px;align-items:center}'+
+ '.mgp-pre-fact strong{font-size:13px;font-variant-numeric:tabular-nums}'+
+ '@container (max-width:530px){.mgp-pre-facts{grid-template-columns:1fr}}'+
  '.mgp-pre-position{display:flex;align-items:center;justify-content:center;min-width:32px;height:31px;border-radius:6px;background:var(--secondary-background-color,#8882);font-size:14px;font-weight:900;flex:none;font-variant-numeric:tabular-nums}'+
  '.mgp-pre-flag{font-size:15px;flex:none}'+
  '.mgp-pre-name{min-width:0;display:flex;flex-direction:column;gap:3px}'+
@@ -44,6 +48,24 @@ function gridMarkup(rows){
   html+='</div>';
  }
  return html+'</div>';
+}
+function timingFacts(session,attrs,roster){
+ const category=String(session?.category||'');
+ const race=/^(race|sprint)$/i.test(label(session?.name||session?.type));
+ if(!race||!['MotoGP','Moto2','Moto3'].includes(category))return '';
+ const format=raw=>{const value=String(raw??'').trim();return /^(?:(?:\\d{1,2})[:'])?\\d{1,2}\\.\\d{3}$/.test(value)?value:'';};
+ const grid=attrs.start_grids?.[category];
+ const pole=roster.grid&&Array.isArray(grid)&&grid.length===roster.rows.length
+  ?grid.filter(r=>Number(r?.position)===1):[];
+ const qualifying=pole.length===1?format(pole[0]?.time):'';
+ const records=attrs.records_by_category?.[category];
+ const absolute=Array.isArray(records)?records.filter(r=>
+   ['LAPRECORD','ALLTIMELAPRECORD','ALLTIMERECORD','CIRCUITRECORD','ALLTIME'].includes(
+     String(r?.type||'').toUpperCase().replace(/[^A-Z0-9]/g,''))&&format(r?.time)):[];
+ const record=absolute.length?absolute[0]:null;
+ const fact=(name,value)=>'<div class="mgp-pre-fact"><span>'+esc(name)+'</span><strong>'+esc(value||'—')+'</strong></div>';
+ return '<div class="mgp-pre-facts" aria-label="Kvaltid och banrekord">'+
+   fact('Pole · aktuellt kval',qualifying)+fact('Absolut varvrekord',record?format(record.time):'')+'</div>';
 }
 function eventWindow(attrs){
  const start=String(attrs.date_start||'').slice(0,10),end=String(attrs.date_end||'').slice(0,10);
@@ -154,7 +176,7 @@ function install(){
    if(!roster.rows.length)return html+'<div class="nt-empty">Officiell deltagarlista/startgrid saknas ännu. Inga tider eller placeringar antas.</div></section>';
    html+='<div class="nt-results">'+(roster.grid?'Publicerad startgrid':'Anmälda förare · sorterade efter startnummer')+
     ' · tider visas först när matchande live-data finns</div>';
-   if(roster.grid)return html+gridMarkup(roster.rows)+'</section>';
+   if(roster.grid)return html+timingFacts(s,attrs,roster)+gridMarkup(roster.rows)+'</section>';
    html+='<div class="nt-scroll"><div class="nt-table"><div class="nt-row nt-heading"><span>'+(roster.grid?'GRID':'NR')+'</span>'+
     '<span>FÖRARE / TEAM</span><span>VARV</span><span>SENASTE</span><span>Δ FRAMFÖR</span><span>Δ LEDARE</span><span>STATUS</span></div>';
    for(const r of roster.rows){
