@@ -2,9 +2,13 @@
 
 Inofficiell Home Assistant-integration för MotoGP, Moto2 och Moto3.
 
-**HACS beta: `2026.11.0b46` · Frontend `0.3.0-dev.89`.**
+**HACS beta: `2026.11.0b47` · Frontend `0.3.0-dev.91`.**
 
-## Nytt i b46
+## Nytt i b47
+- Schemat visar klass- och sessionsmatchad Pulselive-status, även efter en RAC2-omstart, i stället för att lita på passerad starttid eller en eftersläpande Results-status.
+- Bekräftad avslutning från timing-gateway sparas för aktuell GP-helg tills nästa pass; Results-sessionsstatus uppdateras dessutom vid redan befintlig femminutershämtning.
+- Senaste sparade tider visas som preliminärt resultat tills officiell slutklassificering verifierats.
+
 - Rekordrutorna visar förare och årtal synligt under respektive tid, inklusive aktuell pole och preliminära rekord.
 - Omstartade race märks `Moto2 · Race · Omstart` i stället för `Del 2`.
 - RAC2-sessionernas säkra isolering och b44:s rekordfixar är kvar.
@@ -21,4 +25,4 @@ Inofficiell Home Assistant-integration för MotoGP, Moto2 och Moto3.
 
 **Beta för okulärbesiktning.** Installera via HACS beta, inte dev. [Release notes](docs/hacs-beta-release-notes.md) och [testguide](docs/hacs-beta-installation.md).
 
-**Dev → beta → main.** b45 är rollback. Main ändras först efter godkännande.
+**Dev → beta → main.** b46 är rollback. Main ändras först efter godkännande.
