@@ -219,7 +219,7 @@ function install(){
   let html=original.replace(/(<span class="nt-label">)🏁 [^<]*(<\/span>)/,
    '$1🏁 Senaste: '+esc(snap.category)+' · '+esc(snap.name)+'$2');
   html=html.replace(/(<span class="nt-status(?: finished)?">)[^<]*(<\/span>)/,
-   '$1SENASTE RESULTAT · EJ LIVE$2');
+   '$1PRELIMINÄRT RESULTAT · EJ LIVE$2');
   if(next)html=html.replace(/<span class="nt-clock">[\s\S]*?<\/span>(?=<span class="nt-toggle">)/,
    '<span class="nt-clock"><small>Nästa: '+esc(next.s.category)+' '+esc(label(next.s.name||next.s.type))+
    ' · '+esc(countdown(next.at))+'</small></span>');
