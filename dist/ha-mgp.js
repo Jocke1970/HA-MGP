@@ -1,4 +1,4 @@
-/* MotoGP Next SINGLE Lovelace resource | build next-one-20261122-11 | read only. */
+/* MotoGP Next SINGLE Lovelace resource | build next-one-20261122-12 | read only. */
 /* MotoGP Next: isolated frontend for motogp-test. No HA writes or service calls. */
 (() => {
   'use strict';
@@ -261,16 +261,19 @@
       if (this._filter!=='Total'&&!available.includes(this._filter))this._filter='Total';
       const sessions=all.filter(s=>this._filter==='Total'||s._cat===this._filter),st=this._hass.states[this._ids.status];
       const isLive=s=>Boolean(this._live)&&s._cat===this._live.category&&keyName(s._name)===keyName(this._live.name)&&s._wall.day===this._today;
-      const past=s=>!isLive(s)&&(explicitFinish(s)|| (s._wall.date<now && (now-s._wall.date>=2*60*60*1000 || all.some(later=>later._wall.date>s._wall.date && later._wall.date<=now))));
+      const observedCode=s=>String(race?.attributes?.session_status_by_category?.[s._cat]?.[s._name]?.status_id||'').toUpperCase();
+      const effectiveStatus=s=>{const published=String(s.status||'').toUpperCase();return ['F','C'].includes(observedCode(s))?'FINISHED':published;};
+      const confirmedFinish=s=>effectiveStatus(s)==='FINISHED';
+      const past=s=>!isLive(s)&&(confirmedFinish(s)|| (s._wall.date<now && (now-s._wall.date>=2*60*60*1000 || all.some(later=>later._wall.date>s._wall.date && later._wall.date<=now))));
       const current=all.filter(s=>s._wall.day===this._today);
       const tomorrow=dayKey(new Date(now.getFullYear(),now.getMonth(),now.getDate()+1));
       const hasTomorrow=all.some(s=>s._wall.day===tomorrow);
       const lastStart=current.length?Math.max(...current.map(s=>s._wall.date.getTime())):Infinity;
-      const confirmedDone=current.length>0&&current.every(explicitFinish);
+      const confirmedDone=current.length>0&&current.every(confirmedFinish);
       const presumedDone=current.length>0&&now.getTime()>=lastStart+2*60*60*1000;
       this._autoDays=new Set(current.length?[this._today]:[]);
       if (hasTomorrow&&!active(st)&&(confirmedDone||presumedDone))this._autoDays.add(tomorrow);
-      const next=sessions.find(isLive)||sessions.find(s=>s._wall.date>now&&!explicitFinish(s));
+      const next=sessions.find(isLive)||sessions.find(s=>s._wall.date>now&&!confirmedFinish(s));
       let html=`<section class="panel"><div class="head"><strong>🗓️ Helgens schema</strong><span class="muted">${esc(this._filter)} · ${sessions.length} pass`+
         `${next?` · ${isLive(next)?'Pågår':'Nästa'}: ${esc(next._cat)} ${esc(next._name)} ${next._wall.time}`:''}</span></div>`;
       html+=`<div class="cats">${['Total',...available].map(c=>`<button type="button" class="cat" data-category="${esc(c)}" ${this._filter===c?'selected':''} aria-pressed="${this._filter===c}">${esc(c)}</button>`).join('')}</div>`;
@@ -278,13 +281,13 @@
       const groups=new Map();
       for(const s of sessions) {if(!groups.has(s._wall.day))groups.set(s._wall.day,[]);groups.get(s._wall.day).push(s);}
       for(const [day,items] of groups) {
-        const open=this._expanded(day),upcoming=items.find(isLive)||items.find(s=>s._wall.date>now&&!explicitFinish(s));
+        const open=this._expanded(day),upcoming=items.find(isLive)||items.find(s=>s._wall.date>now&&!confirmedFinish(s));
         const summary=upcoming?`${isLive(upcoming)?'Pågår':'Nästa'} ${upcoming._cat} ${upcoming._name} · ${upcoming._wall.time}`:
-          items.every(explicitFinish)?'Klart':'Inga kommande starter';
+          items.every(confirmedFinish)?'Klart':'Inga kommande starter';
         const todayTag=day===this._today?'<span class="today-tag"> · IDAG</span>':'';
         html+=`<div class="day"><button class="daybtn ${day===this._today?'today':''}" type="button" data-day="${day}" aria-expanded="${open}"><span>${dayName(day)}${todayTag}</span><span class="summary">${items.length} pass · ${esc(summary)} ${open?'⌃':'⌄'}</span></button>`;
         if(open)html+=`<div class="tiles">${items.map(s=>{
-          const live=isLive(s),elapsed=past(s),status=String(s.status||'').toUpperCase();
+          const live=isLive(s),elapsed=past(s),status=effectiveStatus(s);
           const label=live?'● LIVE':status==='FINISHED'?'✓ KLART':['CANCELLED','CANCELED'].includes(status)?'INSTÄLLT':elapsed?'TID PASSERAD':s._wall.date<now?'INVÄNTAR STATUS':'KOMMANDE';
           return `<div class="tile ${live?'live':elapsed?'done':''}"><div class="row"><strong>${s._wall.time}</strong><span class="badge ${live?'live':''}">${label}</span></div><div class="name">${esc(s._cat)} · ${esc(s._name)}</div></div>`;
         }).join('')}</div>`;
@@ -331,9 +334,9 @@
       this._track(now,race);
       const event=valid(race?.state)?race.state:'Inget evenemang tillgängligt';
       const meta=[a.circuit,a.country,a.date_start&&a.date_end?dateRange(a.date_start,a.date_end):''].filter(valid);
-      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.90</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
+      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.91</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
         this._schedule(race,now)+`<div class="root">${this._weather()}${this._timing()}</div>`+
-        `<div class="foot">HA-MGP UI · 0.3.0-dev.90 · UI-preview</div></div>`;
+        `<div class="foot">HA-MGP UI · 0.3.0-dev.91 · UI-preview</div></div>`;
     }
     getCardSize(){return 8;}
     getGridOptions(){return {columns:12,rows:'auto',min_columns:6};}
