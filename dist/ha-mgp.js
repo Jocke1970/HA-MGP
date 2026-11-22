@@ -1,4 +1,4 @@
-/* MotoGP Next SINGLE Lovelace resource | build next-one-20261122-09 | read only. */
+/* MotoGP Next SINGLE Lovelace resource | build next-one-20261122-10 | read only. */
 /* MotoGP Next: isolated frontend for motogp-test. No HA writes or service calls. */
 (() => {
   'use strict';
@@ -331,9 +331,9 @@
       this._track(now,race);
       const event=valid(race?.state)?race.state:'Inget evenemang tillgängligt';
       const meta=[a.circuit,a.country,a.date_start&&a.date_end?dateRange(a.date_start,a.date_end):''].filter(valid);
-      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.88</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
+      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.89</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
         this._schedule(race,now)+`<div class="root">${this._weather()}${this._timing()}</div>`+
-        `<div class="foot">HA-MGP UI · 0.3.0-dev.88 · UI-preview</div></div>`;
+        `<div class="foot">HA-MGP UI · 0.3.0-dev.89 · UI-preview</div></div>`;
     }
     getCardSize(){return 8;}
     getGridOptions(){return {columns:12,rows:'auto',min_columns:6};}
@@ -1016,10 +1016,17 @@
     const rows=attrs.records_by_category?.[category];
     const found=new Map(),names={lap:'Absolut varvrekord',pole:'Pole · aktuellt kval',race:'Bästa racevarv'};
     const timeOk=time=>/^(?:\d{1,2}[:'])?\d{1,2}\.\d{3}$/.test(time);
-    const chip=(kind,time,detail)=>{
-      const note=detail?' · '+detail:'';
+    const currentYear=Number(String(attrs.date_start||'').slice(0,4));
+    const validYear=year=>Number.isInteger(year)&&year>=1949&&year<=new Date().getFullYear()+1;
+    const chip=(kind,time,rider,year,speed)=>{
+      const meta=[String(rider||'').trim(),validYear(year)?String(year):''].filter(Boolean).join(' · ');
+      const detail=[meta,Number.isFinite(speed)&&speed>0&&speed<500?
+        String(Math.round(speed*10)/10)+' km/h':''].filter(Boolean).join(' · ');
       return '<span class="mgp-timing-record-chip" title="'+esc(detail)+'" aria-label="'+
-        esc(names[kind]+': '+time+note)+'"><small>'+names[kind]+'</small><strong>'+esc(time)+'</strong></span>';
+        esc(names[kind]+': '+time+(detail?' · '+detail:''))+'">'+
+        '<small class="mgp-record-kind">'+esc(names[kind])+'</small>'+
+        '<strong>'+esc(time)+'</strong>'+
+        (meta?'<span class="mgp-record-meta">'+esc(meta)+'</span>':'')+'</span>';
     };
     for(const record of Array.isArray(rows)?rows:[]){
       if(!record||typeof record!=='object')continue;
@@ -1028,10 +1035,7 @@
       const time=String(record.time??'').trim();
       if(!timeOk(time))continue;
       const rider=String(record.rider||'').trim(),year=Number(record.year),speed=Number(record.speed);
-      const detail=[rider,Number.isInteger(year)&&year>=1949&&year<=new Date().getFullYear()+1?String(year):'',
-        Number.isFinite(speed)&&speed>0&&speed<500?String(Math.round(speed*10)/10)+' km/h':'']
-        .filter(Boolean).join(' · ');
-      found.set(type,chip(type,time,detail));
+      found.set(type,chip(type,time,rider,year,speed));
     }
     // The current GP pole is P1's verified qualifying time, not a poleLap
     // value drawn from an unrelated session's records payload.
@@ -1039,7 +1043,7 @@
     const leaders=Array.isArray(grid)?grid.filter(r=>Number(r?.position)===1):[];
     if(leaders.length===1){
       const pole=leaders[0],time=String(pole?.time??'').trim();
-      if(timeOk(time))found.set('pole',chip('pole',time,String(pole.rider||'').trim()));
+      if(timeOk(time))found.set('pole',chip('pole',time,String(pole.rider||'').trim(),currentYear));
     }
     // A new qualifying or live lap can break the circuit record before the
     // Results classification publishes a refreshed recordLap. Use verified
@@ -1074,11 +1078,14 @@
     const faster=candidates[0];
     if(faster&&baseline!==null&&toSeconds(faster.time)<baseline-0.0005){
       const kind='lap',time=faster.time;
-      const title=baseline===null?'Snabbaste verifierade varv · preliminärt banrekord':
-        'Preliminärt nytt banrekord';
+      const title='Preliminärt nytt banrekord';
+      const year=validYear(currentYear)?String(currentYear):'';
+      const meta=[faster.rider,year].filter(Boolean).join(' · ');
       found.set(kind,'<span class="mgp-timing-record-chip" title="'+esc(title+
-        (faster.rider?' · '+faster.rider:''))+'" aria-label="'+esc(title+': '+time)+
-        '"><small>'+esc(title)+'</small><strong>'+esc(time)+'</strong></span>');
+        (meta?' · '+meta:''))+'" aria-label="'+esc(title+': '+time+
+        (meta?' · '+meta:''))+'"><small class="mgp-record-kind">'+esc(title)+'</small>'+
+        '<strong>'+esc(time)+'</strong>'+
+        (meta?'<span class="mgp-record-meta">'+esc(meta)+'</span>':'')+'</span>');
     }
     if(!found.size)return '';
     return '<div class="mgp-timing-records" role="group" aria-label="'+esc(category)+' circuit records">'+
@@ -1139,10 +1146,11 @@
     .mgp-timing-header{border-bottom:1px solid var(--divider-color,#ddd)}
     .mgp-timing-header>.nt-head{width:100%}
     .mgp-timing-records{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:5px 16px 10px}
-    .mgp-timing-record-chip{display:flex;align-items:center;justify-content:space-between;gap:4px 8px;min-width:0;border:1px solid var(--divider-color,#ddd);border-radius:9px;padding:6px 8px;background:var(--secondary-background-color,rgba(127,127,127,.045))}
-    .mgp-timing-record-chip small{font-size:9px;font-weight:700;color:var(--secondary-text-color);white-space:nowrap}
+    .mgp-timing-record-chip{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:6px;row-gap:4px;align-items:center;min-width:0;border:1px solid var(--divider-color,#ddd);border-radius:9px;padding:7px 9px;background:var(--secondary-background-color,rgba(127,127,127,.045))}
+    .mgp-timing-record-chip .mgp-record-kind{font-size:9px;font-weight:700;color:var(--secondary-text-color);min-width:0}
     .mgp-timing-record-chip strong{font-size:12px;font-weight:850;font-variant-numeric:tabular-nums;white-space:nowrap}
-    @media(max-width:560px){.mgp-timing-records{gap:4px;padding:6px}.mgp-timing-record-chip{display:flex;flex-direction:column;gap:2px;padding:6px 3px}.mgp-timing-record-chip small{font-size:8px}.mgp-timing-record-chip strong{font-size:11px}}
+    .mgp-timing-record-chip .mgp-record-meta{grid-column:1/-1;font-size:10px;line-height:1.3;color:var(--secondary-text-color);overflow-wrap:anywhere;min-width:0}
+    @media(max-width:560px){.mgp-timing-records{gap:4px;padding:6px}.mgp-timing-record-chip{grid-template-columns:minmax(0,1fr);gap:2px;padding:6px 5px;text-align:center}.mgp-timing-record-chip .mgp-record-kind{font-size:8px}.mgp-timing-record-chip strong{font-size:11px}.mgp-timing-record-chip .mgp-record-meta{font-size:9px}}
     .np-card{background:var(--ha-card-background,var(--card-background-color,#fff));color:var(--primary-text-color);border:1px solid var(--divider-color,#ddd);border-radius:15px;overflow:hidden;min-width:0}
     .np-heading{display:flex;align-items:center;justify-content:space-between;gap:9px;border-bottom:1px solid var(--divider-color,#ddd);padding:11px 13px;font-size:14px;font-weight:900}
     .np-note{font-size:11px;color:var(--secondary-text-color);font-weight:550}
