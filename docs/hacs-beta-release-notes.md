@@ -1,16 +1,16 @@
-# HA-MGP 2026.11.0b43 – kvalets pole-tid, banrekord och API-verktygets placering
+# HA-MGP 2026.11.0b44 – banrekord och preliminära helgrekord
 
-**HACS beta:** `2026.11.0b43` · **Frontend:** `0.3.0-dev.82`
+**HACS beta:** `2026.11.0b44` · **Frontend:** `0.3.0-dev.86`
 
-## Ändrat sedan b42
-- Startgridden visar separat P1:s verifierade kvaltid för det aktuella loppet och absolut varvrekord från den aktuella klassens banrekord-API. Historiska pole-rekord används **inte** som aktuell kvaltid.
-- Uppgifterna ligger i timingkortets startgridvy och finns kvar vid T−15; saknad kvaltid eller banrekord visas som —, utan gissning.
-- Frontend hindrar tidigare sessions snabbaste observerade varv från att visas under en annan klass startgrid. Verifierat avslutat pass behåller sin historik.
-- Det manuella, läsande API-verktyget ligger efter timing-/startgridkortet, längst ned; ingen extra Lovelace-resurs krävs.
-- Regressionstest för kvaltid kontra historiskt pole-rekord, T−15, klassisolering och API-verktygets placering.
-- b42:s enhetliga grid, TV-delay-värden, b41:s livetiming och No Spoiler-skydd bevaras.
+## Ändrat sedan b43
+- Rekordtyperna från verkligt Pulselive-API: `recordLap` för publicerat absolut varvrekord, `bestLap` för publicerat bästa racevarv. `poleLap` och `fastestLap` är sessionsuppgifter och får inte felmärkas som historiska banrekord.
+- Årets pole-tid kommer från verifierad P1 i startgridden.
+- Om ett verifierat varv under pågående GP slår det senast publicerade `recordLap` visas **preliminärt nytt banrekord** direkt, utan att invänta officiell rekorduppdatering. En känd referenstid krävs; värden från annan klass eller inte färdig TV-delay används inte.
+- Förare och år visas när recordsposten innehåller dem; startgridden visar förare för pole och rekord.
+- Bara en sammanfattning av sessionens snabbaste varv behålls, med förare, tid och varvnummer; klockan visas även vid den aktuella snabbaste varvtiden i förarlistan.
+- Den tidigare grid- och API-verktygslayouten är oförändrad. Röd flagg härleds inte från en oförändrad `In Progress`-status.
 
 ## Verifiering
-- I Home Assistant: bekräfta en enda grid, aktuell kvaltid och absolut varvrekord där API:t levererar dessa, samt att uppgifterna kvarstår under T−15.
-- Kontrollera att API-verktyget ligger efter timing och att tidigare klassers varvtider inte följer med.
-- **Rollback:** `2026.11.0b42`. **Main orörd.**
+- Kontrollera klassvisa rekord i HA, och att snabbare helgvarv markeras som preliminära till dess `recordLap` har uppdaterats.
+- Kontrollera att ett rekord inte påstås vara slaget utan publicerat jämförelsevärde; ingen klassblandning eller avsteg från TV-delay.
+- **Rollback:** `2026.11.0b43`. **Main orörd.**
