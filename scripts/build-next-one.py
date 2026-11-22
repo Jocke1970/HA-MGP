@@ -73,8 +73,8 @@ def build(directory, destination):
         'current.every(confirmedFinish)',
         'day summary uses verified final status')
     base = swap(base,
-        "s._wall.date>now&&!explicitFinish(s)",
-        "s._wall.date>now&&!confirmedFinish(s)",
+        'const next=sessions.find(isLive)||sessions.find(s=>s._wall.date>now&&!explicitFinish(s));',
+        'const next=sessions.find(isLive)||sessions.find(s=>s._wall.date>now&&!confirmedFinish(s));',
         'header next excludes verified completed sessions')
     base = swap(base,
         "items.find(s=>s._wall.date>now&&!explicitFinish(s))",
