@@ -61,8 +61,9 @@ def build(directory, destination):
         "const isLive=s=>Boolean(this._live)&&s._cat===this._live.category&&keyName(s._name)===keyName(this._live.name)&&s._wall.day===this._today;\n"
         "      const observedCode=s=>String(race?.attributes?.session_status_by_category?.[s._cat]?.[s._name]?.status_id||'').toUpperCase();\n"
         "      const effectiveStatus=s=>{const published=String(s.status||'').toUpperCase();"
-        "return ['F','C'].includes(observedCode(s))?'FINISHED':published;};\n"
-        "      const confirmedFinish=s=>effectiveStatus(s)==='FINISHED';",
+        "const code=observedCode(s);return ['F','C'].includes(code)?'FINISHED':"
+        "['I','S','R','D'].includes(code)?'IN-PROGRESS':published;};\n"
+        "      const confirmedFinish=s=>!isLive(s)&&effectiveStatus(s)==='FINISHED';",
         'class-scoped timing status overrides stale Results timetable')
     base = swap(base,
         'explicitFinish(s)|| (s._wall.date<now &&',
