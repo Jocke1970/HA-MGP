@@ -109,7 +109,14 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   assert.match(timing._timing(),/mgp-timing-records/,'chips remain when rider rows are collapsed or absent');
   timing._snapshot.riders=[r];
   timing._live=null;
-  assert.match(timing._timing(),/nt-session-observed-best[\s\S]*Sessionens snabbaste observerade/,'finished session keeps best lap');
+  timing._ids.status='status';timing._ids.session='session';
+  timing._hass.states.status={state:'Finished',attributes:{category:'MotoGP',session_status_id:'C'}};
+  timing._hass.states.session={state:'Race'};
+  assert.match(timing._timing(),/nt-session-observed-best[\s\S]*Sessionens snabbaste observerade/,'finished matching session keeps best lap');
+  timing._hass.states.status.attributes.category='Moto3';
+  assert.doesNotMatch(timing._timing(),/nt-session-observed-best/,
+    'previous MotoGP lap must not leak into Moto3 pre-race header');
+  timing._hass.states.status.attributes.category='MotoGP';
   timing._live={category:'MotoGP',name:'Race'};
   timing._live.category='Moto2';timing._snapshot.category='Moto2';
   h=timing._timing();assert.match(h,/01:43\.111/);
