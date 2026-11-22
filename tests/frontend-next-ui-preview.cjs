@@ -35,7 +35,7 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   for(let i=0;i<4;i++)await Promise.resolve();
   const r={position:3,number:93,surname:'TEST',team:'TEAM',nation:'ITA',num_lap:12,
     last_lap_time:"1'30.450",best_lap_time:"1'29.980",status_name:'RUNNING'};
-  const race={state:'GP',attributes:{
+  const race={state:'GP',attributes:{date_start:'2026-09-18',
      records_by_category:{
        MotoGP:[{type:'recordLap',time:'01:50.028',rider:'BEZZECCHI',year:2026,speed:176},
          {type:'poleLap',time:'00:50.001',rider:'SESSION POLE NOT HISTORIC'},
