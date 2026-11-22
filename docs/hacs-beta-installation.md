@@ -1,8 +1,8 @@
-# HA-MGP b45 – HACS beta / verifiering
+# HA-MGP b46 – HACS beta / verifiering
 
-1. Installera **`2026.11.0b45`** via HACS beta, starta om Home Assistant och gör `Ctrl+Shift+R`.
-2. Verifiera backend **`2026.11.0b45`** samt frontend **`0.3.0-dev.87`**. Äldre UI (dev.82) innehåller inte de nya fixarna.
-3. Vid rödflagg och omstart: `RAC2` ska matchas mot samma schemalagda Race, men visa `Del 2` och livefeedens egna varv (t.ex. 4/7). Loppet är fortsatt pågående vid status `S`.
-4. Byte av `session_id` ska rensa föregående delens snapshot. Två olika session-ID i HA-sensorerna får aldrig kombineras.
-5. Rekord: b44:s `recordLap`, `bestLap` och preliminära helgrekord ska fortsätta fungera; TV-delay, No Spoiler och klassisolering bevaras.
-6. Vid fel: återgå till **b44**. `main` ändras inte.
+1. Installera **`2026.11.0b46`** via HACS beta och starta om Home Assistant. Gör sedan `Ctrl+Shift+R`.
+2. Verifiera backend **`2026.11.0b46`** och frontend **`0.3.0-dev.89`** i UI.
+3. Kontrollera att rekordrutorna visar **rekordtyp, tid, förare och årtal** direkt. För absolut varvrekord och bästa racevarv används API:s data; pole får förare från P1 och helgens årtal.
+4. Under pågående helg ska ett nytt verifierat varv visas som preliminärt rekord när en känd publicerad rekordtid slås.
+5. Vid nytt racedels-ID `RAC2`: visa **Race · Omstart** och nytt delpass varvantal; TV-delay, No Spoiler och klassisolering ska gälla.
+6. **Rollback b45** om något är fel. `main` orörd.
