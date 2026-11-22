@@ -12,23 +12,25 @@ const GRID_STYLE='<style>'+
  '.mgp-pre-slot{display:flex;align-items:center;gap:8px;min-width:0;min-height:47px;padding:7px 9px;border:1px solid var(--divider-color,#8886);border-left:4px solid var(--mgp-grid-color,#777);border-radius:9px;background:var(--ha-card-background,var(--card-background-color,#fff))}'+
  '.mgp-pre-slot-2{transform:translateY(4px)}.mgp-pre-slot-3{transform:translateY(8px)}'+
  '.mgp-pre-pole{border-color:#c8a146;box-shadow:inset 0 0 0 1px #c8a14655}'+
- '.mgp-pre-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:8px 12px}'+
+ '.mgp-pre-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:8px 12px}'+
  '.mgp-pre-fact{display:flex;justify-content:space-between;gap:8px;border:1px solid var(--divider-color,#8886);border-radius:8px;padding:9px 11px;font-size:12px;align-items:center}'+
  '.mgp-pre-fact strong{font-size:13px;font-variant-numeric:tabular-nums}'+
  '.mgp-pre-fact-value{display:flex;flex-direction:column;align-items:flex-end;gap:2px;min-width:0}'+
  '.mgp-pre-fact-value small{font-size:10px;color:var(--secondary-text-color);text-align:right}'+
- '@container (max-width:530px){.mgp-pre-facts{grid-template-columns:1fr}}'+
+ '@container (max-width:720px){.mgp-pre-facts{grid-template-columns:1fr}}'+
  '.mgp-pre-position{display:flex;align-items:center;justify-content:center;min-width:32px;height:31px;border-radius:6px;background:var(--secondary-background-color,#8882);font-size:14px;font-weight:900;flex:none;font-variant-numeric:tabular-nums}'+
  '.mgp-pre-flag{font-size:15px;flex:none}'+
  '.mgp-pre-name{min-width:0;display:flex;flex-direction:column;gap:3px}'+
  '.mgp-pre-name b{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'+
  '.mgp-pre-name small{font-size:10px;color:var(--secondary-text-color);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}'+
+ '.mgp-pre-qual{font-size:11px;font-weight:750;font-variant-numeric:tabular-nums;color:var(--primary-text-color);white-space:nowrap}'+
  '@container (max-width:530px){.mgp-pre-grid-scroll{padding:8px 5px 14px}.mgp-pre-slot{padding:6px;gap:5px}.mgp-pre-name b{font-size:11px}}'+
  '</style>';
 const safeColor=v=>/^#(?:[0-9a-f]{6})$/i.test(String(v||''))?String(v):'#777777';
 const riderNumber=v=>{const x=String(v??'').trim().replace(/^#/,'');return /^\d{1,3}$/.test(x)&&Number(x)>0?String(Number(x)):'';};
 const nameKey=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/gi,'').toLowerCase();
 const teamKey=v=>String(v||'').trim().replace(/\s+/g,' ').toLowerCase();
+const gridTime=raw=>{const value=String(raw??'').trim();return /^(?:(?:\\d{1,2})[:'])?\\d{1,2}\\.\\d{3}$/.test(value)?value:'';};
 const nationFlag=v=>{
  const code=String(v||'').toUpperCase();
  const iso3={ITA:'IT',SPA:'ES',FRA:'FR',GBR:'GB',AUS:'AU',JPN:'JP',BRA:'BR',NED:'NL',GER:'DE',POR:'PT',USA:'US',BEL:'BE',CZE:'CZ',COL:'CO',RSA:'ZA',TUR:'TR',SUI:'CH',THA:'TH',MAL:'MY',IDN:'ID',ARG:'AR',IND:'IN'};
@@ -45,7 +47,9 @@ function gridMarkup(rows){
     '<span class="mgp-pre-position">P'+esc(r.position)+'</span>'+
     (flag?'<span class="mgp-pre-flag">'+flag+'</span>':'')+
     '<span class="mgp-pre-name"><b>'+esc(r.rider)+'</b><small>'+
-    (riderNumber(r.number)?'#'+esc(riderNumber(r.number))+' · ':'')+esc(r.team)+'</small></span></div>';
+    (riderNumber(r.number)?'#'+esc(riderNumber(r.number))+' · ':'')+esc(r.team)+'</small>'+
+    (gridTime(r.time)?'<span class="mgp-pre-qual" title="Kvaltid">⏱ '+esc(gridTime(r.time))+'</span>':'')+
+    '</span></div>';
   }
   html+='</div>';
  }
@@ -61,6 +65,14 @@ function timingFacts(session,attrs,roster){
   ?grid.filter(r=>Number(r?.position)===1):[];
  const qualifying=pole.length===1?format(pole[0]?.time):'';
  const records=attrs.records_by_category?.[category];
+ const raceRecords=Array.isArray(records)?records.filter(r=>
+   ['BESTLAP','BESTRACELAP','RACELAPRECORD','BESTRACERECORD'].includes(
+     String(r?.type||'').toUpperCase().replace(/[^A-Z0-9]/g,''))&&gridTime(r?.time)):[];
+ const raceRecord=raceRecords.length===1?raceRecords[0]:null;
+ const raceYear=Number(raceRecord?.year);
+ const raceMeta=raceRecord?[String(raceRecord.rider||'').trim(),
+   Number.isInteger(raceYear)&&raceYear>=1949&&raceYear<=new Date().getFullYear()+1?String(raceYear):''].filter(Boolean).join(' · '):'';
+
  const absolute=Array.isArray(records)?records.filter(r=>
    ['RECORDLAP','LAPRECORD','ALLTIMELAPRECORD','ALLTIMERECORD','CIRCUITRECORD','ALLTIME'].includes(
      String(r?.type||'').toUpperCase().replace(/[^A-Z0-9]/g,''))&&format(r?.time)):[];
@@ -88,7 +100,8 @@ function timingFacts(session,attrs,roster){
    (meta?'<small>'+esc(meta)+'</small>':'')+'</span></div>';
  return '<div class="mgp-pre-facts" aria-label="Kvaltid och banrekord">'+
    fact('Pole · aktuellt kval',qualifying,pole.length===1?String(pole[0]?.rider||'').trim():'')+
-   fact(provisional?'Preliminärt banrekord':'Absolut varvrekord',shownRecord,recordMeta)+'</div>';
+   fact(provisional?'Preliminärt banrekord':'Absolut varvrekord',shownRecord,recordMeta)+
+   (raceRecord?fact('Bästa racevarv',gridTime(raceRecord.time),raceMeta):'')+'</div>';
 }
 function eventWindow(attrs){
  const start=String(attrs.date_start||'').slice(0,10),end=String(attrs.date_end||'').slice(0,10);
@@ -143,7 +156,7 @@ function rowsFor(session,attrs){
    if(!Number.isInteger(position)||position<1||!key||seen.has(key)||positions.has(position)||(number&&seenNumbers.has(number)))
      return roster.map(r=>({position:null,number:r.number,rider:r.rider,team:r.team||'',nation:r.nation||''}));
    seen.add(key);positions.add(position);if(number)seenNumbers.add(number);
-   out.push({position,number,rider,team:team||entrant?.team||'',nation:g.nation||entrant?.nation||match?.nation||'',color:g.color||entrant?.color||match?.team_color||''});
+   out.push({position,number,rider,team:team||entrant?.team||'',nation:g.nation||entrant?.nation||match?.nation||'',color:g.color||entrant?.color||match?.team_color||'',time:gridTime(g.time)});
   }
   if(out.length&&new Set(out.map(x=>x.position)).size===out.length&&
      Math.min(...out.map(x=>x.position))===1&&
