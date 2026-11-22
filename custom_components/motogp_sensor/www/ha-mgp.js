@@ -1,4 +1,4 @@
-/* MotoGP Next SINGLE Lovelace resource | build next-one-20261122-10 | read only. */
+/* MotoGP Next SINGLE Lovelace resource | build next-one-20261122-11 | read only. */
 /* MotoGP Next: isolated frontend for motogp-test. No HA writes or service calls. */
 (() => {
   'use strict';
@@ -331,9 +331,9 @@
       this._track(now,race);
       const event=valid(race?.state)?race.state:'Inget evenemang tillgängligt';
       const meta=[a.circuit,a.country,a.date_start&&a.date_end?dateRange(a.date_start,a.date_end):''].filter(valid);
-      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.89</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
+      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.90</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
         this._schedule(race,now)+`<div class="root">${this._weather()}${this._timing()}</div>`+
-        `<div class="foot">HA-MGP UI · 0.3.0-dev.89 · UI-preview</div></div>`;
+        `<div class="foot">HA-MGP UI · 0.3.0-dev.90 · UI-preview</div></div>`;
     }
     getCardSize(){return 8;}
     getGridOptions(){return {columns:12,rows:'auto',min_columns:6};}
@@ -569,7 +569,7 @@
         } else if (hasRiders && !spoiler && (status?.state==='Finished' ||
           ['F','C'].includes(String(status?.attributes?.session_status_id||'').toUpperCase()))) {
           title=`${snap.category} · ${snap.name}`;
-          statusText='AVSLUTAT · SLUTRESULTAT';
+          statusText='PRELIMINÄRT RESULTAT · EJ LIVE';
         } else if (upcoming) {
           title=`Nästa: ${upcoming.category} · ${upcoming.name}`;
           statusText=spoiler?'SPOILERLÄGE':hasRiders?'SENASTE PASS · EJ LIVE':'MELLAN PASSEN';
@@ -3790,7 +3790,7 @@ function install(){
   let html=original.replace(/(<span class="nt-label">)🏁 [^<]*(<\/span>)/,
    '$1🏁 Senaste: '+esc(snap.category)+' · '+esc(snap.name)+'$2');
   html=html.replace(/(<span class="nt-status(?: finished)?">)[^<]*(<\/span>)/,
-   '$1SENASTE RESULTAT · EJ LIVE$2');
+   '$1PRELIMINÄRT RESULTAT · EJ LIVE$2');
   if(next)html=html.replace(/<span class="nt-clock">[\s\S]*?<\/span>(?=<span class="nt-toggle">)/,
    '<span class="nt-clock"><small>Nästa: '+esc(next.s.category)+' '+esc(label(next.s.name||next.s.type))+
    ' · '+esc(countdown(next.at))+'</small></span>');
