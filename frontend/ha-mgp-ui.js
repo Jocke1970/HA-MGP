@@ -135,15 +135,16 @@
     .nt-lap-pair>small.nt-session-best{color:var(--motogp-fastest-lap-color,var(--error-color,#b71c1c));font-weight:850}
     .nt-lap-pair .nt-last-main{font-weight:850;white-space:nowrap}
     .nt-lap-pair .nt-best-main{font-size:13px;font-weight:900;white-space:nowrap}
-    .mgp-tv-delay{display:inline-flex;align-items:center;gap:6px;position:relative;padding:4px 8px}
+    .mgp-tv-delay{display:flex;align-items:center;gap:6px;position:relative;padding:4px 12px;width:max-content;max-width:100%;box-sizing:border-box}
     .mgp-tv-delay button{font:inherit;font-size:11px;border:1px solid var(--divider-color,#ddd);
       border-radius:8px;padding:5px 9px;background:var(--card-background-color,#fff);
       color:var(--primary-text-color);cursor:pointer}
-    .mgp-tv-panel{position:absolute;z-index:15;right:0;top:100%;width:min(260px,75vw);
-      padding:12px;border:1px solid var(--divider-color,#ddd);border-radius:9px;
-      background:var(--card-background-color,#fff);box-shadow:0 5px 18px rgba(0,0,0,.2)}
-    .mgp-tv-panel label{display:block;font-size:12px;font-weight:800;margin-bottom:9px}
-    .mgp-tv-panel input{width:100%}
+    .mgp-tv-panel{display:flex;flex-direction:column;gap:10px;position:relative;z-index:2;
+      width:min(300px,calc(100vw - 60px));box-sizing:border-box;
+      padding:10px 12px;border:1px solid var(--divider-color,#ddd);border-radius:9px;
+      background:var(--card-background-color,#fff)}
+    .mgp-tv-panel label{display:block;font-size:12px;font-weight:800}
+    .mgp-tv-panel input{display:block;width:100%;height:24px;margin:0;box-sizing:border-box;accent-color:var(--primary-color)}
     .mgp-tv-panel small{display:block;color:var(--secondary-text-color)}
 
     .nt-status-pair{display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:0}
@@ -320,15 +321,19 @@
       if(html.includes('<button type="button" class="nt-head"')&&html.includes('</button>')){
         const helper=this._hass?.states?.['input_number.motogp_tv_delay_seconds'];
         const rawDelay=Number(helper?.state);
-        const haveDelay=helper&&Number.isFinite(rawDelay)&&rawDelay>=0;
-        const delayValue=haveDelay?Math.round(rawDelay):0;
-        const delayControl=this._live&&!this._spoiler()?'<span class="mgp-tv-delay">'+
+        const min=Number(helper?.attributes?.min),max=Number(helper?.attributes?.max),step=Number(helper?.attributes?.step);
+        const rangeOk=helper&&Number.isFinite(min)&&Number.isFinite(max)&&min>=0&&max>=min&&max<=300;
+        const increment=Number.isFinite(step)&&step>0?step:1;
+        const haveDelay=rangeOk&&Number.isFinite(rawDelay)&&rawDelay>=min&&rawDelay<=max;
+        const delayValue=haveDelay?rawDelay:0;
+        const delayControl=this._live&&!this._spoiler()?'<div class="mgp-tv-delay">'+
           '<button type="button" data-mgp-tv-delay aria-expanded="'+Boolean(this._tvDelayOpen)+'">'+
-          '⏱ TV-delay '+(haveDelay?delayValue+' s':'saknas')+'</button>'+
-          (this._tvDelayOpen?'<span class="mgp-tv-panel"><label>TV-fördröjning · '+delayValue+' s</label>'+
-            (haveDelay?'<input type="range" data-mgp-tv-slider min="0" max="300" step="5" value="'+delayValue+'" aria-label="TV-fördröjning i sekunder">':
-              '<small>Skapa hjälparen input_number.motogp_tv_delay_seconds i Home Assistant.</small>')+
-            '</span>':'')+'</span>':'';
+          '⏱ TV-delay '+(haveDelay?delayValue+' s':'ej inställd')+'</button>'+
+          (this._tvDelayOpen?'<div class="mgp-tv-panel"><label>TV-fördröjning · '+(haveDelay?delayValue+' s':'saknar giltig hjälpare')+'</label>'+
+            (haveDelay?'<input type="range" data-mgp-tv-slider min="'+min+'" max="'+max+'" step="'+increment+'" value="'+delayValue+'" aria-label="TV-fördröjning i sekunder">'+
+              '<small>Tillåtet intervall: '+min+'–'+max+' s · steg '+increment+' s</small>':
+              '<small>Kontrollera input_number.motogp_tv_delay_seconds och dess min/max/step i Home Assistant.</small>')+
+            '</div>':'')+'</div>':'';
         const headerDetails=delayControl+sessionFastest(this)+recordChips(this,category);
         if(headerDetails){
           html=html.replace('<button type="button" class="nt-head"',
@@ -489,9 +494,14 @@
       if(!this._tvDelayChangeBound&&this.shadowRoot?.addEventListener){
         this.shadowRoot.addEventListener('change',e=>{
           if(!e.target?.matches?.('[data-mgp-tv-slider]'))return;
+          const helper=this._hass?.states?.['input_number.motogp_tv_delay_seconds'];
+          if(!helper)return;
+          const min=Number(helper.attributes?.min),max=Number(helper.attributes?.max);
+          const step=Number(helper.attributes?.step);
           const value=Number(e.target.value);
-          if(!Number.isInteger(value)||value<0||value>300)return;
-          if(!this._hass?.states?.['input_number.motogp_tv_delay_seconds'])return;
+          if(!Number.isFinite(value)||!Number.isFinite(min)||!Number.isFinite(max)||
+             !Number.isFinite(step)||step<=0||min<0||max>300||max<min||
+             value<min||value>max||Math.abs((value-min)/step-Math.round((value-min)/step))>1e-7)return;
           this._hass.callService('input_number','set_value',{
             entity_id:'input_number.motogp_tv_delay_seconds',value
           });
