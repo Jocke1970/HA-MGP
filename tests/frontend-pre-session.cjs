@@ -75,7 +75,7 @@ assert.match(html,/Publicerad startgrid/);
 schedule(29,{entry_lists:{Moto3:roster},start_grids:{Moto3:[{...full[0],time:"1'42.900"},...full.slice(1)]},
   records_by_category:{Moto3:[{type:'recordLap',time:"1'43.111",rider:'PREVIOUS HOLDER',year:2025}]}});
 html=card._timing();
-assert.match(html,/Preliminärt banrekord[\\s\\S]*1&#39;42\\.900/);
+assert.match(html,/Preliminärt banrekord[\s\S]*1&#39;42\.900/);
 assert.match(html,/Preliminärt · aktuellt kval/);
 assert.doesNotMatch(html,/PREVIOUS HOLDER/,'slower historic record is superseded by a faster qualifying time');
 schedule(29,{entry_lists:{Moto3:roster},start_grids:{Moto3:[{...full[0],time:"1'45.652"},...full.slice(1)]},
