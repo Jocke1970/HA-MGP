@@ -67,6 +67,25 @@ class TestSessionStatusOverlay(unittest.TestCase):
         self.assertEqual(observe({}, live(), EVENT, SCHEDULE + [SCHEDULE[0]]), {})
         self.assertEqual(observe({}, live(), EVENT, []), {})
 
+    def test_existing_five_minute_results_refresh(self):
+        from_results = mod.refreshed_results_statuses(
+            SCHEDULE, "Moto2",
+            [{"id": "moto2-results-uuid", "status": "FINISHED"}],
+        )
+        self.assertEqual(from_results[0]["status"], "FINISHED")
+        self.assertEqual(from_results[1]["status"], "NOT-STARTED")
+        stale = mod.refreshed_results_statuses(
+            from_results, "Moto2",
+            [{"id": "moto2-results-uuid", "status": "NOT-STARTED"}],
+        )
+        self.assertEqual(stale[0]["status"], "FINISHED")
+        self.assertEqual(SCHEDULE[0]["status"], "NOT-STARTED")
+        self.assertEqual(
+            mod.refreshed_results_statuses(SCHEDULE, "Moto2",
+                [{"id": "other-event-id", "status": "FINISHED"}])[0]["status"],
+            "NOT-STARTED",
+        )
+
     def test_separate_classes(self):
         previous = observe({}, live(), EVENT, SCHEDULE)
         later = observe(previous, live(shortname="RAC", category="MotoGP",
