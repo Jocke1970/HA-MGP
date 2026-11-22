@@ -1,4 +1,4 @@
-/* MotoGP Next SINGLE Lovelace resource | build next-one-20261122-05 | read only. */
+/* MotoGP Next SINGLE Lovelace resource | build next-one-20261122-07 | read only. */
 /* MotoGP Next: isolated frontend for motogp-test. No HA writes or service calls. */
 (() => {
   'use strict';
@@ -319,9 +319,9 @@
       this._track(now,race);
       const event=valid(race?.state)?race.state:'Inget evenemang tillgängligt';
       const meta=[a.circuit,a.country,a.date_start&&a.date_end?dateRange(a.date_start,a.date_end):''].filter(valid);
-      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.84</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
+      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.86</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
         this._schedule(race,now)+`<div class="root">${this._weather()}${this._timing()}</div>`+
-        `<div class="foot">HA-MGP UI · 0.3.0-dev.84 · UI-preview</div></div>`;
+        `<div class="foot">HA-MGP UI · 0.3.0-dev.86 · UI-preview</div></div>`;
     }
     getCardSize(){return 8;}
     getGridOptions(){return {columns:12,rows:'auto',min_columns:6};}
@@ -987,37 +987,86 @@
       if(img.complete){if(img.naturalWidth>0)ready();else failed();}
     }
   };
-  // Current GP records are supplied by sensor.motogp_next_race, separately per class.
-  // No new API calls and no fallback to records belonging to another class.
+  // Only explicitly typed, class-scoped Pulselive records are historical
+  // circuit records. In captured 2026 Results data, recordLap is the all-time
+  // lap record and bestLap is the best race lap. fastestLap is session-scoped,
+  // while poleLap can be the current qualifying pole, not a historical best.
+  // Never relabel either of those as an all-time circuit record.
   const recordKind=value=>{
     const key=String(value||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
-    const types={LAPRECORD:'lap',LAP:'lap',ALLTIMELAPRECORD:'lap',ALLTIMERECORD:'lap',
-      CIRCUITRECORD:'lap',ALLTIME:'lap',POLELAP:'pole',POLE:'pole',POLERECORD:'pole',
-      POLEPOSITION:'pole',BESTRACELAP:'race',BESTRACE:'race',
-      RACELAPRECORD:'race',BESTRACERECORD:'race'};
-    return types[key]||'';
+    return ({RECORDLAP:'lap',LAPRECORD:'lap',ALLTIMELAPRECORD:'lap',
+      ALLTIMERECORD:'lap',BESTLAP:'race',BESTRACELAP:'race',
+      RACELAPRECORD:'race',BESTRACERECORD:'race'})[key]||'';
   };
   const recordChips=(card,category)=>{
     if(!['MotoGP','Moto2','Moto3'].includes(category))return '';
     const attrs=card._hass?.states?.[card._ids?.race]?.attributes||{};
     const rows=attrs.records_by_category?.[category];
-    if(!Array.isArray(rows)||!rows.length)return '';
-    const found=new Map(),names={lap:'Lap record',pole:'Pole lap',race:'Race lap'};
-    for(const record of rows){
+    const found=new Map(),names={lap:'Absolut varvrekord',pole:'Pole · aktuellt kval',race:'Bästa racevarv'};
+    const timeOk=time=>/^(?:\d{1,2}[:'])?\d{1,2}\.\d{3}$/.test(time);
+    const chip=(kind,time,detail)=>{
+      const note=detail?' · '+detail:'';
+      return '<span class="mgp-timing-record-chip" title="'+esc(detail)+'" aria-label="'+
+        esc(names[kind]+': '+time+note)+'"><small>'+names[kind]+'</small><strong>'+esc(time)+'</strong></span>';
+    };
+    for(const record of Array.isArray(rows)?rows:[]){
       if(!record||typeof record!=='object')continue;
       const type=recordKind(record.type);
       if(!type||found.has(type))continue;
       const time=String(record.time??'').trim();
-      if(!/^(?:\d{1,2}[:'])?\d{1,2}\.\d{3}$/.test(time))continue;
-      const rider=String(record.rider||'').trim();
-      const year=Number(record.year);
-      const speed=Number(record.speed);
-      const detail=[rider,
-        Number.isInteger(year)&&year>=1949&&year<=new Date().getFullYear()+1?String(year):'',
-        Number.isFinite(speed)&&speed>0&&speed<500?String(Math.round(speed*10)/10)+' km/h':''
-      ].filter(Boolean).join(' · ');
-      found.set(type,'<span class="mgp-timing-record-chip" title="'+esc(detail)+'" aria-label="'+esc(names[type]+': '+time+(detail?', '+detail:''))+'">'+
-        '<small>'+names[type]+'</small><strong>'+esc(time)+'</strong></span>');
+      if(!timeOk(time))continue;
+      const rider=String(record.rider||'').trim(),year=Number(record.year),speed=Number(record.speed);
+      const detail=[rider,Number.isInteger(year)&&year>=1949&&year<=new Date().getFullYear()+1?String(year):'',
+        Number.isFinite(speed)&&speed>0&&speed<500?String(Math.round(speed*10)/10)+' km/h':'']
+        .filter(Boolean).join(' · ');
+      found.set(type,chip(type,time,detail));
+    }
+    // The current GP pole is P1's verified qualifying time, not a poleLap
+    // value drawn from an unrelated session's records payload.
+    const grid=attrs.start_grids?.[category];
+    const leaders=Array.isArray(grid)?grid.filter(r=>Number(r?.position)===1):[];
+    if(leaders.length===1){
+      const pole=leaders[0],time=String(pole?.time??'').trim();
+      if(timeOk(time))found.set('pole',chip('pole',time,String(pole.rider||'').trim()));
+    }
+    // A new qualifying or live lap can break the circuit record before the
+    // Results classification publishes a refreshed recordLap. Use verified
+    // current-event inputs only; identify the unratified result as provisional.
+    const toSeconds=raw=>{
+      const m=/^(?:(\d{1,2})[:'])?(\d{1,2})\.(\d{3})$/.exec(String(raw??'').trim());
+      if(!m||Number(m[2])>=60)return null;
+      const n=Number(m[1]||0)*60+Number(m[2])+Number(m[3])/1000;
+      return n>0&&Number.isFinite(n)?n:null;
+    };
+    const published=Array.isArray(rows)?rows.find(r=>
+      recordKind(r?.type)==='lap'&&toSeconds(r?.time)!==null):null;
+    const baseline=toSeconds(published?.time);
+    const candidates=[];
+    if(leaders.length===1&&toSeconds(leaders[0]?.time)!==null){
+      candidates.push({time:String(leaders[0].time),rider:String(leaders[0].rider||'').trim()});
+    }
+    const snap=card._snapshot,live=card._live;
+    const positions=card._hass?.states?.[card._ids?.riders]?.attributes||{};
+    if(live?.category===category&&snap?.category===category&&
+      snap.day===card._today&&snap.name===live.name&&
+      positions.category===category&&positions.tv_delay_ready!==false&&
+      Array.isArray(snap.riders)){
+      for(const rider of snap.riders){
+        if(toSeconds(rider?.best_lap_time)!==null){
+          candidates.push({time:String(rider.best_lap_time),
+            rider:String(rider.surname||rider.shortname||'').trim()});
+        }
+      }
+    }
+    candidates.sort((a,b)=>toSeconds(a.time)-toSeconds(b.time));
+    const faster=candidates[0];
+    if(faster&&baseline!==null&&toSeconds(faster.time)<baseline-0.0005){
+      const kind='lap',time=faster.time;
+      const title=baseline===null?'Snabbaste verifierade varv · preliminärt banrekord':
+        'Preliminärt nytt banrekord';
+      found.set(kind,'<span class="mgp-timing-record-chip" title="'+esc(title+
+        (faster.rider?' · '+faster.rider:''))+'" aria-label="'+esc(title+': '+time)+
+        '"><small>'+esc(title)+'</small><strong>'+esc(time)+'</strong></span>');
     }
     if(!found.size)return '';
     return '<div class="mgp-timing-records" role="group" aria-label="'+esc(category)+' circuit records">'+
@@ -3515,6 +3564,8 @@ const GRID_STYLE='<style>'+
  '.mgp-pre-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:8px 12px}'+
  '.mgp-pre-fact{display:flex;justify-content:space-between;gap:8px;border:1px solid var(--divider-color,#8886);border-radius:8px;padding:9px 11px;font-size:12px;align-items:center}'+
  '.mgp-pre-fact strong{font-size:13px;font-variant-numeric:tabular-nums}'+
+ '.mgp-pre-fact-value{display:flex;flex-direction:column;align-items:flex-end;gap:2px;min-width:0}'+
+ '.mgp-pre-fact-value small{font-size:10px;color:var(--secondary-text-color);text-align:right}'+
  '@container (max-width:530px){.mgp-pre-facts{grid-template-columns:1fr}}'+
  '.mgp-pre-position{display:flex;align-items:center;justify-content:center;min-width:32px;height:31px;border-radius:6px;background:var(--secondary-background-color,#8882);font-size:14px;font-weight:900;flex:none;font-variant-numeric:tabular-nums}'+
  '.mgp-pre-flag{font-size:15px;flex:none}'+
@@ -3560,12 +3611,33 @@ function timingFacts(session,attrs,roster){
  const qualifying=pole.length===1?format(pole[0]?.time):'';
  const records=attrs.records_by_category?.[category];
  const absolute=Array.isArray(records)?records.filter(r=>
-   ['LAPRECORD','ALLTIMELAPRECORD','ALLTIMERECORD','CIRCUITRECORD','ALLTIME'].includes(
+   ['RECORDLAP','LAPRECORD','ALLTIMELAPRECORD','ALLTIMERECORD','CIRCUITRECORD','ALLTIME'].includes(
      String(r?.type||'').toUpperCase().replace(/[^A-Z0-9]/g,''))&&format(r?.time)):[];
- const record=absolute.length?absolute[0]:null;
- const fact=(name,value)=>'<div class="mgp-pre-fact"><span>'+esc(name)+'</span><strong>'+esc(value||'—')+'</strong></div>';
+ const record=absolute.length===1?absolute[0]:null;
+ const seconds=raw=>{
+   const m=/^(?:(\d{1,2})[:'])?(\d{1,2})\.(\d{3})$/.exec(String(raw??'').trim());
+   if(!m||Number(m[2])>=60)return null;
+   const n=Number(m[1]||0)*60+Number(m[2])+Number(m[3])/1000;
+   return n>0&&Number.isFinite(n)?n:null;
+ };
+ // Published recordLap can lag the qualifying session. Don't hide a new
+ // faster qualifying time while waiting for an official record update.
+ const verifiedPole=qualifying&&pole.length===1?seconds(qualifying):null;
+ const published=record?seconds(record.time):null;
+ const provisional=verifiedPole!==null&&published!==null&&verifiedPole<published-0.0005;
+ const shownRecord=provisional?qualifying:(record?format(record.time):'');
+ const year=Number(record?.year);
+ const recordMeta=provisional?
+   [String(pole[0]?.rider||'').trim(),'Preliminärt · aktuellt kval'].filter(Boolean).join(' · '):
+   record?[String(record.rider||'').trim(),
+   Number.isInteger(year)&&year>=1949&&year<=new Date().getFullYear()+1?String(year):'']
+   .filter(Boolean).join(' · '):'';
+ const fact=(name,value,meta)=>'<div class="mgp-pre-fact"><span>'+esc(name)+'</span>'+
+   '<span class="mgp-pre-fact-value"><strong>'+esc(value||'—')+'</strong>'+
+   (meta?'<small>'+esc(meta)+'</small>':'')+'</span></div>';
  return '<div class="mgp-pre-facts" aria-label="Kvaltid och banrekord">'+
-   fact('Pole · aktuellt kval',qualifying)+fact('Absolut varvrekord',record?format(record.time):'')+'</div>';
+   fact('Pole · aktuellt kval',qualifying,pole.length===1?String(pole[0]?.rider||'').trim():'')+
+   fact(provisional?'Preliminärt banrekord':'Absolut varvrekord',shownRecord,recordMeta)+'</div>';
 }
 function eventWindow(attrs){
  const start=String(attrs.date_start||'').slice(0,10),end=String(attrs.date_end||'').slice(0,10);
