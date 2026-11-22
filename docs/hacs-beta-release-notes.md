@@ -1,16 +1,16 @@
-# HA-MGP 2026.11.0b46 – synliga rekordförare och omstartsrubrik
+# HA-MGP 2026.11.0b47 – schemastatus från Pulselive
 
-**HACS beta:** `2026.11.0b46` · **Frontend:** `0.3.0-dev.89`
+**HACS beta:** `2026.11.0b47` · **Frontend:** `0.3.0-dev.91`
 
-## Ändrat sedan b45
-- Rekordrutorna visar förare och årtal på en egen rad **under tiden**; uppgifterna är inte längre gömda enbart i en tooltip.
-- Den aktuella pole-tiden visar P1-föraren och kalenderhelgens år när detta kan hämtas säkert.
-- Ett snabbare verifierat varv under helgen visas fortfarande som **preliminärt banrekord**, nu med förare och årtal i rutan.
-- Omstartad racedelsession `RAC2` får rubriken **Moto2 · Race · Omstart**, inte ”Del 2”. Separata sessions-ID och loppdistans skyddas fortfarande.
-- b45:s restartmatchning och b44:s rekordmappning behålls.
-- Ingen ändring av `main`; rollback till b45.
+## Ändrat sedan b46
+- Weekend-schemat använder en bekräftad, klass- och sessionsmatchad status från Pulselive Timing Gateway när Results-tabellen fortfarande säger `NOT-STARTED`.
+- `RAC2` hör till samma schemalagda Race, men ny racedels `session_id` kan återöppna ett lopp efter en tidigare avslutad del. Nytt observerat `F/C` markerar passet som klart.
+- Statusminnet är knutet till aktuellt GP och endast TV-delay-godkända statusar används. Ingen gissning från passerad starttid, stillastående varvräknare eller depå.
+- Results-sessionsstatus uppdateras med samma befintliga femminutershämtning som används för rekord/startgrid; inga nya API-anrop behövs. Publicerat `FINISHED` ska inte skrivas över av en äldre `NOT-STARTED`.
+- Efter loppet används **PRELIMINÄRT RESULTAT · EJ LIVE** för senaste tider tills officiell klassificering kan verifieras.
+- Resultatet av en tidigare session kan inte retroaktivt bekräftas av Timing Gateway efter en omstart av Home Assistant om den aldrig observerades; då är Results API fallback.
 
-## Verifiering
-- Kontrollera att `recordLap` och `bestLap` ger synlig förare och årtal när API:t levererar dem.
-- Kontrollera startgrid, pole samt preliminära rekord. Om uppgiften saknas ska inget förare/årtal hittas på.
-- Installera via HACS beta, starta om Home Assistant och hårduppdatera webbläsaren. Testa gärna under MotoGP-racet.
+## Testa
+- Kontrollera status för Moto3, Moto2, MotoGP var för sig i helgschemat, särskilt RAC2 och sessioner med försenad Results-status.
+- Se att aktivt race aldrig markeras Klart och att okänd status inte gissas.
+- `main` orörd. **Rollback b46.**
