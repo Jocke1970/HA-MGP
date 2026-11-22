@@ -183,7 +183,8 @@ function before(card,next,attrs){
 }
 function checkpoint(at){
  const minutes=Math.floor((Date.now()-at)/60000);
- return minutes>=5?'START EJ BEKRÄFTAD · MÖJLIG FÖRSENING':'STARTLISTA · INVÄNTAR LIVE';
+ if(minutes<0)return 'STARTLISTA · INFÖR START';
+ return minutes>=5?'START EJ BEKRÄFTAD · MÖJLIG FÖRSENING':'STARTTID PASSERAD · INVÄNTAR BEKRÄFTELSE';
 }
 function countdown(at){
  const s=Math.max(0,Math.ceil((at-Date.now())/1000));
@@ -211,7 +212,7 @@ function install(){
    if(!expanded)return html+'</section>';
    if(!roster.rows.length)return html+'<div class="nt-empty">Officiell deltagarlista/startgrid saknas ännu. Inga tider eller placeringar antas.</div></section>';
    html+='<div class="nt-results">'+(roster.grid?'Publicerad startgrid':'Anmälda förare · sorterade efter startnummer')+
-    ' · tider visas först när matchande live-data finns</div>';
+    (roster.grid?' · kvaltider visas när de finns':' · livetider visas först när passet startat')+'</div>';
    if(roster.grid)return html+timingFacts(s,attrs,roster)+gridMarkup(roster.rows)+'</section>';
    html+='<div class="nt-scroll"><div class="nt-table"><div class="nt-row nt-heading"><span>'+(roster.grid?'GRID':'NR')+'</span>'+
     '<span>FÖRARE / TEAM</span><span>VARV</span><span>SENASTE</span><span>Δ FRAMFÖR</span><span>Δ LEDARE</span><span>STATUS</span></div>';
