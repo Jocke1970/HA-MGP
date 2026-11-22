@@ -65,6 +65,8 @@ schedule(29,{entry_lists:{Moto3:roster},start_grids:{Moto3:[{...full[0],time:"1'
     {type:'bestLap',time:"1'44.111",rider:'BEST RACE RIDER',year:2024}
   ]}});
 html=card._timing();
+assert.match(html,/STARTLISTA · INFÖR START/);
+assert.doesNotMatch(html,/INVÄNTAR LIVE/);
 assert.match(html,/Pole · aktuellt kval/);
 assert.match(html,/1&#39;45\.652/);
 assert.match(html,/Absolut varvrekord/);
@@ -139,7 +141,7 @@ assert.doesNotMatch(card._timing(),/Rider 1|mgp-pre-grid-scroll/);
 card._timingManual=null;
 schedule(-2);
 assert.match(card._timing(),/Schemalagd start passerad · inväntar bekräftelse/);
-assert.match(card._timing(),/STARTLISTA · INVÄNTAR LIVE/);
+assert.match(card._timing(),/STARTTID PASSERAD · INVÄNTAR BEKRÄFTELSE/);
 schedule(-8);
 assert.match(card._timing(),/START EJ BEKRÄFTAD · MÖJLIG FÖRSENING/);
 card._live={key:'verified'};
