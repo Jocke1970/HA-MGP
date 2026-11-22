@@ -104,7 +104,7 @@ def build(directory, destination):
         "        } else if (hasRiders && !spoiler && (status?.state==='Finished' ||\n"
         "          ['F','C'].includes(String(status?.attributes?.session_status_id||'').toUpperCase()))) {\n"
         "          title=`${snap.category} · ${snap.name}`;\n"
-        "          statusText='AVSLUTAT · SLUTRESULTAT';\n"
+        "          statusText='PRELIMINÄRT RESULTAT · EJ LIVE';\n"
         "        } else if (upcoming) {\n"
         "          title=`Nästa: ${upcoming.category} · ${upcoming.name}`;\n"
         "          statusText=spoiler?'SPOILERLÄGE':hasRiders?'SENASTE PASS · EJ LIVE':'MELLAN PASSEN';",
