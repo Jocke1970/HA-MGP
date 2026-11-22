@@ -136,6 +136,26 @@ const live=(category,name,riders)=>({
     'old pass status must not appear beneath the upcoming Moto3 race');
   assert.doesNotMatch(timing.view.innerHTML,/Nästa: MotoGP · Warm Up|RIDER1|● LIVE/);
   assert.match(overview.view.innerHTML,/Nästa: Moto3 Race/,'overview also advances to future start');
+  // Portugal 2026: Results says NOT-STARTED after a RAC2 restart, but the
+  // TV-delayed timing gateway has already observed Moto2 Race as finished.
+  push({'sensor.motogp_next_race':e('GRAND PRIX OF PORTUGAL',{
+    date_start:'2026-11-20',date_end:'2026-11-22',sessions_all:sunday,
+    session_status_by_category:{Moto2:{Race:{status_id:'C',session_id:'7',
+      session_shortname:'RAC2',source:'timing-gateway'}}}
+  })});
+  assert.match(overview.view.innerHTML,/Moto2 · Race[\\s\\S]*?✓ KLART|✓ KLART[\\s\\S]*?Moto2 · Race/,
+    'RAC2 observed finish overrides stale Results timetable');
+  assert.doesNotMatch(overview.view.innerHTML,/Moto2 · Race[\\s\\S]*?INVÄNTAR STATUS/,
+    'Moto2 is not awaiting status once gateway has confirmed finish');
+  push({'sensor.motogp_next_race':e('GRAND PRIX OF PORTUGAL',{
+    date_start:'2026-11-20',date_end:'2026-11-22',sessions_all:sunday,
+    session_status_by_category:{Moto3:{Race:{status_id:'C',session_id:'4'}}}
+  })});
+  assert.match(overview.view.innerHTML,/Moto2 · Race/,
+    'Moto3 finish must not be attributed to Moto2');
+  assert.match(overview.view.innerHTML,/INVÄNTAR STATUS/,
+    'unknown status stays unknown without a verified Moto2 finish');
+
   // Reproduces the reported Qatar screenshot: Sprint in the future, Moto2 Q2
   // already scheduled but its status remains stale/unknown.
   now=Date.parse('2026-11-07T16:47:00+01:00');
