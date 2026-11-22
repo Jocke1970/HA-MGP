@@ -18,7 +18,7 @@
     const m = /moto\s*(gp|2|3|e)/i.exec(String(value || ''));
     return m ? ({gp:'MotoGP','2':'Moto2','3':'Moto3',e:'MotoE'})[m[1].toLowerCase()] : String(value || '');
   };
-  const sessionName = value => ({SPR:'Sprint',RAC:'Race',PR:'Practice',WUP:'Warm Up'})[String(value || '').toUpperCase()] || String(value || '');
+  const sessionName = value => {const raw=String(value||'').trim();if(/^RAC[2-9][0-9]*$/i.test(raw)||/^Race\s+PART\s+[2-9][0-9]*$/i.test(raw))return 'Race';return ({SPR:'Sprint',RAC:'Race',PR:'Practice',WUP:'Warm Up'})[raw.toUpperCase()]||raw;};
   const safeColor = value => /^#?[0-9a-f]{6}$/i.test(String(value || '')) ? `#${String(value).replace('#', '')}` : '#94a3b8';
   const numberText = value => positive(value) === null ? '—' : String(value);
   const lapText = value => !valid(value) || /^0+(?:[.:']0+)?$/.test(String(value).trim()) ? '—' : String(value);
@@ -165,7 +165,7 @@
         const expanded=!spoiler && (this._timingManual===null ? Boolean(hasRiders || live) : this._timingManual);
         let title, statusText, clockHtml='';
         if (live && !spoiler) {
-          title=`${live.category} · ${live.name}`;
+          title=`${live.category} · ${live.name}${live.part?' · Del '+live.part:''}`;
           statusText='● LIVE';
           const lap=positive(states[this._ids.laps]?.state);
           const total=positive(states[this._ids.laps]?.attributes?.num_laps);
