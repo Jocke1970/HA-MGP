@@ -4,7 +4,7 @@
 const TAG='ha-motogp-next-timing-card';
 const BUILD='finish-settling-20261108-01';
 const HOLD_MS=240000;
-const session=v=>({WUP:'WARMUP',RAC:'RACE',SPR:'SPRINT',PR:'PRACTICE'})[String(v||'').toUpperCase()]||v;
+const session=v=>{const raw=String(v||'').toUpperCase();return /^RAC[2-9][0-9]*$/.test(raw)?'RACE':({WUP:'WARMUP',RAC:'RACE',SPR:'SPRINT',PR:'PRACTICE'})[raw]||v;};
 const same=(a,b)=>String(a||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]/g,'')===String(b||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]/g,'');
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const category=v=>{const m=/moto\s*(gp|2|3|e)/i.exec(String(v||''));return m?({gp:'MotoGP','2':'Moto2','3':'Moto3',e:'MotoE'})[m[1].toLowerCase()]:String(v||'');};
