@@ -1,4 +1,4 @@
-/* MotoGP Next SINGLE Lovelace resource | build next-one-20261122-13 | read only. */
+/* MotoGP Next SINGLE Lovelace resource | build next-one-20261122-14 | read only. */
 /* MotoGP Next: isolated frontend for motogp-test. No HA writes or service calls. */
 (() => {
   'use strict';
@@ -334,9 +334,9 @@
       this._track(now,race);
       const event=valid(race?.state)?race.state:'Inget evenemang tillgängligt';
       const meta=[a.circuit,a.country,a.date_start&&a.date_end?dateRange(a.date_start,a.date_end):''].filter(valid);
-      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.92</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
+      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.93</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
         this._schedule(race,now)+`<div class="root">${this._weather()}${this._timing()}</div>`+
-        `<div class="foot">HA-MGP UI · 0.3.0-dev.92 · UI-preview</div></div>`;
+        `<div class="foot">HA-MGP UI · 0.3.0-dev.93 · UI-preview</div></div>`;
     }
     getCardSize(){return 8;}
     getGridOptions(){return {columns:12,rows:'auto',min_columns:6};}
@@ -3755,7 +3755,8 @@ function before(card,next,attrs){
 }
 function checkpoint(at){
  const minutes=Math.floor((Date.now()-at)/60000);
- return minutes>=5?'START EJ BEKRÄFTAD · MÖJLIG FÖRSENING':'STARTLISTA · INVÄNTAR LIVE';
+ if(minutes<0)return 'STARTLISTA · INFÖR START';
+ return minutes>=5?'START EJ BEKRÄFTAD · MÖJLIG FÖRSENING':'STARTTID PASSERAD · INVÄNTAR BEKRÄFTELSE';
 }
 function countdown(at){
  const s=Math.max(0,Math.ceil((at-Date.now())/1000));
@@ -3785,7 +3786,7 @@ function install(){
    if(!expanded)return html+'</section>';
    if(!roster.rows.length)return html+'<div class="nt-empty">Officiell deltagarlista/startgrid saknas ännu. Inga tider eller placeringar antas.</div></section>';
    html+='<div class="nt-results">'+(roster.grid?'Publicerad startgrid':'Anmälda förare · sorterade efter startnummer')+
-    ' · tider visas först när matchande live-data finns</div>';
+    (roster.grid?' · kvaltider visas när de finns':' · livetider visas först när passet startat')+'</div>';
    if(roster.grid)return html+timingFacts(s,attrs,roster)+gridMarkup(roster.rows)+'</section>';
    html+='<div class="nt-scroll"><div class="nt-table"><div class="nt-row nt-heading"><span>'+(roster.grid?'GRID':'NR')+'</span>'+
     '<span>FÖRARE / TEAM</span><span>VARV</span><span>SENASTE</span><span>Δ FRAMFÖR</span><span>Δ LEDARE</span><span>STATUS</span></div>';
