@@ -355,7 +355,7 @@
             `<span class="nt-lap-pair"><span class="nt-best-main"${overall?' style="color:var(--motogp-fastest-lap-color,var(--error-color,#b71c1c))"':''}>${esc(best)}</span>`+
               `<small>Senaste: ${original}</small></span>`:
             `<span class="nt-lap-pair"><span class="nt-last-main">${original}</span>`+
-              `<small${overall?' class="nt-session-best"':''}>Snabbaste: ${esc(best)}</small></span>`;
+              `<small${overall?' class="nt-session-best"':''}>Snabbaste: ${overall?'⏱ ':''}${esc(best)}</small></span>`;
           row=row.slice(0,range.begin)+cell+row.slice(range.end);
         }
         const status=r.on_pit?'PIT':valid(r.status_name)?String(r.status_name):valid(r.status_id)?String(r.status_id):'—';
