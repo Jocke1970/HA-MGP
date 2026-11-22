@@ -108,11 +108,24 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   assert.equal((h.match(/class="mgp-timing-record-chip"/g)||[]).length,3);
   assert.match(h,/01:50\.028/);assert.match(h,/01:52\.561/);
   assert.match(h,/Pole · aktuellt kval/);
-  assert.match(h,/01:50\\.100/,'verified P1 qualifying time from grid');
+  assert.match(h,/01:50\.100/,'verified P1 qualifying time from grid');
   assert.match(h,/Absolut varvrekord/);
   assert.match(h,/Bästa racevarv/);
   assert.doesNotMatch(h,/SESSION POLE NOT HISTORIC|SESSION FASTEST NOT HISTORIC|00:50\\.001|00:49\\.001/,
     'record chips must ignore session-only fastestLap and poleLap');
+  // A faster current-weekend live lap is provisionally displayed, not held
+  // back until the historical Results recordLap is revised.
+  timing._ids.riders='positions';
+  timing._hass.states.positions={attributes:{category:'MotoGP',tv_delay_ready:true}};
+  assert.match(timing._timing(),/Preliminärt nytt banrekord/);
+  timing._hass.states.positions.attributes.tv_delay_ready=false;
+  assert.doesNotMatch(timing._timing(),/Preliminärt nytt banrekord/,
+    'unready TV-delayed samples must not be used as provisional records');
+  timing._hass.states.positions.attributes.tv_delay_ready=true;
+  timing._hass.states.positions.attributes.category='Moto2';
+  assert.doesNotMatch(timing._timing(),/Preliminärt nytt banrekord/,
+    'cross-class live laps must never overwrite a record');
+  delete timing._hass.states.positions;
   assert.doesNotMatch(h,/MOTO2 RIDER|MOTO3 RIDER|00:00\.001/);
   assert.ok(h.indexOf('mgp-timing-records')<h.indexOf('nt-scroll'),'chips above rider table');
   timing._snapshot.riders=[];
