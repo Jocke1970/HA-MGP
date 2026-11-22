@@ -16,7 +16,7 @@ from .api import MotogpApiClient, MotogpApiError
 from .api_diagnostics import PulseliveDiagnostics
 from .api_event_archive import PulseliveEventArchive, DiagnosticArchiveError
 from .session_lap_archive import ArchiveError, SessionLapArchive
-from .session_status_overlay import observe_session_status
+from .session_status_overlay import observe_session_status, refreshed_results_statuses
 from .qualifying_grid import q1_eliminated_rows
 from .weather_conditions import select_session_weather, observe_weather_report
 from .broadcast_schedule import broadcast_schedule_rows, results_sessions_for_event
@@ -678,6 +678,11 @@ class MotogpCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
             # Stale Results sessions must not drive Q1, records or status for this GP.
             sessions, _ = results_sessions_for_event(sessions, event)
+            # Reuse the existing 5-minute Results fetch to refresh published
+            # schedule status without waiting for the 6-hour static refresh.
+            self.static["weekend_sessions_all"] = refreshed_results_statuses(
+                self.static.get("weekend_sessions_all", []), category_name, sessions
+            )
 
             # Never expose classified Q1 eliminations during Q1 itself.
             # Only request them after this category's scheduled Q2 begins.
