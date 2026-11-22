@@ -2,9 +2,13 @@
 
 Inofficiell Home Assistant-integration för MotoGP, Moto2 och Moto3.
 
-**HACS beta: `2026.11.0b45` · Frontend `0.3.0-dev.87`.**
+**HACS beta: `2026.11.0b46` · Frontend `0.3.0-dev.89`.**
 
-## Nytt i b45
+## Nytt i b46
+- Rekordrutorna visar förare och årtal synligt under respektive tid, inklusive aktuell pole och preliminära rekord.
+- Omstartade race märks `Moto2 · Race · Omstart` i stället för `Del 2`.
+- RAC2-sessionernas säkra isolering och b44:s rekordfixar är kvar.
+
 - Live-API: Moto2/MotoGP/Moto3 `RAC2` / `Race PART 2` mappas till kalenderns Race, med `session_id` som separerar racedelar och den omstartade delens egna varv.
 - Vid omstart visar timingkortet "Del 2" i rubriken, utan att använda äldre delens snapshot. Inget antagande om en verklig rödflaggskod; `S` förblir In Progress.
 - Alla rekordförbättringar från b44 ingår.
@@ -17,4 +21,4 @@ Inofficiell Home Assistant-integration för MotoGP, Moto2 och Moto3.
 
 **Beta för okulärbesiktning.** Installera via HACS beta, inte dev. [Release notes](docs/hacs-beta-release-notes.md) och [testguide](docs/hacs-beta-installation.md).
 
-**Dev → beta → main.** b44 är rollback. Main ändras först efter godkännande.
+**Dev → beta → main.** b45 är rollback. Main ändras först efter godkännande.
