@@ -58,7 +58,7 @@ def check_bundle_integrity() -> None:
     next_js = (ASSETS / "ha-mgp.js").read_text(encoding="utf-8")
     assert "ha-motogp-next-overview-card" in next_js
     assert "ha-motogp-next-timing-card" in next_js
-    assert "0.3.0-dev.79" in next_js
+    assert "0.3.0-dev.80" in next_js
     assert "motogp_sensor/api_probe" in next_js
     assert "api-utility-20261121-01" in next_js
     assert "mgp-timing-header" in next_js, "records must render inside unified timing header"
