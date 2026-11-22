@@ -190,11 +190,11 @@ const context={customElements:{
   const report=card._hass.states['sensor.motogp_track_weather'];
   report.attributes={...report.attributes,fetch_status:'ok',poll_count:4,change_count:2,
     checked_at:new Date().toISOString(),last_success_at:new Date().toISOString(),
-    updated_at:new Date(Date.now()-600000).toISOString(),data_age_seconds:600};
+    updated_at:new Date(Date.now()-9*60000).toISOString(),data_age_seconds:540};
   card._render();
   assert.match(card.root.innerHTML,/Kontroller 4/);
   assert.match(card.root.innerHTML,/Ändringar 2/);
-  assert.match(card.root.innerHTML,/Ändrat för 10 min sedan/);
+  assert.match(card.root.innerHTML,/Ändrat för 9 min sedan/);
   assert.match(card.root.innerHTML,/31 °C/,'values can be displayed as an explicitly labeled recent session report');
   report.attributes.updated_at=new Date(Date.now()-11*60000).toISOString();
   card._render();
