@@ -109,7 +109,7 @@ jobs:
           assert "leaderboard=shown.map" in source
           assert "ui-preview-20261121-01" in source
           assert "header-track-weather-20261121-07" in source
-          assert "api-utility-20261121-01" in source
+          assert "api-utility-20261122-02" in source
           assert "mgp-brand-logo" in source
           assert "mgp-rider-flag" in source
           assert "mgp-class-mark" in source
