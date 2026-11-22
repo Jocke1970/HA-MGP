@@ -154,8 +154,8 @@ const live=(category,name,riders)=>({
     date_start:'2026-09-19',date_end:'2026-09-20',sessions_all:sunday,
     session_status_by_category:{Moto3:{Race:{status_id:'C',session_id:'4'}}}
   })});
-  assert.match(overview.view.innerHTML,/INVÄNTAR STATUS<\/span><\/div><div class="name">Moto2 · Race/,
-    'Moto3 finish must not be attributed to Moto2');
+  assert.match(overview.view.innerHTML,/KOMMANDE<\/span><\/div><div class="name">Moto2 · Race/,
+    'Moto3 finish must not be attributed to upcoming Moto2');
   overview._scheduleOpen=false;
 
   // Reproduces the reported Qatar screenshot: Sprint in the future, Moto2 Q2
