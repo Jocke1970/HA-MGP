@@ -1,16 +1,15 @@
-# HA-MGP 2026.11.0b47 – schemastatus från Pulselive
+# HA-MGP 2026.11.0b48 – finalhelgens kandidat
 
-**HACS beta:** `2026.11.0b47` · **Frontend:** `0.3.0-dev.91`
+**HACS beta:** `2026.11.0b48` · **Frontend:** `0.3.0-dev.94`
 
-## Ändrat sedan b46
-- Weekend-schemat använder en bekräftad, klass- och sessionsmatchad status från Pulselive Timing Gateway när Results-tabellen fortfarande säger `NOT-STARTED`.
-- `RAC2` hör till samma schemalagda Race, men ny racedels `session_id` kan återöppna ett lopp efter en tidigare avslutad del. Nytt observerat `F/C` markerar passet som klart.
-- Statusminnet är knutet till aktuellt GP och endast TV-delay-godkända statusar används. Ingen gissning från passerad starttid, stillastående varvräknare eller depå.
-- Results-sessionsstatus uppdateras med samma befintliga femminutershämtning som används för rekord/startgrid; inga nya API-anrop behövs. Publicerat `FINISHED` ska inte skrivas över av en äldre `NOT-STARTED`.
-- Efter loppet används **PRELIMINÄRT RESULTAT · EJ LIVE** för senaste tider tills officiell klassificering kan verifieras.
-- Resultatet av en tidigare session kan inte retroaktivt bekräftas av Timing Gateway efter en omstart av Home Assistant om den aldrig observerades; då är Results API fallback.
+## Ändringar sedan b47
+- **Startgridden** visar förarens egen kvaltid i respektive ruta om den finns i den verifierade startgridposten; inga tider gissas.
+- **Rekordraden före start** kompletteras med bästa racevarv vid sidan av aktuell pole och absolut varvrekord.
+- **Startstatus**: före schemalagd start `STARTLISTA · INFÖR START`; efter passerad starttid inväntas säker bekräftelse från livetiming innan status ändras. Ingen automatisk LIVE-etikett från klockan.
+- **Banväder**: Results API ger sessionsrapporter, inte garanterat realtidsväder. Rapporter märks med sin verkliga källa och gamla, oförändrade värden (över 10 minuter) döljs för att inte skapa en falsk aktuell väderbild.
+- **b47:s** Pulselive-schemastatus, omstartade racedelar och preliminära resultat behålls. `main` orörd.
 
-## Testa
-- Kontrollera status för Moto3, Moto2, MotoGP var för sig i helgschemat, särskilt RAC2 och sessioner med försenad Results-status.
-- Se att aktivt race aldrig markeras Klart och att okänd status inte gissas.
-- `main` orörd. **Rollback b46.**
+## Nästa steg
+Under finalhelgen: kontrollera förstart, liveövergång, kvaltider, banrekord, schemastatus, TV-delay/No Spoiler och slutresultat. Undersök en bättre väderkälla separat, inklusive tidstämpel för faktiska vädermätningar. Denna beta ändrar inte väderleverantör.
+
+**Rollback:** `2026.11.0b47`.
