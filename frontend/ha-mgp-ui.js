@@ -123,7 +123,7 @@
     }
     candidates.sort((a,b)=>toSeconds(a.time)-toSeconds(b.time));
     const faster=candidates[0];
-    if(faster&&(baseline===null||toSeconds(faster.time)<baseline-0.0005)){
+    if(faster&&baseline!==null&&toSeconds(faster.time)<baseline-0.0005){
       const kind='lap',time=faster.time;
       const title=baseline===null?'Snabbaste verifierade varv · preliminärt banrekord':
         'Preliminärt nytt banrekord';
