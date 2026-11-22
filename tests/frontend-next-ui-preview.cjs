@@ -37,15 +37,16 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
     last_lap_time:"1'30.450",best_lap_time:"1'29.980",status_name:'RUNNING'};
   const race={state:'GP',attributes:{
      records_by_category:{
-       MotoGP:[{type:'LAP_RECORD',time:'01:50.028',rider:'BEZZECCHI',year:2026,speed:176},
-         {type:'POLE_LAP',time:'01:50.028',rider:'BEZZECCHI'},
-         {type:'BEST_RACE_LAP',time:'01:52.561',rider:'MARQUEZ',year:2025,speed:172},
+       MotoGP:[{type:'recordLap',time:'01:50.028',rider:'BEZZECCHI',year:2026,speed:176},
+         {type:'poleLap',time:'00:50.001',rider:'SESSION POLE NOT HISTORIC'},
+         {type:'fastestLap',time:'00:49.001',rider:'SESSION FASTEST NOT HISTORIC'},
+         {type:'bestLap',time:'01:52.561',rider:'MARQUEZ',year:2025,speed:172},
          {type:'FAKE',time:'00:00.001'}],
-       Moto2:[{type:'LAP_RECORD',time:'01:43.111',rider:'MOTO2 RIDER'}],
-       Moto3:[{type:'POLE_LAP',time:'01:55.222',rider:'MOTO3 RIDER'}]
+       Moto2:[{type:'recordLap',time:'01:43.111',rider:'MOTO2 RIDER',year:2026}],
+       Moto3:[{type:'recordLap',time:'01:55.222',rider:'MOTO3 RIDER',year:2026}]
      },
      start_grids:{MotoGP:[{position:8,number:93,rider:'TEST',team:'TEAM'},
-    {position:1,number:1,rider:'A',team:'B'}]},sessions_all:[{category:'MotoGP',name:'Race',type:'RAC',
+    {position:1,number:1,rider:'A',team:'B',time:'01:50.100'}]},sessions_all:[{category:'MotoGP',name:'Race',type:'RAC',
     date:'2026-09-20T14:00:00+00:00',status:'NOT-STARTED'}]}};
   const standing={attributes:{
     standings:[{position:1,number:93,rider:'STANDINGS',nation:'SPA',team:'Ducati Lenovo',team_color:'#CC0000',points:250}],
@@ -106,6 +107,12 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
     'only backend lap-stats addon may render the fastest session lap');
   assert.equal((h.match(/class="mgp-timing-record-chip"/g)||[]).length,3);
   assert.match(h,/01:50\.028/);assert.match(h,/01:52\.561/);
+  assert.match(h,/Pole · aktuellt kval/);
+  assert.match(h,/01:50\\.100/,'verified P1 qualifying time from grid');
+  assert.match(h,/Absolut varvrekord/);
+  assert.match(h,/Bästa racevarv/);
+  assert.doesNotMatch(h,/SESSION POLE NOT HISTORIC|SESSION FASTEST NOT HISTORIC|00:50\\.001|00:49\\.001/,
+    'record chips must ignore session-only fastestLap and poleLap');
   assert.doesNotMatch(h,/MOTO2 RIDER|MOTO3 RIDER|00:00\.001/);
   assert.ok(h.indexOf('mgp-timing-records')<h.indexOf('nt-scroll'),'chips above rider table');
   timing._snapshot.riders=[];
