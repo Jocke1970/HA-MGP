@@ -295,7 +295,7 @@ const context={customElements:{
   assert.doesNotMatch(card.root.innerHTML,/<img src=x/,'untrusted names escaped');
   other.attributes.circuit='Lusail International Circuit';
   const weather=card._hass.states['sensor.motogp_track_weather'];
-  weather.attributes={results_event_uuid:'qatar-gp',updated_at:'2026-11-08T13:00:00Z',
+  weather.attributes={results_event_uuid:'qatar-gp',updated_at:new Date().toISOString(),
     air:'bad-script',ground:'0°C',humidity:'500%',track:'<script>alert(1)</script>',
     weather:'<img onerror=alert(1)>'};
   card._render();
