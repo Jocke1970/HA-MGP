@@ -111,6 +111,12 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   assert.match(h,/01:50\.100/,'verified P1 qualifying time from grid');
   assert.match(h,/Absolut varvrekord/);
   assert.match(h,/Bästa racevarv/);
+  assert.match(h,/class="mgp-record-meta">BEZZECCHI · 2026<\/span>/,
+    'absolute lap record visibly includes rider and year');
+  assert.match(h,/class="mgp-record-meta">MARQUEZ · 2025<\/span>/,
+    'best race lap visibly includes rider and year');
+  assert.match(h,/class="mgp-record-meta">A · 2026<\/span>/,
+    'current pole visibly includes rider and current GP year');
   assert.doesNotMatch(h,/SESSION POLE NOT HISTORIC|SESSION FASTEST NOT HISTORIC|00:50\\.001|00:49\\.001/,
     'record chips must ignore session-only fastestLap and poleLap');
   // A faster current-weekend live lap is provisionally displayed, not held
@@ -118,6 +124,8 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   timing._ids.riders='positions';
   timing._hass.states.positions={attributes:{category:'MotoGP',tv_delay_ready:true}};
   assert.match(timing._timing(),/Preliminärt nytt banrekord/);
+  assert.match(timing._timing(),/class="mgp-record-meta">TEST · 2026<\/span>/,
+    'provisional record still shows rider and year without a tooltip');
   timing._hass.states.positions.attributes.tv_delay_ready=false;
   assert.doesNotMatch(timing._timing(),/Preliminärt nytt banrekord/,
     'unready TV-delayed samples must not be used as provisional records');
