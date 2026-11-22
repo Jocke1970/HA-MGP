@@ -62,7 +62,7 @@ function timingFacts(session,attrs,roster){
  const qualifying=pole.length===1?format(pole[0]?.time):'';
  const records=attrs.records_by_category?.[category];
  const absolute=Array.isArray(records)?records.filter(r=>
-   ['LAPRECORD','ALLTIMELAPRECORD','ALLTIMERECORD','CIRCUITRECORD','ALLTIME'].includes(
+   ['RECORDLAP','LAPRECORD','ALLTIMELAPRECORD','ALLTIMERECORD','CIRCUITRECORD','ALLTIME'].includes(
      String(r?.type||'').toUpperCase().replace(/[^A-Z0-9]/g,''))&&format(r?.time)):[];
  const record=absolute.length===1?absolute[0]:null;
  const seconds=raw=>{
