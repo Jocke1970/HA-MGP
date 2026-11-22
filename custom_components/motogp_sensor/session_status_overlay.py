@@ -73,3 +73,44 @@ def observe_session_status(
         "source": "timing-gateway",
     }
     return updated
+
+
+def refreshed_results_statuses(
+    schedule: list[dict[str, Any]],
+    category: str,
+    results_sessions: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Update exact Results UUID/category statuses from already-fetched sessions.
+
+    A later stale NOT-STARTED row must never undo a confirmed FINISHED. This
+    function is not proof that a session has finished when Results has no
+    status to contribute.
+    """
+    if not isinstance(schedule, list) or not isinstance(results_sessions, list):
+        return schedule
+    eligible = {}
+    for item in results_sessions:
+        if not isinstance(item, dict) or not item.get("id"):
+            continue
+        ident = str(item["id"])
+        status = str(item.get("status") or "").upper()
+        if status in {"FINISHED", "CANCELLED", "CANCELED", "IN-PROGRESS", "NOT-STARTED"}:
+            eligible.setdefault(ident, []).append(status)
+    updated = []
+    for row in schedule:
+        if not isinstance(row, dict) or row.get("category") != category:
+            updated.append(row)
+            continue
+        statuses = eligible.get(str(row.get("id") or ""), [])
+        if len(statuses) != 1:
+            updated.append(row)
+            continue
+        old = str(row.get("status") or "").upper()
+        incoming = statuses[0]
+        if old in {"FINISHED", "CANCELLED", "CANCELED"} and incoming in {"IN-PROGRESS", "NOT-STARTED"}:
+            updated.append(row)
+        elif incoming != old:
+            updated.append({**row, "status": incoming})
+        else:
+            updated.append(row)
+    return updated
