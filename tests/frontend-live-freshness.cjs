@@ -7,7 +7,7 @@ const vm=require('node:vm');
 
 const code=fs.readFileSync(process.argv[2]||
   'custom_components/motogp_sensor/www/ha-mgp.js','utf8');
-assert.match(code,/0\.3\.0-dev\.93/);
+assert.match(code,/0\.3\.0-dev\.94/);
 assert.match(code,/live\.part\?' · Omstart'/,'a restarted race uses Omstart rather than Del 2');
 const anchor='/* MotoGP Next: approved lap records, personal bests, gap trends and feed freshness.';
 const start=code.indexOf(anchor);
