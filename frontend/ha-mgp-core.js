@@ -25,7 +25,12 @@
     const match = /moto\s*(gp|2|3|e)/i.exec(raw);
     return match ? ({gp:'MotoGP','2':'Moto2','3':'Moto3',e:'MotoE'})[match[1].toLowerCase()] : raw;
   };
-  const sess = value => ({RAC:'Race',SPR:'Sprint',PR:'Practice',WUP:'Warm Up', 'TISSOT SPRINT':'Sprint'})[String(value || '').trim().toUpperCase()] || String(value || '');
+  const sess = value => {const raw=String(value||'').trim(),upper=raw.toUpperCase();
+    // Restart segments RAC2 / Race PART 2 belong to the scheduled Race,
+    // but retain their own live session_id for snapshot isolation.
+    if(/^RAC(?:[2-9][0-9]*)$/.test(upper)||/^RACE\s+PART\s+[2-9][0-9]*$/.test(upper))return 'Race';
+    return ({RAC:'Race',SPR:'Sprint',PR:'Practice',WUP:'Warm Up','TISSOT SPRINT':'Sprint'})[upper]||raw;
+  };
   const keyName = value => {
     const name=String(sess(value)).trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
     // API calls the Sprint "Tissot Sprint"; calendar may call it just Sprint.
@@ -105,6 +110,10 @@
         (valid(sa.session_shortname) && keyName(sa.session_shortname)!==name)) return null;
     const ids=[sa.championship_id,ta.championship_id,pa.championship_id].filter(valid).map(String);
     if (new Set(ids).size > 1) return null;
+    // All available entity session IDs must agree. A restarted part has a new
+    // live ID even though it belongs to the same calendar Race.
+    const segmentIds=[sa.session_id,ta.session_id,pa.session_id].filter(valid).map(String);
+    if(new Set(segmentIds).size>1)return null;
     // Do not expose unbuffered raw live timing while requested TV-delay is not ready.
     const requested=nonzero(pa.tv_delay_seconds);
     if (requested && pa.tv_delay_ready === false) return null;
@@ -112,8 +121,11 @@
     // cross a day boundary; match within the verified current GP weekend.
     const matches=sessionsFor(race).filter(s => s._cat===category && keyName(s._name)===name);
     if (matches.length!==1) return null;
-    return {key:`${calendar}|${today}|${category}|${name}|${matches[0].id || matches[0].date}`,
-      name:sess(se.state), category};
+    const liveId=segmentIds[0]||'';
+    const rawShort=String(sa.session_shortname||ta.session_shortname||pa.session_shortname||'').trim().toUpperCase();
+    const part=/^RAC([2-9][0-9]*)$/.exec(rawShort);
+    return {key:`${calendar}|${today}|${category}|${name}|${matches[0].id || matches[0].date}|${liveId||rawShort}`,
+      name:sess(se.state),category,session_id:liveId,part:part?Number(part[1]):null};
   }
   function timingInfo(live, states, ids) {
     if (!live) return [];
