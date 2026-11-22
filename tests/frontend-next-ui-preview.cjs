@@ -85,8 +85,9 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   timing._live.name='Q2';timing._snapshot.name='Q2';
   assert.match(timing._timing(),/nt-best-main/);
   timing._live.name='Race';timing._snapshot.name='Race';
-  assert.match(h,/nt-last-main[\s\S]*nt-pb-chip[\s\S]*Snabbaste: 1&#39;29\.980/);
-  assert.match(h,/class="nt-session-best"[^>]*>Snabbaste: 1&#39;29\.980/,'only session-fastest lap highlighted in red');
+  assert.match(h,/nt-last-main[\s\S]*nt-pb-chip[\s\S]*Snabbaste: ⏱ 1&#39;29\.980/);
+  assert.match(h,/class="nt-session-best"[^>]*>Snabbaste: ⏱ 1&#39;29\.980/,'only session-fastest lap highlighted in red');
+  assert.equal((h.match(/Snabbaste: ⏱ /g)||[]).length,1,'clock appears only on session-fastest best lap');
 
   assert.match(h,/▲ \+5/);assert.match(h,/RUNNING/);
   assert.match(h,/Nation: ITA[^>]*>🇮🇹/,'live timing uses supplied nationality');
