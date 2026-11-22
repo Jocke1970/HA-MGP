@@ -3,7 +3,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('nod
 const source=fs.readFileSync('frontend/ha-mgp-api-utility.js','utf8');
 const calls=[];
 const doc={createElement:()=>({setAttribute(){},textContent:''})};
-class Overview {
+class Timing {
   constructor(){
     this._ids={race:'sensor.motogp_next_race',status:'sensor.motogp_session_status'};
     this._hass={states:{
@@ -27,10 +27,10 @@ class Overview {
       insertAdjacentHTML:(position,markup)=>{this.root.innerHTML+=markup}};
     this.shadowRoot=this.root;
   }
-  _render(){this.root.innerHTML='<section>Existing GP header</section>';}
+  _render(){this.root.innerHTML='<section>Existing race timing and grid</section>';}
   _click(){this.legacy=true;}
 }
-const ctx={customElements:{get:()=>Overview,whenDefined:()=>Promise.resolve()},document:doc,console,
+const ctx={customElements:{get:name=>name==='ha-motogp-next-timing-card'?Timing:null,whenDefined:()=>Promise.resolve()},document:doc,console,
   navigator:{clipboard:{writeText:async()=>{}}}};
 const button=(type,action)=>({
   hasAttribute:key=>key===type,
@@ -39,9 +39,11 @@ const button=(type,action)=>({
 const event=(obj)=>({target:{closest:()=>obj}});
 (async()=>{
  vm.runInNewContext(source,ctx);await Promise.resolve();await Promise.resolve();
- const card=new Overview();card.connectedCallback();
+ const card=new Timing();card.connectedCallback();
  card._render();
  assert.match(card.root.innerHTML,/API-verktyg/);
+ assert.ok(card.root.innerHTML.indexOf('Existing race timing and grid')<card.root.innerHTML.indexOf('API-verktyg'),
+   'API controls are appended after the entire timing/grid content');
  assert.doesNotMatch(card.root.innerHTML,/Results-sessioner/,'collapsed by default');
  card._click(event(button('data-mgp-util-toggle')));
  assert.match(card.root.innerHTML,/portugal-results-uuid/);
