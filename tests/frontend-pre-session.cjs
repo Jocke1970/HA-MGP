@@ -59,18 +59,20 @@ const roster=full.map(r=>({number:r.number,rider:r.rider}));
 schedule(29,{entry_lists:{Moto3:roster},start_grids:{Moto3:[{...full[0],time:"1'45.652"},...full.slice(1)]},
   records_by_category:{Moto3:[
     {type:'POLE_LAP',time:"1'44.999"}, // historical pole record is NOT current qualification
-    {type:'LAP_RECORD',time:"1'43.111"}
+    {type:'recordLap',time:"1'43.111",rider:'TEST RECORD HOLDER',year:2025}
   ]}});
 html=card._timing();
 assert.match(html,/Pole · aktuellt kval/);
 assert.match(html,/1&#39;45\.652/);
 assert.match(html,/Absolut varvrekord/);
+assert.match(html,/TEST RECORD HOLDER/);
+assert.match(html,/2025/,'record year shown when supplied');
 assert.match(html,/1&#39;43\.111/);
 assert.doesNotMatch(html,/1&#39;44\.999/,'historical pole record must not masquerade as this qualifying lap');
 assert.match(html,/Publicerad startgrid/);
 // Crossing T-15 must NOT remove the pole and absolute record panel.
 schedule(14,{entry_lists:{Moto3:roster},start_grids:{Moto3:[{...full[0],time:"1'45.652"},...full.slice(1)]},
-  records_by_category:{Moto3:[{type:'LAP_RECORD',time:"1'43.111"}]}});
+  records_by_category:{Moto3:[{type:'recordLap',time:"1'43.111",rider:'TEST RECORD HOLDER',year:2025}]}});
 html=card._timing();
 assert.match(html,/Pole · aktuellt kval[\s\S]*1&#39;45\.652/);
 assert.match(html,/Absolut varvrekord[\s\S]*1&#39;43\.111/);
