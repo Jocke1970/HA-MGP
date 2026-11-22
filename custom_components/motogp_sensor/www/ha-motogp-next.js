@@ -1,4 +1,4 @@
-/* MotoGP Next SINGLE Lovelace resource | build next-one-20261122-02 | read only. */
+/* MotoGP Next SINGLE Lovelace resource | build next-one-20261122-03 | read only. */
 /* MotoGP Next: isolated frontend for motogp-test. No HA writes or service calls. */
 (() => {
   'use strict';
@@ -319,9 +319,9 @@
       this._track(now,race);
       const event=valid(race?.state)?race.state:'Inget evenemang tillgängligt';
       const meta=[a.circuit,a.country,a.date_start&&a.date_end?dateRange(a.date_start,a.date_end):''].filter(valid);
-      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.81</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
+      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.82</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
         this._schedule(race,now)+`<div class="root">${this._weather()}${this._timing()}</div>`+
-        `<div class="foot">HA-MGP UI · 0.3.0-dev.81 · UI-preview</div></div>`;
+        `<div class="foot">HA-MGP UI · 0.3.0-dev.82 · UI-preview</div></div>`;
     }
     getCardSize(){return 8;}
     getGridOptions(){return {columns:12,rows:'auto',min_columns:6};}
@@ -1040,6 +1040,18 @@
   const sessionFastest=card=>{
     const snap=card._snapshot;
     if(!snap||snap.day!==card._today||!Array.isArray(snap.riders)||!snap.riders.length)return '';
+    // A retained snapshot is NOT the upcoming race. Never show the previous
+    // class's observed lap above a new class's published start grid.
+    if(!card._live){
+      const status=card._hass?.states?.[card._ids?.status];
+      const session=card._hass?.states?.[card._ids?.session];
+      const code=String(status?.attributes?.session_status_id||'').toUpperCase();
+      const norm=v=>String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'')
+        .replace(/^SPR$/,'SPRINT').replace(/^RAC$/,'RACE');
+      if(!['C','F'].includes(code) ||
+         norm(status?.attributes?.category)!==norm(snap.category) ||
+         norm(session?.state)!==norm(snap.name))return '';
+    }
     const candidates=snap.riders.map(r=>{
       const raw=lap(r.best_lap_time);
       const match=/^(?:(\d+)[:'])?(\d{1,2})\.(\d{3})$/.exec(raw);
@@ -3530,6 +3542,10 @@ const GRID_STYLE='<style>'+
  '.mgp-pre-slot{display:flex;align-items:center;gap:8px;min-width:0;min-height:47px;padding:7px 9px;border:1px solid var(--divider-color,#8886);border-left:4px solid var(--mgp-grid-color,#777);border-radius:9px;background:var(--ha-card-background,var(--card-background-color,#fff))}'+
  '.mgp-pre-slot-2{transform:translateY(4px)}.mgp-pre-slot-3{transform:translateY(8px)}'+
  '.mgp-pre-pole{border-color:#c8a146;box-shadow:inset 0 0 0 1px #c8a14655}'+
+ '.mgp-pre-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:8px 12px}'+
+ '.mgp-pre-fact{display:flex;justify-content:space-between;gap:8px;border:1px solid var(--divider-color,#8886);border-radius:8px;padding:9px 11px;font-size:12px;align-items:center}'+
+ '.mgp-pre-fact strong{font-size:13px;font-variant-numeric:tabular-nums}'+
+ '@container (max-width:530px){.mgp-pre-facts{grid-template-columns:1fr}}'+
  '.mgp-pre-position{display:flex;align-items:center;justify-content:center;min-width:32px;height:31px;border-radius:6px;background:var(--secondary-background-color,#8882);font-size:14px;font-weight:900;flex:none;font-variant-numeric:tabular-nums}'+
  '.mgp-pre-flag{font-size:15px;flex:none}'+
  '.mgp-pre-name{min-width:0;display:flex;flex-direction:column;gap:3px}'+
@@ -3562,6 +3578,24 @@ function gridMarkup(rows){
   html+='</div>';
  }
  return html+'</div>';
+}
+function timingFacts(session,attrs,roster){
+ const category=String(session?.category||'');
+ const race=/^(race|sprint)$/i.test(label(session?.name||session?.type));
+ if(!race||!['MotoGP','Moto2','Moto3'].includes(category))return '';
+ const format=raw=>{const value=String(raw??'').trim();return /^(?:(?:\d{1,2})[:'])?\d{1,2}\.\d{3}$/.test(value)?value:'';};
+ const grid=attrs.start_grids?.[category];
+ const pole=roster.grid&&Array.isArray(grid)&&grid.length===roster.rows.length
+  ?grid.filter(r=>Number(r?.position)===1):[];
+ const qualifying=pole.length===1?format(pole[0]?.time):'';
+ const records=attrs.records_by_category?.[category];
+ const absolute=Array.isArray(records)?records.filter(r=>
+   ['LAPRECORD','ALLTIMELAPRECORD','ALLTIMERECORD','CIRCUITRECORD','ALLTIME'].includes(
+     String(r?.type||'').toUpperCase().replace(/[^A-Z0-9]/g,''))&&format(r?.time)):[];
+ const record=absolute.length?absolute[0]:null;
+ const fact=(name,value)=>'<div class="mgp-pre-fact"><span>'+esc(name)+'</span><strong>'+esc(value||'—')+'</strong></div>';
+ return '<div class="mgp-pre-facts" aria-label="Kvaltid och banrekord">'+
+   fact('Pole · aktuellt kval',qualifying)+fact('Absolut varvrekord',record?format(record.time):'')+'</div>';
 }
 function eventWindow(attrs){
  const start=String(attrs.date_start||'').slice(0,10),end=String(attrs.date_end||'').slice(0,10);
@@ -3674,7 +3708,7 @@ function install(){
    if(!roster.rows.length)return html+'<div class="nt-empty">Officiell deltagarlista/startgrid saknas ännu. Inga tider eller placeringar antas.</div></section>';
    html+='<div class="nt-results">'+(roster.grid?'Publicerad startgrid':'Anmälda förare · sorterade efter startnummer')+
     ' · tider visas först när matchande live-data finns</div>';
-   if(roster.grid)return html+gridMarkup(roster.rows)+'</section>';
+   if(roster.grid)return html+timingFacts(s,attrs,roster)+gridMarkup(roster.rows)+'</section>';
    html+='<div class="nt-scroll"><div class="nt-table"><div class="nt-row nt-heading"><span>'+(roster.grid?'GRID':'NR')+'</span>'+
     '<span>FÖRARE / TEAM</span><span>VARV</span><span>SENASTE</span><span>Δ FRAMFÖR</span><span>Δ LEDARE</span><span>STATUS</span></div>';
    for(const r of roster.rows){
@@ -3718,11 +3752,12 @@ customElements.whenDefined(TAG).then(install);
 })();
 ;
 /* HA-MGP: on-demand API utility panel in the existing overview card.
+ * Renders BELOW the separate timing/startgrid card (not between overview and timing).
  * No automatic API traffic; commands use the authenticated HA WebSocket.
  */
 (() => {
 'use strict';
-const TAG='ha-motogp-next-overview-card', BUILD='api-utility-20261121-01';
+const TAG='ha-motogp-next-timing-card', BUILD='api-utility-20261122-02';
 const COMMAND='motogp_sensor/api_probe';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','"':'&#39;'}[c]));
 const CATEGORIES=['MotoGP','Moto2','Moto3'];
