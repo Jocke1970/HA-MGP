@@ -1,4 +1,4 @@
-/* MotoGP Next SINGLE Lovelace resource | build next-one-20261122-07 | read only. */
+/* MotoGP Next SINGLE Lovelace resource | build next-one-20261122-08 | read only. */
 /* MotoGP Next: isolated frontend for motogp-test. No HA writes or service calls. */
 (() => {
   'use strict';
@@ -26,7 +26,12 @@
     const match = /moto\s*(gp|2|3|e)/i.exec(raw);
     return match ? ({gp:'MotoGP','2':'Moto2','3':'Moto3',e:'MotoE'})[match[1].toLowerCase()] : raw;
   };
-  const sess = value => ({RAC:'Race',SPR:'Sprint',PR:'Practice',WUP:'Warm Up', 'TISSOT SPRINT':'Sprint'})[String(value || '').trim().toUpperCase()] || String(value || '');
+  const sess = value => {const raw=String(value||'').trim(),upper=raw.toUpperCase();
+    // Restart segments RAC2 / Race PART 2 belong to the scheduled Race,
+    // but retain their own live session_id for snapshot isolation.
+    if(/^RAC(?:[2-9][0-9]*)$/.test(upper)||/^RACE\s+PART\s+[2-9][0-9]*$/.test(upper))return 'Race';
+    return ({RAC:'Race',SPR:'Sprint',PR:'Practice',WUP:'Warm Up','TISSOT SPRINT':'Sprint'})[upper]||raw;
+  };
   const keyName = value => {
     const name=String(sess(value)).trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
     // API calls the Sprint "Tissot Sprint"; calendar may call it just Sprint.
@@ -106,6 +111,10 @@
         (valid(sa.session_shortname) && keyName(sa.session_shortname)!==name)) return null;
     const ids=[sa.championship_id,ta.championship_id,pa.championship_id].filter(valid).map(String);
     if (new Set(ids).size > 1) return null;
+    // All available entity session IDs must agree. A restarted part has a new
+    // live ID even though it belongs to the same calendar Race.
+    const segmentIds=[sa.session_id,ta.session_id,pa.session_id].filter(valid).map(String);
+    if(new Set(segmentIds).size>1)return null;
     // Do not expose unbuffered raw live timing while requested TV-delay is not ready.
     const requested=nonzero(pa.tv_delay_seconds);
     if (requested && pa.tv_delay_ready === false) return null;
@@ -113,8 +122,11 @@
     // cross a day boundary; match within the verified current GP weekend.
     const matches=sessionsFor(race).filter(s => s._cat===category && keyName(s._name)===name);
     if (matches.length!==1) return null;
-    return {key:`${calendar}|${today}|${category}|${name}|${matches[0].id || matches[0].date}`,
-      name:sess(se.state), category};
+    const liveId=segmentIds[0]||'';
+    const rawShort=String(sa.session_shortname||ta.session_shortname||pa.session_shortname||'').trim().toUpperCase();
+    const part=/^RAC([2-9][0-9]*)$/.exec(rawShort);
+    return {key:`${calendar}|${today}|${category}|${name}|${matches[0].id || matches[0].date}|${liveId||rawShort}`,
+      name:sess(se.state),category,session_id:liveId,part:part?Number(part[1]):null};
   }
   function timingInfo(live, states, ids) {
     if (!live) return [];
@@ -319,9 +331,9 @@
       this._track(now,race);
       const event=valid(race?.state)?race.state:'Inget evenemang tillgängligt';
       const meta=[a.circuit,a.country,a.date_start&&a.date_end?dateRange(a.date_start,a.date_end):''].filter(valid);
-      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.86</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
+      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.87</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
         this._schedule(race,now)+`<div class="root">${this._weather()}${this._timing()}</div>`+
-        `<div class="foot">HA-MGP UI · 0.3.0-dev.86 · UI-preview</div></div>`;
+        `<div class="foot">HA-MGP UI · 0.3.0-dev.87 · UI-preview</div></div>`;
     }
     getCardSize(){return 8;}
     getGridOptions(){return {columns:12,rows:'auto',min_columns:6};}
@@ -354,7 +366,7 @@
     const m = /moto\s*(gp|2|3|e)/i.exec(String(value || ''));
     return m ? ({gp:'MotoGP','2':'Moto2','3':'Moto3',e:'MotoE'})[m[1].toLowerCase()] : String(value || '');
   };
-  const sessionName = value => ({SPR:'Sprint',RAC:'Race',PR:'Practice',WUP:'Warm Up'})[String(value || '').toUpperCase()] || String(value || '');
+  const sessionName = value => {const raw=String(value||'').trim();if(/^RAC[2-9][0-9]*$/i.test(raw)||/^Race\s+PART\s+[2-9][0-9]*$/i.test(raw))return 'Race';return ({SPR:'Sprint',RAC:'Race',PR:'Practice',WUP:'Warm Up'})[raw.toUpperCase()]||raw;};
   const safeColor = value => /^#?[0-9a-f]{6}$/i.test(String(value || '')) ? `#${String(value).replace('#', '')}` : '#94a3b8';
   const numberText = value => positive(value) === null ? '—' : String(value);
   const lapText = value => !valid(value) || /^0+(?:[.:']0+)?$/.test(String(value).trim()) ? '—' : String(value);
@@ -536,7 +548,7 @@
         const expanded=!spoiler && (this._timingManual===null ? Boolean(hasRiders || live) : this._timingManual);
         let title, statusText, clockHtml='';
         if (live && !spoiler) {
-          title=`${live.category} · ${live.name}`;
+          title=`${live.category} · ${live.name}${live.part?' · Del '+live.part:''}`;
           statusText='● LIVE';
           const lap=positive(states[this._ids.laps]?.state);
           const total=positive(states[this._ids.laps]?.attributes?.num_laps);
@@ -3475,7 +3487,7 @@ customElements.whenDefined(TAG).then(install);
 const TAG='ha-motogp-next-timing-card';
 const BUILD='finish-settling-20261108-01';
 const HOLD_MS=240000;
-const session=v=>({WUP:'WARMUP',RAC:'RACE',SPR:'SPRINT',PR:'PRACTICE'})[String(v||'').toUpperCase()]||v;
+const session=v=>{const raw=String(v||'').toUpperCase();return /^RAC[2-9][0-9]*$/.test(raw)?'RACE':({WUP:'WARMUP',RAC:'RACE',SPR:'SPRINT',PR:'PRACTICE'})[raw]||v;};
 const same=(a,b)=>String(a||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]/g,'')===String(b||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]/g,'');
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const category=v=>{const m=/moto\s*(gp|2|3|e)/i.exec(String(v||''));return m?({gp:'MotoGP','2':'Moto2','3':'Moto3',e:'MotoE'})[m[1].toLowerCase()]:String(v||'');};
