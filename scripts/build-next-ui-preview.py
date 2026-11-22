@@ -8,7 +8,7 @@ import pathlib
 import sys
 import tempfile
 
-UI_BLOB = '05fd6e0cf095a4e8da7b885d8052b1075f5541fa'
+UI_BLOB = '1806beb6beb806fa6f4c8b11033e69191afad6a0'
 QUAL_BLOB = 'a2a61f681d0a82fd8acfcde6cbdf41113bbfe453'
 HEADER_BLOB = '3d1bed3ce6ba54e64be7858160cdf3258d63a7e8'
 HISTORY_BLOB = '8b7038e64df05cb7ffbc1e6059a966c867733fac'
