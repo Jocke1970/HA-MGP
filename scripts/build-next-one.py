@@ -6,7 +6,7 @@ import sys
 
 EXPECTED = {
     'ha-mgp-core.js': '42f3223748c8d8be6ac4e584680db48d1def2e3e',
-    'ha-mgp-split.js': 'dc93996728b3f4f61ba9171a21897703e86876ce',
+    'ha-mgp-split.js': 'b77a4771e6b9a3beb2cd42322d66cef87a2e6bbe',
     'ha-mgp-split-enhancements.js': '346df5046cc9301e426650cb36cb32449883414c',
     'ha-mgp-gap-trends.js': 'd522624e0eb4ae87315232894d1566bb10e348f3',
 }
