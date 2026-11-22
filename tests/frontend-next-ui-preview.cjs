@@ -150,9 +150,12 @@ const ctx={Date:Clock,console,document:{createElement:()=>({setAttribute(){},tex
   assert.doesNotMatch(h,/01:43\.111|01:50\.028/,'Moto3 class isolation');
   timing._live.category='MotoGP';timing._snapshot.category='MotoGP';
   race.attributes.records_by_category.MotoGP=[{type:'LAP_RECORD',time:'<script>x</script>',rider:'FAKE'}];
-  assert.doesNotMatch(timing._timing(),/mgp-timing-records|FAKE/,'unsafe records are hidden');
+  assert.doesNotMatch(timing._timing(),/FAKE|<script>|Preliminärt nytt banrekord/,'unsafe records never become a circuit record');
+  assert.match(timing._timing(),/Pole · aktuellt kval/,'verified grid P1 remains visible without any published record');
   race.attributes.records_by_category.MotoGP=[];
-  assert.doesNotMatch(timing._timing(),/mgp-timing-records/,'no empty record strips');
+  assert.match(timing._timing(),/Pole · aktuellt kval/,'pole time is still verified even when records are empty');
+  assert.doesNotMatch(timing._timing(),/Preliminärt nytt banrekord|Absolut varvrekord/,
+    'without a historical baseline no provisional circuit record can be claimed');
 
   timing._snapshot.name='Q1';timing._live.name='Q1';
   assert.match(timing._timing(),/nt-position-empty/,'no progression in qualifying');
