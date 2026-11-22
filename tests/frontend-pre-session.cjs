@@ -46,6 +46,8 @@ schedule(29,{date_start:near,date_end:near,event_id:'correct-gp',sessions_all:[
 assert.doesNotMatch(card._timing(),/Moto2 · FP2|STARTLISTA/,'pre-session rejects wrong explicit event ID');
 schedule(31);
 assert.match(card._timing(),/Senaste: MotoGP · Qualifying/);
+assert.match(card._timing(),/PRELIMINÄRT RESULTAT · EJ LIVE/,'retained timing snapshot is not an official result');
+assert.doesNotMatch(card._timing(),/SENASTE RESULTAT · EJ LIVE|SLUTRESULTAT/,'unverified classifications must never be marked final');
 schedule(29);
 let html=card._timing();
 assert.match(html,/STARTLISTA/);
