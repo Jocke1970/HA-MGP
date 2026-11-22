@@ -30,7 +30,7 @@ const safeColor=v=>/^#(?:[0-9a-f]{6})$/i.test(String(v||''))?String(v):'#777777'
 const riderNumber=v=>{const x=String(v??'').trim().replace(/^#/,'');return /^\d{1,3}$/.test(x)&&Number(x)>0?String(Number(x)):'';};
 const nameKey=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]/gi,'').toLowerCase();
 const teamKey=v=>String(v||'').trim().replace(/\s+/g,' ').toLowerCase();
-const gridTime=raw=>{const value=String(raw??'').trim();return /^(?:(?:\\d{1,2})[:'])?\\d{1,2}\\.\\d{3}$/.test(value)?value:'';};
+const gridTime=raw=>{const value=String(raw??'').trim();return /^(?:(?:\d{1,2})[:'])?\d{1,2}\.\d{3}$/.test(value)?value:'';};
 const nationFlag=v=>{
  const code=String(v||'').toUpperCase();
  const iso3={ITA:'IT',SPA:'ES',FRA:'FR',GBR:'GB',AUS:'AU',JPN:'JP',BRA:'BR',NED:'NL',GER:'DE',POR:'PT',USA:'US',BEL:'BE',CZE:'CZ',COL:'CO',RSA:'ZA',TUR:'TR',SUI:'CH',THA:'TH',MAL:'MY',IDN:'ID',ARG:'AR',IND:'IN'};
