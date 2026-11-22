@@ -1,11 +1,8 @@
-# HA-MGP b44 – HACS beta / verifiering
+# HA-MGP b45 – HACS beta / verifiering
 
-1. Installera **`2026.11.0b44`** via HACS beta, starta om Home Assistant och gör `Ctrl+Shift+R`.
-2. Kontrollera backend **`2026.11.0b44`** och frontend **`0.3.0-dev.86`**.
-3. Kontrollera att `recordLap` och `bestLap` visas i rätt klass som absolut varvrekord respektive bästa racevarv. Aktuell pole kommer från P1-kvaltiden.
-4. När ett verifierat varv slår ett känt rekord under helgen ska den snabbare tiden visas som **preliminärt banrekord** utan att invänta uppdaterad officiell rekordpost.
-5. Under loppet: bara en sessionssnabbaste sammanfattning (förare, tid, varvnummer); röd klocka i rätt förares snabbastevarv, inte nödvändigtvis senaste varvet.
-6. TV-delay, No Spoiler, klassisolering och befintlig grid ska fungera oförändrat. Röd flagg detekteras inte via stillastående data.
-7. Vid fel: rollback till **b43**. Ingen ny YAML eller separat Lovelace-resurs.
-
-**Main lämnas orörd** tills b44 verifierats i Home Assistant.
+1. Installera **`2026.11.0b45`** via HACS beta, starta om Home Assistant och gör `Ctrl+Shift+R`.
+2. Verifiera backend **`2026.11.0b45`** samt frontend **`0.3.0-dev.87`**. Äldre UI (dev.82) innehåller inte de nya fixarna.
+3. Vid rödflagg och omstart: `RAC2` ska matchas mot samma schemalagda Race, men visa `Del 2` och livefeedens egna varv (t.ex. 4/7). Loppet är fortsatt pågående vid status `S`.
+4. Byte av `session_id` ska rensa föregående delens snapshot. Två olika session-ID i HA-sensorerna får aldrig kombineras.
+5. Rekord: b44:s `recordLap`, `bestLap` och preliminära helgrekord ska fortsätta fungera; TV-delay, No Spoiler och klassisolering bevaras.
+6. Vid fel: återgå till **b44**. `main` ändras inte.
