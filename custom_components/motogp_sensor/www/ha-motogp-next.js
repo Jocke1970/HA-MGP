@@ -1,4 +1,4 @@
-/* MotoGP Next SINGLE Lovelace resource | build next-one-20261122-03 | read only. */
+/* MotoGP Next SINGLE Lovelace resource | build next-one-20261122-04 | read only. */
 /* MotoGP Next: isolated frontend for motogp-test. No HA writes or service calls. */
 (() => {
   'use strict';
@@ -319,9 +319,9 @@
       this._track(now,race);
       const event=valid(race?.state)?race.state:'Inget evenemang tillgängligt';
       const meta=[a.circuit,a.country,a.date_start&&a.date_end?dateRange(a.date_start,a.date_end):''].filter(valid);
-      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.82</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
+      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.83</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
         this._schedule(race,now)+`<div class="root">${this._weather()}${this._timing()}</div>`+
-        `<div class="foot">HA-MGP UI · 0.3.0-dev.82 · UI-preview</div></div>`;
+        `<div class="foot">HA-MGP UI · 0.3.0-dev.83 · UI-preview</div></div>`;
     }
     getCardSize(){return 8;}
     getGridOptions(){return {columns:12,rows:'auto',min_columns:6};}
@@ -1037,34 +1037,6 @@
     const times=snap.riders.map(r=>lapSeconds(r.best_lap_time)).filter(v=>v!==null);
     return times.length?Math.min(...times):null;
   };
-  const sessionFastest=card=>{
-    const snap=card._snapshot;
-    if(!snap||snap.day!==card._today||!Array.isArray(snap.riders)||!snap.riders.length)return '';
-    // A retained snapshot is NOT the upcoming race. Never show the previous
-    // class's observed lap above a new class's published start grid.
-    if(!card._live){
-      const status=card._hass?.states?.[card._ids?.status];
-      const session=card._hass?.states?.[card._ids?.session];
-      const code=String(status?.attributes?.session_status_id||'').toUpperCase();
-      const norm=v=>String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'')
-        .replace(/^SPR$/,'SPRINT').replace(/^RAC$/,'RACE');
-      if(!['C','F'].includes(code) ||
-         norm(status?.attributes?.category)!==norm(snap.category) ||
-         norm(session?.state)!==norm(snap.name))return '';
-    }
-    const candidates=snap.riders.map(r=>{
-      const raw=lap(r.best_lap_time);
-      const match=/^(?:(\d+)[:'])?(\d{1,2})\.(\d{3})$/.exec(raw);
-      if(!match)return null;
-      const seconds=Number(match[1]||0)*60+Number(match[2])+Number(match[3])/1000;
-      if(!Number.isFinite(seconds)||seconds<=0)return null;
-      return {seconds,time:raw,rider:String(r.surname||r.shortname||r.firstname||'').trim()};
-    }).filter(Boolean).sort((a,b)=>a.seconds-b.seconds);
-    if(!candidates.length)return '';
-    const best=candidates[0];
-    return '<div class="nt-session-observed-best" role="status">⏱ Sessionens snabbaste observerade: '+
-      '<strong>'+esc(best.time)+'</strong>'+(best.rider?' · '+esc(best.rider):'')+'</div>';
-  };
   const session=v=>({RAC:'Race',SPR:'Sprint'})[String(v||'').toUpperCase()]||String(v||'');
   const number=v=>/^#?\d+$/.test(String(v??'').trim())?String(Number(String(v).replace('#',''))):'';
   // Use only colors explicitly supplied by the provider; neutral fallback.
@@ -1105,8 +1077,6 @@
     /* Records and observed fastest lap are part of the timing HEADER, not table rows. */
     .mgp-timing-header{border-bottom:1px solid var(--divider-color,#ddd)}
     .mgp-timing-header>.nt-head{width:100%}
-    .nt-session-observed-best{padding:2px 16px 7px;font-size:11px;font-weight:650;color:var(--primary-text-color)}
-    .nt-session-observed-best strong{font-size:12px;color:var(--motogp-fastest-lap-color,var(--error-color,#b71c1c))}
     .mgp-timing-records{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:5px 16px 10px}
     .mgp-timing-record-chip{display:flex;align-items:center;justify-content:space-between;gap:4px 8px;min-width:0;border:1px solid var(--divider-color,#ddd);border-radius:9px;padding:6px 8px;background:var(--secondary-background-color,rgba(127,127,127,.045))}
     .mgp-timing-record-chip small{font-size:9px;font-weight:700;color:var(--secondary-text-color);white-space:nowrap}
@@ -1283,7 +1253,7 @@
               '<small>Tillåtet intervall: '+min+'–'+max+' s · steg '+increment+' s</small>':
               '<small>Kontrollera input_number.motogp_tv_delay_seconds och dess min/max/step i Home Assistant.</small>')+
             '</div>':'')+'</div>':'';
-        const headerDetails=delayControl+sessionFastest(this)+recordChips(this,category);
+        const headerDetails=delayControl+recordChips(this,category);
         if(headerDetails){
           html=html.replace('<button type="button" class="nt-head"',
             '<div class="mgp-timing-header"><button type="button" class="nt-head"');
