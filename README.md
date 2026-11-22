@@ -2,9 +2,14 @@
 
 Inofficiell Home Assistant-integration för MotoGP, Moto2 och Moto3.
 
-**HACS beta: `2026.11.0b47` · Frontend `0.3.0-dev.91`.**
+**HACS beta: `2026.11.0b48` · Frontend `0.3.0-dev.94`.**
 
-## Nytt i b47
+## Nytt i b48
+- Startlista före tävlingen anger nu `INFÖR START` i stället för felaktigt `INVÄNTAR LIVE` och särskiljer passerad starttid från bekräftad livetiming.
+- Startgridden visar individuella kvaltider när Pulselive levererar dem. Rekordraden kompletteras med bästa racevarv.
+- Banvädret redovisas som en sessionsrapport (inte verifierade live-mätningar); oförändrade vädervärden över 10 minuter döljs i stället för att se aktuella ut.
+- Tidigare b47-statusmatchning och preliminär resultatvisning finns kvar.
+
 - Schemat visar klass- och sessionsmatchad Pulselive-status, även efter en RAC2-omstart, i stället för att lita på passerad starttid eller en eftersläpande Results-status.
 - Bekräftad avslutning från timing-gateway sparas för aktuell GP-helg tills nästa pass; Results-sessionsstatus uppdateras dessutom vid redan befintlig femminutershämtning.
 - Senaste sparade tider visas som preliminärt resultat tills officiell slutklassificering verifierats.
@@ -25,4 +30,4 @@ Inofficiell Home Assistant-integration för MotoGP, Moto2 och Moto3.
 
 **Beta för okulärbesiktning.** Installera via HACS beta, inte dev. [Release notes](docs/hacs-beta-release-notes.md) och [testguide](docs/hacs-beta-installation.md).
 
-**Dev → beta → main.** b46 är rollback. Main ändras först efter godkännande.
+**Dev → beta → main.** b47 är rollback. Main ändras först efter godkännande.
