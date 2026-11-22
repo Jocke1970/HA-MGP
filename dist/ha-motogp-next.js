@@ -1,4 +1,4 @@
-/* MotoGP Next SINGLE Lovelace resource | build next-one-20261122-04 | read only. */
+/* MotoGP Next SINGLE Lovelace resource | build next-one-20261122-05 | read only. */
 /* MotoGP Next: isolated frontend for motogp-test. No HA writes or service calls. */
 (() => {
   'use strict';
@@ -319,9 +319,9 @@
       this._track(now,race);
       const event=valid(race?.state)?race.state:'Inget evenemang tillgängligt';
       const meta=[a.circuit,a.country,a.date_start&&a.date_end?dateRange(a.date_start,a.date_end):''].filter(valid);
-      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.83</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
+      this.shadowRoot.getElementById('app').innerHTML=`<div class="root"><section class="panel header"><div class="eyebrow">🏁 HA-MGP · 0.3.0-dev.84</div><h2>${esc(event)}</h2><div class="sub">${meta.map(esc).join(' · ')||'Väntar på evenemangsdata'}</div></section>`+
         this._schedule(race,now)+`<div class="root">${this._weather()}${this._timing()}</div>`+
-        `<div class="foot">HA-MGP UI · 0.3.0-dev.83 · UI-preview</div></div>`;
+        `<div class="foot">HA-MGP UI · 0.3.0-dev.84 · UI-preview</div></div>`;
     }
     getCardSize(){return 8;}
     getGridOptions(){return {columns:12,rows:'auto',min_columns:6};}
@@ -1292,7 +1292,7 @@
             `<span class="nt-lap-pair"><span class="nt-best-main"${overall?' style="color:var(--motogp-fastest-lap-color,var(--error-color,#b71c1c))"':''}>${esc(best)}</span>`+
               `<small>Senaste: ${original}</small></span>`:
             `<span class="nt-lap-pair"><span class="nt-last-main">${original}</span>`+
-              `<small${overall?' class="nt-session-best"':''}>Snabbaste: ${esc(best)}</small></span>`;
+              `<small${overall?' class="nt-session-best"':''}>Snabbaste: ${overall?'⏱ ':''}${esc(best)}</small></span>`;
           row=row.slice(0,range.begin)+cell+row.slice(range.end);
         }
         const status=r.on_pit?'PIT':valid(r.status_name)?String(r.status_name):valid(r.status_id)?String(r.status_id):'—';
