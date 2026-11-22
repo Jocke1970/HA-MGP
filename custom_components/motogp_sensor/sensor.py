@@ -409,6 +409,7 @@ def _live_attributes(
         "category": live.get("category"),
         "championship_id": live.get("championship_id"),
         "session_shortname": live.get("session_shortname"),
+        "session_id": live.get("session_id"),
         "session_status_id": live.get("session_status_id"),
         "circuit": live.get("circuit_name"),
         "event": live.get("event_name"),
