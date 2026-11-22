@@ -66,7 +66,7 @@
     const attrs=card._hass?.states?.[card._ids?.race]?.attributes||{};
     const rows=attrs.records_by_category?.[category];
     const found=new Map(),names={lap:'Absolut varvrekord',pole:'Pole · aktuellt kval',race:'Bästa racevarv'};
-    const timeOk=time=>/^(?:\\d{1,2}[:'])?\\d{1,2}\\.\\d{3}$/.test(time);
+    const timeOk=time=>/^(?:\d{1,2}[:'])?\d{1,2}\.\d{3}$/.test(time);
     const chip=(kind,time,detail)=>{
       const note=detail?' · '+detail:'';
       return '<span class="mgp-timing-record-chip" title="'+esc(detail)+'" aria-label="'+
