@@ -53,6 +53,41 @@ def build(directory, destination):
         'const open=this._expanded(day),upcoming=items.find(s=>!past(s));',
         'const open=this._expanded(day),upcoming=items.find(isLive)||items.find(s=>s._wall.date>now&&!explicitFinish(s));',
         'day next session must actually be in the future')
+    # Results timetable can lag or remain NOT-STARTED after RAC2.
+    # Use only exact, class-scoped status observed in the TV-delayed gateway;
+    # a passed schedule time never implies official completion.
+    base = swap(base,
+        'const isLive=s=>Boolean(this._live)&&s._cat===this._live.category&&keyName(s._name)===keyName(this._live.name)&&s._wall.day===this._today;',
+        "const isLive=s=>Boolean(this._live)&&s._cat===this._live.category&&keyName(s._name)===keyName(this._live.name)&&s._wall.day===this._today;\\n"
+        "      const observedCode=s=>String(race?.attributes?.session_status_by_category?.[s._cat]?.[s._name]?.status_id||'').toUpperCase();\\n"
+        "      const effectiveStatus=s=>{const published=String(s.status||'').toUpperCase();"
+        "return ['F','C'].includes(observedCode(s))?'FINISHED':published;};\\n"
+        "      const confirmedFinish=s=>effectiveStatus(s)==='FINISHED';",
+        'class-scoped timing status overrides stale Results timetable')
+    base = swap(base,
+        'explicitFinish(s)|| (s._wall.date<now &&',
+        'confirmedFinish(s)|| (s._wall.date<now &&',
+        'passed timing must not imply a finished session')
+    base = swap(base,
+        'current.every(explicitFinish)',
+        'current.every(confirmedFinish)',
+        'day summary uses verified final status')
+    base = swap(base,
+        "s._wall.date>now&&!explicitFinish(s)",
+        "s._wall.date>now&&!confirmedFinish(s)",
+        'header next excludes verified completed sessions')
+    base = swap(base,
+        "items.find(s=>s._wall.date>now&&!explicitFinish(s))",
+        "items.find(s=>s._wall.date>now&&!confirmedFinish(s))",
+        'day next excludes completed sessions')
+    base = swap(base,
+        "items.every(explicitFinish)?'Klart'",
+        "items.every(confirmedFinish)?'Klart'",
+        'day completed only from verified source')
+    base = swap(base,
+        "const live=isLive(s),elapsed=past(s),status=String(s.status||'').toUpperCase();",
+        "const live=isLive(s),elapsed=past(s),status=effectiveStatus(s);",
+        'tile status uses Pulselive status')
     base = swap(base, '🏁 MOTOGP · ${esc(VERSION)}',
                 f'🏁 MOTOGP NEXT · {DISPLAY_VERSION}', 'unified version header')
     base = swap(base, '${esc(TAG)} · ${esc(BUILD)} · testresurs',
