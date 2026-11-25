@@ -2333,8 +2333,8 @@ function install(){
       brandedHeader.replace('<div class="np-top-actions">','<div class="np-top-actions">'+toolbarHtml):
       brandedHeader+'<div class="np-top-actions">'+toolbarHtml+'</div>';
     const body='<div class="mgp-hero-grid" data-mgp-hero-grid>'+
-      '<div class="mgp-hero-copy">'+actions+historicalHtml(this)+'</div>'+
-      venue(this)+'</div>';
+      '<div class="mgp-hero-copy">'+actions+'</div>'+
+      venue(this)+'</div>'+historicalHtml(this);
     const footer='<details class="mgp-ui-footer"><summary>ⓘ UI-information</summary>'+
       '<div>Frontend: '+esc(uiVersion)+' · Bas-kort: '+esc(Overview.buildInfo?.version||'okänd')+
       '<br>Backendversion hanteras separat.</div></details>';
