@@ -62,7 +62,7 @@ def check_bundle_integrity() -> None:
     assert "motogp_sensor/api_probe" in next_js
     assert "api-utility-20261122-02" in next_js
     assert "mgp-timing-header" in next_js, "records must render inside unified timing header"
-    assert "header-track-weather-20261122-01" in next_js
+    assert "header-track-history-20261125-01" in next_js
     assert "mgp-country-flag" in next_js
     assert "mgp-brand-logo" in next_js
     assert "data:image/webp;base64," in next_js
@@ -77,7 +77,7 @@ def check_bundle_integrity() -> None:
     assert "nt-lap-pair" in next_js
     assert "Snabbaste: " in next_js
     assert "riderStart=/<div" in next_js
-    assert "header-track-weather-20261122-01" in next_js
+    assert "header-track-history-20261125-01" in next_js
     assert "data-mgp-hero-grid" in next_js
     assert "mgp-venue-strip" in next_js
     assert "MELLAN PASSEN" in next_js
@@ -85,7 +85,7 @@ def check_bundle_integrity() -> None:
     assert "qual-grid-20261121-01" in next_js
     assert "nt-qual-slot-3" in next_js
     assert "qualifying_q1_eliminated" in next_js
-    assert "header-track-weather-20261122-01" in next_js
+    assert "header-track-history-20261125-01" in next_js
     assert "mgp-venue-strip" in next_js
     assert "mgp-track-svg" in next_js
     assert "Senast rapporterat" in next_js
