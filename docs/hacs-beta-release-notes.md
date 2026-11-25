@@ -1,15 +1,14 @@
-# HA-MGP 2026.11.0b48 – finalhelgens kandidat
+# HA-MGP 2026.11.0b49 – Valencia-historik i toppkortet
 
-**HACS beta:** `2026.11.0b48` · **Frontend:** `0.3.0-dev.94`
+**HACS beta:** \`2026.11.0b49\` · **Frontend:** \`0.3.0-dev.95\`
 
-## Ändringar sedan b47
-- **Startgridden** visar förarens egen kvaltid i respektive ruta om den finns i den verifierade startgridposten; inga tider gissas.
-- **Rekordraden före start** kompletteras med bästa racevarv vid sidan av aktuell pole och absolut varvrekord.
-- **Startstatus**: före schemalagd start `STARTLISTA · INFÖR START`; efter passerad starttid inväntas säker bekräftelse från livetiming innan status ändras. Ingen automatisk LIVE-etikett från klockan.
-- **Banväder**: Results API ger sessionsrapporter, inte garanterat realtidsväder. Rapporter märks med sin verkliga källa och gamla, oförändrade värden (över 10 minuter) döljs för att inte skapa en falsk aktuell väderbild.
-- **b47:s** Pulselive-schemastatus, omstartade racedelar och preliminära resultat behålls. `main` orörd.
+## Nytt sedan b48
+- **Banhistorik i toppkortet:** sammanhållen, hopfällbar sektion med all-time kvalrekord, snabbaste racevarv, pole 2025 och racevinnare 2025 för MotoGP, Moto2 och Moto3 på Valencia.
+- Historiken har källänkar, är låst till rätt bana och evenemangsår och innehåller inga resultat från pågående helg.
+- Fullbreddslayout inne i befintligt toppkort, med tabell som kan scrollas horisontellt i smala vyer.
+- Samma befintliga liveflöde, väder och kortfunktioner som b48. Inget Open-Meteo ännu.
 
-## Nästa steg
-Under finalhelgen: kontrollera förstart, liveövergång, kvaltider, banrekord, schemastatus, TV-delay/No Spoiler och slutresultat. Undersök en bättre väderkälla separat, inklusive tidstämpel för faktiska vädermätningar. Denna beta ändrar inte väderleverantör.
+## Test under finalhelgen
+Verifiera Valencia-historiken för alla klasser, mobilbredd, kortets omrendering, TV-delay, No Spoiler, startgrid, omstarter och resultatstatus. Om 2025-data inte visas: kontrollera att GP:s bana verkligen identifieras som Circuit Ricardo Tormo och att eventåret är 2026.
 
-**Rollback:** `2026.11.0b47`.
+**Rollback:** \`2026.11.0b48\`. \`main\` oförändrad.
