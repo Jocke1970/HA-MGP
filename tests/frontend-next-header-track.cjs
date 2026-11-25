@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const file=process.argv[2]||'frontend/ha-mgp-header-track.js';
 const src=fs.readFileSync(file,'utf8');
-assert.match(src,/header-track-weather-20261122-01/);
+assert.match(src,/header-track-history-20261125-01/);
 const docs=[];
 class Overview {
   static buildInfo={version:'0.2.0-split.2'};
@@ -110,6 +110,18 @@ const context={customElements:{
   card._render();
   assert.match(card.root.innerHTML,/mgp-dialog-race">Valencia GP</,'VAL resolves to a readable event name');
   assert.doesNotMatch(card.root.innerHTML,/mgp-dialog-race">VAL</,'do not render track code as GP');
+  // 2025 Valencia results are previous-year only, scoped to circuit + year.
+  assert.match(card.root.innerHTML,/data-mgp-history/,'2026 Valencia has historical GP panel');
+  assert.match(card.root.innerHTML,/Marco Bezzecchi/,'MotoGP prior-year pole and winner');
+  assert.match(card.root.innerHTML,/Daniel Holgado/,'Moto2 previous year pole');
+  assert.match(card.root.innerHTML,/Izan Guevara/,'Moto2 previous year winner');
+  assert.match(card.root.innerHTML,/Adrián Fernández/,'Moto3 historical pole and winner');
+  assert.match(card.root.innerHTML,/Álvaro Carpe/,'Moto3 best race lap');
+  assert.match(card.root.innerHTML,/Källa 1/,'history has provenance');
+  attrs.date_start='2027-11-26'; card._render();
+  assert.doesNotMatch(card.root.innerHTML,/data-mgp-history/,'2025 is not previous year in 2027');
+  attrs.date_start='2026-11-27'; card._render();
+  assert.match(card.root.innerHTML,/data-mgp-history/,'historical data resumes in its valid season');
   attrs.circuit='Autódromo Internacional do Algarve';attrs.country='Portugal';attrs.short_name='POR';
   card._render();
   assert.match(card.root.innerHTML,/mgp-dialog-race">Portugal GP</,'POR resolves to a readable event name');
