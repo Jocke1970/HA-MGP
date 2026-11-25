@@ -1,9 +1,9 @@
-# HA-MGP b48 – sista racehelgens beta
+# HA-MGP b49 – Valencia-historik inför sista racehelgen
 
-1. Installera **`2026.11.0b48`** via HACS beta. Starta om Home Assistant och gör `Ctrl+Shift+R`.
-2. Kontrollera **backend `2026.11.0b48`** och **frontend `0.3.0-dev.94`**.
-3. **Före start:** `STARTLISTA · INFÖR START`; inga påhittade LIVE- eller förseningstillstånd. Verifiera startgridens individuella kvaltider när de finns samt alla tre rekordtyper.
-4. **Under live:** pass-, klass- och sessions-ID, varvräkning, TV-delay och No Spoiler ska fungera som tidigare. `RAC2` visas som `Omstart` vid en ny racedelsession.
-5. **Efter lopp:** sparade varvtider ska heta `PRELIMINÄRT RESULTAT` tills officiell slutklassificering faktiskt bekräftats; kontrollera status i helgschemat.
-6. **Banväder:** gamla Results-sessionsvärden ska inte visas som aktuella när rapporten varit oförändrad över 10 minuter. Ingen ny källa ingår ännu.
-7. Vid fel: rollback till **b47**. `main` lämnas orörd tills finalhelgens verifiering.
+1. Installera **\`2026.11.0b49\`** från HACS beta. Starta om Home Assistant och gör hård omladdning \`Ctrl+Shift+R\`.
+2. Kontrollera **backend \`2026.11.0b49\`** och **frontend \`0.3.0-dev.95\`**.
+3. Öppna \`🏆 Rekord & 2025 års pole/vinnare\` i toppkortet för Valencia. Kontrollera att MotoGP, Moto2 och Moto3 visas separat.
+4. Bekräfta att historiken inte visas för annan bana eller fel år; länkar ska öppna historiska källor.
+5. Före start: startlista, kvaltider och schemalagda pass. Under live: varv, TV-delay, No Spoiler och omstart. Efter mål: preliminärt kontra officiellt resultat.
+6. Banväder fungerar som i b48: gamla sessionsrapporter döljs efter 10 minuters oförändrat innehåll. Open-Meteo ingår ännu inte.
+7. Vid fel: rollback till **b48**. \`main\` lämnas orörd.
